@@ -1,7 +1,12 @@
+# Pansift specific
 *.log
 *.pid
 machine_uuid.conf
 pansift_uuid.conf
+airport.plist
+
+# Rails etc.
+
 *.rbc
 capybara-*.html
 .rspec
