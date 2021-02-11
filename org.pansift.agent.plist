@@ -8,7 +8,7 @@
     <array>            
       <string>/bin/bash</string> 
       <string>-c</string> 
-      <string>$HOME/.pansift/pansift</string> 
+      <string>$HOME/.p3/pansift</string> 
     </array>
     <key>RunAtLoad</key>
     <true/>

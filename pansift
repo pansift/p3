@@ -9,21 +9,21 @@ pansift_uuid=""
 machine_uuid=""
 umask 077
 
-pansift_uuid_file=~/.pansift/pansift_uuid.conf
+pansift_uuid_file=~/.p3/pansift_uuid.conf
 if test -f "$pansift_uuid_file"; then
   line=$(head -n 1 "$pansift_uuid_file")
   pansift_uuid=$(echo -n "$line" | awk '{$1=$1;print}' | tr ',' '.' | tr -s ' ' | tr '[:upper:]' '[:lower:]' | tr -d '\r' | sed 's! !\\ !g')
 else
   pansift_uuid=$(uuidgen | tr '[:upper:]' '[:lower:]')
-  echo -n "$pansift_uuid" > ~/.pansift/pansift_uuid.conf
-  token=$(~/.pansift/db-setup.sh "$pansift_uuid") 
-  echo -n "$token" > ~/.pansift/pansift_token.conf
+  echo -n "$pansift_uuid" > $HOME/.p3/pansift_uuid.conf
+  token=$(~/.p3/db-setup.sh "$pansift_uuid") 
+  echo -n "$token" > $HOME/.p3/pansift_token.conf
   # Call webhook to create DB with UUID
   # If we're gonna create a new UUID here we need to pass it to the DB (also from reset or update UUID)
   # Call script to set up DB db-setup.sh
 fi
 
-machine_uuid_file=~/.pansift/machine_uuid.conf
+machine_uuid_file=$HOME/.p3/machine_uuid.conf
 if test -f "$machine_uuid_file"; then
   line=$(head -n 1 "$machine_uuid_file")
   machine_uuid=$(echo -n "$line" | awk '{$1=$1;print}' | tr ',' '.' | tr -s ' ' | tr '[:upper:]' '[:lower:]' | tr -d '\r' | sed 's! !\\ !g')
@@ -53,11 +53,11 @@ else
     # Unknown so create it.
   fi
   # MAC Machine UUID is different but will be our unique  primary key we can read or generate on other platforms
-  echo -n "$machine_uuid" > ~/.pansift/machine_uuid.conf
+  echo -n "$machine_uuid" > $HOME/.p3/machine_uuid.conf
 fi
 
 
-annotations_file=~/.pansift/pansift_annotations.log
+annotations_file=$HOME/.p3/pansift_annotations.log
 touch "$annotations_file"
 
 # We need the ENV variable for the subshell...
@@ -65,7 +65,7 @@ export pansift_uuid=$pansift_uuid
 #echo "Exported pansift_uuid=$pansift_uuid"
 export machine_uuid=$machine_uuid
 #echo "Exported machine_uuid=$machine_uuid"
-pansift_token_file=~/.pansift/pansift_token.conf
+pansift_token_file=$HOME/.p3/pansift_token.conf
 if test -f "$pansift_token_file"; then
   line=$(head -n 1 "$pansift_token_file")
   # Token is case sensitive!!!
@@ -77,13 +77,13 @@ echo "Pansift UUID:$pansift_uuid"
 echo "Machine UUID:$machine_uuid"
 echo "Token:$pansift_token"
 
-tpid="$HOME/.pansift/telegraf.pid"
+tpid="$HOME/.p3/telegraf.pid"
 if test -f "$tpid"; then
-  pkill -F "$HOME/.pansift/telegraf.pid"
+  pkill -F "$HOME/.p3/telegraf.pid"
 fi
-pkill -f "$HOME/.pansift/telegraf" || true
+pkill -f "$HOME/.p3/telegraf" || true
 sleep 15
 
-"$HOME"/.pansift/telegraf --config "$HOME"/.pansift/telegraf-osx.conf --pidfile "$HOME"/.pansift/telegraf.pid >/dev/null 2>&1 &
+"$HOME"/.p3/telegraf --config "$HOME"/.p3/telegraf-osx.conf --pidfile "$HOME"/.p3/telegraf.pid >/dev/null 2>&1 &
 disown
 exit 0
