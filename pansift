@@ -84,6 +84,7 @@ fi
 pkill -f "$HOME/p3/telegraf" || true
 sleep 15
 
+touch "$HOME"/p3/telegraf.pid "$HOME"/p3/telegraf.log
 "$HOME"/p3/telegraf --config "$HOME"/p3/telegraf-osx.conf --pidfile "$HOME"/p3/telegraf.pid >/dev/null 2>&1 &
 disown
 exit 0
