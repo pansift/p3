@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+
+#set -e
+#set -vx
+
+# Need to add a first run that adds the plist to the LaunchAgents !!!
+
+pansift_uuid=""
+machine_uuid=""
+umask 077
+
+pansift_uuid_file=~/.pansift/pansift_uuid.conf
+if test -f "$pansift_uuid_file"; then
+  line=$(head -n 1 "$pansift_uuid_file")
+  pansift_uuid=$(echo -n "$line" | awk '{$1=$1;print}' | tr ',' '.' | tr -s ' ' | tr '[:upper:]' '[:lower:]' | tr -d '\r' | sed 's! !\\ !g')
+else
+  pansift_uuid=$(uuidgen | tr '[:upper:]' '[:lower:]')
+  echo -n "$pansift_uuid" > ~/.pansift/pansift_uuid.conf
+  token=$(~/.pansift/db-setup.sh "$pansift_uuid") 
+  echo -n "$token" > ~/.pansift/pansift_token.conf
+  # Call webhook to create DB with UUID
+  # If we're gonna create a new UUID here we need to pass it to the DB (also from reset or update UUID)
+  # Call script to set up DB db-setup.sh
+fi
+
+machine_uuid_file=~/.pansift/machine_uuid.conf
+if test -f "$machine_uuid_file"; then
+  line=$(head -n 1 "$machine_uuid_file")
+  machine_uuid=$(echo -n "$line" | awk '{$1=$1;print}' | tr ',' '.' | tr -s ' ' | tr '[:upper:]' '[:lower:]' | tr -d '\r' | sed 's! !\\ !g')
+else
+  if [[ "$OSTYPE" == linux-gnu* ]]; then
+    # ... coerce hostid in to uuid?
+    true
+  elif [[ "$OSTYPE" == darwin* ]]; then
+    # Mac OSX
+    machine_uuid=$(ioreg -d2 -c IOPlatformExpertDevice | awk -F\" '/IOPlatformUUID/{print $(NF-1)}' | tr '[:upper:]' '[:lower:]')
+  elif [[ "$OSTYPE" == "cygwin" ]]; then
+    # POSIX compatibility layer and Linux environment emulation for Windows
+    true
+  elif [[ "$OSTYPE" == "msys" ]]; then
+    # Lightweight shell and GNU utilities compiled for Windows (part of MinGW)
+    true
+  elif [[ "$OSTYPE" == "win32" ]]; then
+    # I'm not sure this can happen.
+    true
+  elif [[ "$OSTYPE" == "freebsd"* ]]; then
+    true
+    # ...
+  else
+    machine_uuid=$(uuidgen | tr '[:upper:]' '[:lower:]')
+    # Or perhaps another approach?
+    # od -x /dev/urandom | head -1 | awk '{OFS="-"; print $2$3,$4,$5,$6,$7$8$9}'
+    # Unknown so create it.
+  fi
+  # MAC Machine UUID is different but will be our unique  primary key we can read or generate on other platforms
+  echo -n "$machine_uuid" > ~/.pansift/machine_uuid.conf
+fi
+
+
+annotations_file=~/.pansift/pansift_annotations.log
+touch "$annotations_file"
+
+# We need the ENV variable for the subshell...
+export pansift_uuid=$pansift_uuid
+#echo "Exported pansift_uuid=$pansift_uuid"
+export machine_uuid=$machine_uuid
+#echo "Exported machine_uuid=$machine_uuid"
+pansift_token_file=~/.pansift/pansift_token.conf
+if test -f "$pansift_token_file"; then
+  line=$(head -n 1 "$pansift_token_file")
+  # Token is case sensitive!!!
+  pansift_clean_token=$(echo -n "$line" | awk '{$1=$1;print}' | tr ',' '.' | tr -s ' ' | tr -d '\r' | sed 's! !\\ !g')
+  export pansift_token=$pansift_clean_token
+fi
+
+echo "Pansift UUID:$pansift_uuid"
+echo "Machine UUID:$machine_uuid"
+echo "Token:$pansift_token"
+
+tpid="$HOME/.pansift/telegraf.pid"
+if test -f "$tpid"; then
+  pkill -F "$HOME/.pansift/telegraf.pid"
+fi
+pkill -f "$HOME/.pansift/telegraf" || true
+sleep 15
+
+"$HOME"/.pansift/telegraf --config "$HOME"/.pansift/telegraf-osx.conf --pidfile "$HOME"/.pansift/telegraf.pid >/dev/null 2>&1 &
+disown
+exit 0
