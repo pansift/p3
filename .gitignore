@@ -1,3 +1,7 @@
+*.log
+*.pid
+machine_uuid.conf
+pansift_uuid.conf
 *.rbc
 capybara-*.html
 .rspec
