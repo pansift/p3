@@ -10,7 +10,7 @@ LDIFS=$IFS
 
 script_name=$(basename "$0")
 # Get configuration targets etc
-source ~/.p3/pansift.conf
+source ~/p3/pansift.conf
 
 if [[ ${#1} = 0 ]]; then
   echo "Usage: Pass one parameter -n|--network -m|--machine"
@@ -237,7 +237,7 @@ wlan_scan () {
   else
     # Need to migrate this to XML output and a data structure that Influx can ingest that includes taking in to account spaces in SSID hence XML
     #scandata="/tmp/airport.plist"
-    scandata="$HOME/.p3/airport.plist" #Need a better way to do the install location, assuming ~/.p3 for now. 
+    scandata="$HOME/p3/airport.plist" #Need a better way to do the install location, assuming ~/p3 for now. 
     #test -f $scandata || touch $scandata
     #if [[ ! -e $scandata ]]; then
     #  touch $scandata

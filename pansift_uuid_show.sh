@@ -5,7 +5,7 @@
 uuid=""
 applescriptCode=""
 
-pansift_uuid_file=$HOME/.p3/pansift_uuid.conf
+pansift_uuid_file=$HOME/p3/pansift_uuid.conf
 if test -f "$pansift_uuid_file"; then
     line=$(head -n 1 $pansift_uuid_file)
     #echo $line

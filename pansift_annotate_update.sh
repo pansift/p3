@@ -18,7 +18,7 @@ if [ -n "$note" ]; then
   fieldset=$(echo -n "note=\"$note\"") 
   measurement="annotation"
   timestamp=$(date +%s)000000000
-  echo "$measurement $fieldset $timestamp" >> $HOME/.p3/pansift_annotations.log
+  echo "$measurement $fieldset $timestamp" >> $HOME/p3/pansift_annotations.log
   exit 0 
 else
   exit 0
