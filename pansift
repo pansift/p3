@@ -4,13 +4,13 @@
 #set -vx
 
 # Need to add a first run that adds the plist to the LaunchAgents !!!
+defaults write com.matryer.BitBar pluginsDirectory "$HOME/p3/Plugins"
+defaults write com.matryer.BitBar NSNavLastRootDirectory "$HOME/p3/Plugins" 
+defaults write com.matryer.BitBar userConfigDisabled -bool true
 
 pansift_uuid=""
 machine_uuid=""
 umask 077
-defaults write com.matryer.BitBar pluginsDirectory "$HOME/p3/Plugins"
-defaults write com.matryer.BitBar NSNavLastRootDirectory "$HOME/p3/Plugins" 
-defaults write com.matryer.BitBar userConfigDisabled -bool true
 
 pansift_uuid_file=~/p3/pansift_uuid.conf
 if test -f "$pansift_uuid_file"; then
