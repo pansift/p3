@@ -42,7 +42,13 @@ export pansift_uuid=$pansift_uuid
 # See ingest router webhook service.
 if test -f "$pansift_ingest_file"; then
   line=$(head -n 1 "$pansift_ingest_file")
-  pansift_ingest=$(echo -n "$line" | xargs | tr ',' '.' | tr -s ' ' | tr '[:upper:]' '[:lower:]' | tr -d '\r')
+  regex='(https?|ftp|file)://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]'
+  if [[ $line =~ $regex ]]; then
+    pansift_ingest=$(echo -n "$line" | xargs | tr ',' '.' | tr -s ' ' | tr '[:upper:]' '[:lower:]' | tr -d '\r')
+  else
+    pansift_ingest=$($HOME/p3/ingest.sh "$pansift_uuid" | tr '[:upper:]' '[:lower:]')
+    echo -n "$pansift_ingest" > $pansift_ingest_file
+  fi
 else
   pansift_ingest=$($HOME/p3/ingest.sh "$pansift_uuid" | tr '[:upper:]' '[:lower:]')
   echo -n "$pansift_ingest" > $pansift_ingest_file
