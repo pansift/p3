@@ -34,6 +34,9 @@ else
   # Call script to set up DB db-setup.sh
 fi
 
+# We need the ENV variable for the subshell...
+export pansift_uuid=$pansift_uuid
+
 # This assumes connectivity on first run to at lesat get the correct DB host (but default fall back too) 
 # Would be good to have a forced kill switch to localhost in the future somehow other than connected restarts
 # See ingest router webhook service.
@@ -81,8 +84,6 @@ fi
 
 
 
-# We need the ENV variable for the subshell...
-export pansift_uuid=$pansift_uuid
 #echo "Exported pansift_uuid=$pansift_uuid"
 export machine_uuid=$machine_uuid
 #echo "Exported machine_uuid=$machine_uuid"
