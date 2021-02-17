@@ -3,6 +3,7 @@
 *.pid
 machine_uuid.conf
 pansift_uuid.conf
+pansift_ingest.conf
 airport.plist
 
 # Rails etc.
