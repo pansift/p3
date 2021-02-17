@@ -12,8 +12,8 @@ if [[ $1 =~ ^\{?[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F
   then 
     echo $ingest
   else
-    exit
+    exit 0
   fi
 else
-  echo "http://localhost"
+  exit 0
 fi
