@@ -10,7 +10,7 @@ else
   $HOME/p3/pansift  >/dev/null 2>&1
 fi
 
-echo "PS"
+echo "Pansift"
 echo "---"
 echo "Add an issue note | bash='$HOME/p3/pansift_annotate_update.sh' terminal=false"
 echo "---"
