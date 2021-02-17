@@ -14,29 +14,35 @@ umask 077
 
 pansift_uuid_file=$HOME/p3/pansift_uuid.conf
 pansift_ingest_file=$HOME/p3/pansift_ingest.conf
+pansift_token_file=$HOME/p3/pansift_token.conf
 machine_uuid_file=$HOME/p3/machine_uuid.conf
 annotations_file=$HOME/p3/pansift_annotations.log
 touch "$annotations_file" # This is just to create for tailing if not already there.
+
+# We need a UUID and token to write to DB. 
 
 if test -f "$pansift_uuid_file"; then
   line=$(head -n 1 "$pansift_uuid_file")
   pansift_uuid=$(echo -n "$line" | awk '{$1=$1;print}' | tr ',' '.' | tr -s ' ' | tr '[:upper:]' '[:lower:]' | tr -d '\r')
 else
   pansift_uuid=$(uuidgen | tr '[:upper:]' '[:lower:]')
-  echo -n "$pansift_uuid" > $HOME/p3/pansift_uuid.conf
+  echo -n "$pansift_uuid" > $pansift_uuid_file
   token=$($HOME/p3/db-setup.sh "$pansift_uuid") 
-  echo -n "$token" > $HOME/p3/pansift_token.conf
+  echo -n "$token" > $pansift_token_file
   # Call webhook to create DB with UUID
   # If we're gonna create a new UUID here we need to pass it to the DB (also from reset or update UUID)
   # Call script to set up DB db-setup.sh
 fi
 
+# This assumes connectivity on first run to at lesat get the correct DB host (but default fall back too) 
+# Would be good to have a forced kill switch to localhost in the future somehow other than connected restarts
+# See ingest router webhook service.
 if test -f "$pansift_ingest_file"; then
-  line=$(head -n 1 "$pansift_uuid_file")
+  line=$(head -n 1 "$pansift_ingest_file")
   pansift_ingest=$(echo -n "$line" | xargs | tr ',' '.' | tr -s ' ' | tr '[:upper:]' '[:lower:]' | tr -d '\r')
 else
   pansift_ingest=$($HOME/p3/ingest.sh "$pansift_uuid" | tr '[:upper:]' '[:lower:]')
-  echo -n "$pansift_ingest" > $HOME/p3/pansift_ingest.conf
+  echo -n "$pansift_ingest" > $pansift_ingest_file
 fi
 export pansift_ingest=$pansift_ingest
 
