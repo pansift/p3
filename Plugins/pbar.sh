@@ -10,13 +10,13 @@ else
   $HOME/p3/pansift  >/dev/null 2>&1
 fi
 
-echo "Pansift"
+echo "PS"
 echo "---"
 echo "Add an issue note | bash='$HOME/p3/pansift_annotate_update.sh' terminal=false"
 echo "---"
 ping -o -c2 -i1 -t5 $pansift_icmp4_target > /dev/null 2>&1 && echo "IPv4 Connectivity OK | color=green" || echo "No IPv4 Connecivity | color=red"
 ping6 -o -c2 -i1 $pansift_icmp6_target > /dev/null 2>&1 && echo "IPv6 Connectivity OK | color=green" || echo "No IPv6 Connecivity | color=red"
-echo "Refresh | refresh=true"
+echo " ↺Refresh | refresh=true"
 echo "---"
 echo "Restart PanSift Metrics | bash='$HOME/p3/pansift' terminal=false"
 echo "---"
@@ -30,4 +30,5 @@ echo "Update Components"
 echo "-- Agent Config | bash='$HOME/p3/pansift_agent_update.sh' terminal=false"
 echo "-- Scripts | bash='$HOME/p3/pansift_scripts_update.sh' terminal=false"
 echo "---"
+echo "Log In / Web App | bash='open https://pansift.com'"
 echo "Open Log | bash='tail -f -n50 $HOME/p3/telegraf.log'"
