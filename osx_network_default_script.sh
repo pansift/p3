@@ -23,7 +23,7 @@ curl_path="/opt/local/bin/curl"
 curl_user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.146 Safari/537.36"
 dns_query_host=$(uuidgen)
 dns_query_domain="doesnotexist.pansift.com"
-dns_query="$dns_query_host$dns_query_domain"
+dns_query="$dns_query_host.$dns_query_domain"
 
 # Old versions of curl will fail with status 53 on SSL/TLS negotiation on newer hosts
 # User really needs a newer curl binary
@@ -106,7 +106,7 @@ network_measure () {
   RESOLV=/etc/resolv.conf
   if test -f "$RESOLV"; then
     dns4_primary=$(cat /etc/resolv.conf | grep -q '\..*\..*\.' || { echo -n '0.0.0.0'; exit 0; }; cat /etc/resolv.conf | grep '\..*\..*\.' | head -n1 | cut -d' ' -f2 | remove_chars)
-    dns6_primary=$(cat /etc/resolv.conf | grep -q ':' || { echo -n '::'; exit 0; }; cat /etc/resolv.conf | grep ':' | head -n1 | cut -d' ' -f2 | remove_chars)
+    dns6_primary=$(cat /etc/resolv.conf | grep -q 'nameserver.*:' || { echo -n '::'; exit 0; }; cat /etc/resolv.conf | grep 'nameserver.*:' | head -n1 | cut -d' ' -f2 | remove_chars)
     if [ $dns4_primary != "0.0.0.0" ]; then
       dns4_query_response=$(dig -4 +tries=2 @"$dns4_primary" "$dns_query" | grep -m1 -i "query time" | cut -d' ' -f4 | remove_chars)
     else
