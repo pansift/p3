@@ -110,7 +110,7 @@ tpid="$HOME/p3/telegraf.pid"
 if test -f "$tpid"; then
   pkill -F "$HOME/p3/telegraf.pid"
 fi
-pkill -f "$HOME/p3/telegraf" || true
+pkill "$HOME/p3/telegraf" || true
 sleep 10
 
 touch "$HOME"/p3/telegraf.pid "$HOME"/p3/telegraf.log
