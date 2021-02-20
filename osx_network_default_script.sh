@@ -287,7 +287,7 @@ http_checks () {
   do
     if [ ! -z "$host" ]; then
       http_url=$(echo -n "$host" | remove_chars)
-      curl_response=$(curl -A "$curl_user_agent" -s -o /dev/null -w "%{http_code}:%{speed_download}" -L "$host" --stderr - | remove_chars)
+      curl_response=$(curl -A "$curl_user_agent" -k -s -o /dev/null -w "%{http_code}:%{speed_download}" -L "$host" --stderr - | remove_chars)
       http_status=$(echo -n "$curl_response" | cut -d':' -f1 | sed 's/^000/0/' | remove_chars)i
       http_speed_bytes=$(echo -n "$curl_response" | cut -d':' -f2)
       # bc doesn't print a leading zero and this confuses poor influx
