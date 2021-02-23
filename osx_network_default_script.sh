@@ -24,6 +24,8 @@ curl_user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537
 dns_query_host=$(uuidgen)
 dns_query_domain="doesnotexist.pansift.com"
 dns_query="$dns_query_host.$dns_query_domain"
+systemsoftware=$(sw_vers)
+osx_mainline=$(echo -n "$systemsoftware" | grep -i "productversion" | cut -d':' -f2- | cut -d'.' -f1 | xargs)
 
 # Old versions of curl will fail with status 53 on SSL/TLS negotiation on newer hosts
 # User really needs a newer curl binary
@@ -52,7 +54,6 @@ system_measure () {
   # Uptime and uptime_format are already covered by the default plugin.
   #uptime=$(sysctl kern.boottime | cut -d' ' -f5 | cut -d',' -f1)
 
-  systemsoftware=$(sw_vers)
   product_name=$(echo -n "$systemsoftware" | egrep -i "productname" | cut -d':' -f2- | remove_chars)
   product_version=$(echo -n "$systemsoftware" | egrep -i "productversion" | cut -d':' -f2- | remove_chars)
   build_version=$(echo -n "$systemsoftware" | egrep -i "buildversion" | cut -d':' -f2- | remove_chars)
@@ -68,12 +69,17 @@ system_measure () {
 
 
 network_measure () {
+  if [ $osx_mainline == 11 ]; then
+    netstat4_print_position=4
+  else 
+    netstat4_print_position=6
+  fi
   netstat4=$(netstat -rn -f inet)
   netstat6=$(netstat -rn -f inet6)
   dg4_ip=$(echo -n "$netstat4" | grep -qi default || { echo -n 'none'; exit 0;}; echo -n "$netstat4" | grep -i default | awk '{print $2}' | remove_chars)
   dg6_fullgw=$(echo -n "$netstat6" | grep -qi default || { echo -n 'none'; exit 0;}; echo -n "$netstat6" | grep -i default | awk '{print $2}' | remove_chars)
   dg6_ip=$(echo -n "$netstat6" | grep -qi default || { echo -n 'none'; exit 0;}; echo -n "$netstat6" | grep -i default | awk '{print $2}' | cut -d'%' -f1 | remove_chars)
-  dg4_interface=$(echo -n "$netstat4" | grep -qi default || { echo -n 'none'; exit 0;}; echo -n "$netstat4" | grep -i default | awk '{print $6}' | remove_chars)
+  dg4_interface=$(echo -n "$netstat4" | grep -qi default || { echo -n 'none'; exit 0;}; echo -n "$netstat4" | grep -i default | awk -v x=$netstat4_print_position '{print $x}' | remove_chars)
   dg6_interface=$(echo -n "$netstat6" | grep -qi default || { echo -n 'none'; exit 0; }; echo -n "$netstat6" | grep -i default | awk '{print $2}'| remove_chars)
   if [ ! "$dg4_ip" == "none" ]; then
     dg4_router_ether=$(arp "$dg4_ip")
