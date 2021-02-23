@@ -28,11 +28,11 @@ systemsoftware=$(sw_vers)
 osx_mainline=$(echo -n "$systemsoftware" | grep -i "productversion" | cut -d':' -f2- | cut -d'.' -f1 | xargs)
 
 # Old versions of curl will fail with status 53 on SSL/TLS negotiation on newer hosts
-# User really needs a newer curl binary
+# User really needs a newer curl binary but can also put defaults here
 if test -f "$curl_path"; then
-  curl_binary="/opt/local/bin/curl"
+  curl_binary="/opt/local/bin/curl --no-keepalive"
 else
-  curl_binary="/usr/bin/curl"
+  curl_binary="/usr/bin/curl --no-keepalive"
 fi
 
 remove_chars () {
