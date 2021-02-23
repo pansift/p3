@@ -70,9 +70,9 @@ system_measure () {
 
 network_measure () {
   if [ $osx_mainline == 11 ]; then
-    netstat4_print_position=4
+    netstat4_print_position=4 # 11.x Big Sur onwards
   else 
-    netstat4_print_position=6
+    netstat4_print_position=6 # 10.x 
   fi
   netstat4=$(netstat -rn -f inet)
   netstat6=$(netstat -rn -f inet6)
