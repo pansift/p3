@@ -2,8 +2,8 @@
 
 # Pansift Telegraf input.exec script for writing influx measurements and tags
 
-#set -e
-#set -vx
+set -e
+set -vx
 
 # Note: We can't afford to have a comma or space out of place with InfluxDB ingestion in the line protocol
 LDIFS=$IFS
@@ -21,6 +21,7 @@ fi
 airport="/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport"
 curl_path="/opt/local/bin/curl"
 curl_user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.146 Safari/537.36"
+#curl_user_agent="pansift.com/0.1"
 dns_query_host=$(uuidgen)
 dns_query_domain="doesnotexist.pansift.com"
 dns_query="$dns_query_host.$dns_query_domain"
@@ -30,9 +31,9 @@ osx_mainline=$(echo -n "$systemsoftware" | grep -i "productversion" | cut -d':' 
 # Old versions of curl will fail with status 53 on SSL/TLS negotiation on newer hosts
 # User really needs a newer curl binary but can also put defaults here
 if test -f "$curl_path"; then
-  curl_binary="/opt/local/bin/curl --no-keepalive"
+  curl_binary="/opt/local/bin/curl -A "$curl_user_agent" --no-keepalive"
 else
-  curl_binary="/usr/bin/curl --no-keepalive"
+  curl_binary="/usr/bin/curl -A "$curl_user_agent" --no-keepalive"
 fi
 
 remove_chars () {
