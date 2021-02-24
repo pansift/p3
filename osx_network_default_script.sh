@@ -2,8 +2,8 @@
 
 # Pansift Telegraf input.exec script for writing influx measurements and tags
 
-set -e
-set -vx
+#set -e
+#set -vx
 
 # Note: We can't afford to have a comma or space out of place with InfluxDB ingestion in the line protocol
 LDIFS=$IFS
