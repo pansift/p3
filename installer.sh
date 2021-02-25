@@ -16,6 +16,7 @@ export PANSIFT_PREFERENCES="$PANSIFT_PREFERENCES"
 # Scripts and additional executables
 PANSIFT_SCRIPTS="$HOME"/Library/Application\ Scripts/Pansift
 mkdir -p "$PANSIFT_SCRIPTS"
+mkdir -p "$PANSIFT_SCRIPTS"/Plugins
 export PANSIFT_SCRIPTS="$PANSIFT_SCRIPTS"
 
 # Logs, logs, logs
@@ -35,6 +36,7 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
   # scripts to ~/Library/Pansift
   cp -Rf ./Scripts/*.sh "$PANSIFT_SCRIPTS"
   cp -Rf ./Scripts/pansift "$PANSIFT_SCRIPTS"
+  cp -Rf ./Plugins "$PANSIFT_SCRIPTS"/Plugins
   # conf to ~/Library/Preferences/Pansift
   cp -Rf ./Preferences/*.conf "$PANSIFT_PREFERENCES"
   # app to /Applications
