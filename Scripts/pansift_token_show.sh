@@ -2,8 +2,9 @@
 
 #set -e
 #set -vx
-uuid=""
 applescriptCode=""
+
+source "$HOME"/Library/Preferences/Pansift/pansift.conf
 
 pansift_token_file=$PANSIFT_PREFERENCES/pansift_token.conf
 if test -f "$pansift_token_file"; then
@@ -20,7 +21,6 @@ if test -f "$pansift_token_file"; then
   fi 
 else
   token="Please retrieve token from PanSift web account or IT admin"
-  #echo "$uuid no file"
   applescriptCode="display dialog \"$token\" buttons {\"OK\"} default button \"OK\"" 
 fi
 

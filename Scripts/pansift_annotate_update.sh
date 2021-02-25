@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+source "$HOME"/Library/Preferences/Pansift/pansift.conf
+
 read -r -d '' applescriptCode <<'EOF'
 set uuid to text returned of (display dialog "Enter an issue note (current time will be logged)" default answer linefeed)
 return uuid

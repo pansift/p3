@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+source "$HOME"/Library/Preferences/Pansift/pansift.conf
+
 read -r -d '' applescriptCode <<'EOF'
    set uuid to text returned of (display dialog "Enter your Pansift account UUID?" default answer "")
    return uuid

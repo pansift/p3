@@ -4,6 +4,7 @@
 #set -vx
 uuid=""
 applescriptCode=""
+source "$HOME"/Library/Preferences/Pansift/pansift.conf
 
 pansift_uuid_file="$PANSIFT_PREFERENCES"/pansift_uuid.conf
 if test -f "$pansift_uuid_file"; then
