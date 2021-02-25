@@ -6,7 +6,7 @@
 
 # Note: GitHub serves "raw" pages with Cache-Control: max-age=300. That's specified in seconds, meaning the pages are intended to be cached for 5 minutes. You can see this if you open the Developer Tools in your web browser of choice before clicking the "Raw" button on GitHub.
 
-host="https://raw.githubusercontent.com/pansift/p3/main/scripts/README.md"
+host="https://raw.githubusercontent.com/pansift/p3/main/README.md"
 curl_response=$(curl -s -o /dev/null -w "%{http_code}" -L "$host" --stderr -)
 
 if [[ $curl_response == 200 ]]; then
