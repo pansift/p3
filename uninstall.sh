@@ -64,3 +64,4 @@ else
   echo "Not supported on this platform yet"
 fi
 
+echo "Now please empty your Trash at your discretion"
