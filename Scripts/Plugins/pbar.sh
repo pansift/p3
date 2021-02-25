@@ -1,6 +1,22 @@
 #!/usr/bin/env bash
 
-source "$PANSIFT_PREFERENCES"/pansift.conf
+source "$HOME"/Library/Preferences/Pansift/pansift.conf
+
+# Configuration and preferences files
+#PANSIFT_PREFERENCES="$HOME"/Library/Preferences/Pansift
+#export PANSIFT_PREFERENCES="$PANSIFT_PREFERENCES"
+
+# Scripts and additional executables
+#PANSIFT_SCRIPTS="$HOME"/Library/Application\ Scripts/Pansift
+#export PANSIFT_SCRIPTS="$PANSIFT_SCRIPTS"
+
+# Logs, logs, logs
+#PANSIFT_LOGS="$HOME"/Library/Logs/Pansift
+#export PANSIFT_LOGS="$PANSIFT_LOGS"
+
+# PIDs and other flotsam
+#PANSIFT_SUPPORT="$HOME"/Library/Application\ Support/Pansift
+#export PANSIFT_SUPPORT="$PANSIFT_SUPPORT"
 
 # Don't kill anything, just check if Telegraf is already running as main script will restart anyway
 tpid="$PANSIFT_SUPPORT"/telegraf.pid
@@ -14,8 +30,8 @@ echo "PS"
 echo "---"
 echo "Add an issue note | bash='$PANSIFT_SCRIPTS/pansift_annotate_update.sh' terminal=false"
 echo "---"
-ping -o -c2 -i1 -t5 $pansift_icmp4_target > /dev/null 2>&1 && echo "IPv4 Connectivity OK | color=green" || echo "No IPv4 Connecivity | color=red"
-ping6 -o -c2 -i1 $pansift_icmp6_target > /dev/null 2>&1 && echo "IPv6 Connectivity OK | color=green" || echo "No IPv6 Connecivity | color=red"
+ping -o -c2 -i1 -t5 $PANSIFT_ICMP4_TARGET > /dev/null 2>&1 && echo "IPv4 Connectivity OK | color=green" || echo "No IPv4 Connecivity | color=red"
+ping6 -o -c2 -i1 $PANSIFT_ICMP6_TARGET > /dev/null 2>&1 && echo "IPv6 Connectivity OK | color=green" || echo "No IPv6 Connecivity | color=red"
 echo " ↺ Refresh | refresh=true"
 echo "---"
 echo "Restart PanSift Metrics | bash='$PANSIFT_SCRIPTS/pansift' terminal=false"

@@ -8,8 +8,8 @@ EOF
 token=$(osascript -e "$applescriptCode");
 
 if [[ $token =~ ^[-_A-Z0-9a-z]{86}==$ ]]; then
-    echo $token > $HOME/p3/pansift_token.conf
-    $HOME/p3/pansift
+    echo $token > "$PANSIFT_PREFERENCES"/pansift_token.conf
+    "$PANSIFT_SCRIPTS"/pansift
 else
     exit 1 
 fi

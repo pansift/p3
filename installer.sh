@@ -34,9 +34,8 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 elif [[ "$OSTYPE" == "darwin"* ]]; then
   # Mac OSX
   # scripts to ~/Library/Pansift
-  cp -Rf ./Scripts/*.sh "$PANSIFT_SCRIPTS"
-  cp -Rf ./Scripts/pansift "$PANSIFT_SCRIPTS"
-  cp -Rf ./Plugins "$PANSIFT_SCRIPTS"/Plugins
+  cp -Rf ./Scripts/* "$PANSIFT_SCRIPTS"
+  #cp -Rf ./Scripts/Plugins/* "$PANSIFT_SCRIPTS"/Plugins
   # conf to ~/Library/Preferences/Pansift
   cp -Rf ./Preferences/*.conf "$PANSIFT_PREFERENCES"
   # app to /Applications
