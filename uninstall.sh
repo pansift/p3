@@ -27,25 +27,37 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 elif [[ "$OSTYPE" == "darwin"* ]]; then
   # Mac OSX
   # Scripts to Trash
-  cp -R "$PANSIFT_SCRIPTS" "$HOME"/.Trash
-  cd "$PANSIFT_SCRIPTS" && rm -rf ../Pansift
-  cd "$HOME"
+  if [[ -d "$PANSIFT_SCRIPTS" ]]; then
+    cp -R "$PANSIFT_SCRIPTS" "$HOME"/.Trash
+    cd "$PANSIFT_SCRIPTS" && rm -rf ../Pansift
+    cd "$HOME"
+  fi
   # Conf files
-  rm "$PANSIFT_PREFERENCES"/pansift_token.conf 
-  cp -R "$PANSIFT_PREFERENCES" "$HOME"/.Trash
-  cd "$PANSIFT_PREFRENCES" && rm -rf ../Pansift
-  cd "$HOME"
+  if [[ -d "$PANSIFT_PREFERENCES" ]]; then
+    if [[ -f "$PANSIFT_PREFERENCES"/pansift_token.conf ]]; then
+      rm "$PANSIFT_PREFERENCES"/pansift_token.conf 
+    fi
+    cp -R "$PANSIFT_PREFERENCES" "$HOME"/.Trash
+    cd "$PANSIFT_PREFRENCES" && rm -rf ../Pansift
+    cd "$HOME"
+  fi
   # /Applications
+    if [[ -f "/Applications/Pansift.app" ]]; then
   cp -R /Applications/Pansift.app "$HOME"/.Trash
   cd /Applications && rm -rf Pansift.app
+  fi
   # Logs
-  cp -R "$PANSIFT_LOGS" "$HOME"/.Trash
-  cd "$PANSIFT_LOGS" && rm -rf ../Pansift
-  cd "$HOME"
+  if [[ -d "$PANSIFT_LOGS" ]]; then
+    cp -R "$PANSIFT_LOGS" "$HOME"/.Trash
+    cd "$PANSIFT_LOGS" && rm -rf ../Pansift
+    cd "$HOME"
+  fi
   # Telegraf Support
-  cp -R "$PANSIFT_SUPPORT" "$HOME"/.Trash
-  cd "$PANSIFT_SUPPORT" && rm -rf ../Pansift 
-  cd "$HOME"
+  if [[ -d "$PANSIFT_SUPPORT" ]]; then
+    cp -R "$PANSIFT_SUPPORT" "$HOME"/.Trash
+    cd "$PANSIFT_SUPPORT" && rm -rf ../Pansift 
+    cd "$HOME"
+  fi
 elif [[ "$OSTYPE" == "cygwin" ]]; then
   # POSIX compatibility layer and Linux environment emulation for Windows
   echo "Not supported on Cygwin yet" 

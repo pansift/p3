@@ -142,4 +142,5 @@ sleep 10
 touch "$PANSIFT_SUPPORT"/telegraf.pid "$PANSIFT_LOGS"/telegraf.log
 "$PANSIFT_SUPPORT"/telegraf --config "$PANSIFT_PREFERENCES"/telegraf-osx.conf --pidfile "$PANSIFT_SUPPORT"/telegraf.pid >/dev/null 2>&1 &
 disown
+set
 exit 0

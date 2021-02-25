@@ -10,7 +10,7 @@ LDIFS=$IFS
 
 script_name=$(basename "$0")
 # Get configuration targets etc
-PANSIFT_PREFERENCES="$HOME/Library/Preferences/Pansift"
+PANSIFT_PREFERENCES="$HOME"/Library/Preferences/Pansift
 source "$PANSIFT_PREFERENCES"/pansift.conf
 
 if [[ ${#1} = 0 ]]; then
@@ -249,7 +249,7 @@ wlan_scan () {
   else
     # Need to migrate this to XML output and a data structure that Influx can ingest that includes taking in to account spaces in SSID hence XML
     #scandata="/tmp/airport.plist"
-    scandata="$PANSIFT_LOGS"/airport.plist" #Need a better way to do the install location, assuming ~/p3 for now. 
+    scandata="$PANSIFT_LOGS"/airport.plist #Need a better way to do the install location, assuming ~/p3 for now. 
     #test -f $scandata || touch $scandata
     #if [[ ! -e $scandata ]]; then
     #  touch $scandata
