@@ -33,5 +33,5 @@ echo "Update Components"
 echo "-- Agent Config | bash='$PANSIFT_SCRIPTS/pansift_agent_config_update.sh' terminal=false"
 echo "-- Scripts | bash='$PANSIFT_SCRIPTS/pansift_scripts_update.sh' terminal=false"
 echo "---"
-echo "Log In / Web App | bash='$PANSIFT_SCRIPTS/pansift_webapp.sh'" # Needs a window reference hence won't work with terminal false
+echo "Log In / Web App | bash='$PANSIFT_SCRIPTS/pansift_webapp.sh' terminal=false"
 echo "Open Log | bash='tail -f -n50 $PANSIFT_LOGS/telegraf.log'"
