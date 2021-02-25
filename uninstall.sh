@@ -8,6 +8,27 @@
 
 source "$HOME"/Library/Preferences/Pansift/pansift.conf
 
+pansift_uuid_file="$PANSIFT_PREFERENCES"/pansift_uuid.conf
+if test -f "$pansift_uuid_file"; then
+    line=$(head -n 1 $pansift_uuid_file)
+    uuid=$(echo -n "$line" | awk '{$1=$1;print}' | tr ',' '.' | tr -s ' ' | tr '[:upper:]' '[:lower:]' | tr -d '\r' | sed 's! !\\ !g')
+fi
+pansift_token_file=$PANSIFT_PREFERENCES/pansift_token.conf
+if test -f "$pansift_token_file"; then
+    line=$(head -n 1 $pansift_token_file)
+    token=$(echo -n "$line" | awk '{$1=$1;print}' | tr ',' '.' | tr -s ' ' | tr -d '\r')
+fi
+
+echo "=========================================================="
+echo " This uninstaller only works if you've previously used the"
+echo " installer.sh due to the directory locations." 
+echo " Recommendation is to make a note of your UUID and token."
+echo " Pansift UUID: ${uuid}" 
+echo " Pansift Token: ${token}" 
+echo "=========================================================="
+read -n 1 -s -r -p "Press any key to continue..."
+echo
+
 #launchctl unload ~/Library/LaunchAgents/org.pansift.agent.plist
 defaults delete com.matryer.BitBar
 
