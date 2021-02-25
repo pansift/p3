@@ -5,7 +5,7 @@
 uuid=""
 applescriptCode=""
 
-pansift_token_file=""$PANSIFT_PREFERENCES"/pansift_token.conf
+pansift_token_file=$PANSIFT_PREFERENCES/pansift_token.conf
 if test -f "$pansift_token_file"; then
     line=$(head -n 1 $pansift_token_file)
     #echo $line

@@ -60,4 +60,4 @@ else
   echo "Not supported on this platform yet"
 fi
 
-cd "$PANSIFT_SCRIPTS" && ./pansift && open /Applications/Pansift.app
+cd "$PANSIFT_SCRIPTS" && ./pansift -f && open /Applications/Pansift.app
