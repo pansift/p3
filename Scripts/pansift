@@ -3,20 +3,40 @@
 #set -e
 #set -vx
 
-# Need to add a first run that adds the plist to the LaunchAgents !!!
-defaults write com.matryer.BitBar pluginsDirectory "$HOME/p3/Plugins"
-defaults write com.matryer.BitBar NSNavLastRootDirectory "$HOME/p3/Plugins" 
-defaults write com.matryer.BitBar userConfigDisabled -bool true
-
-pansift_uuid=""
-machine_uuid=""
+PANSIFT_UUID=""
+MACHINE_UUID=""
 umask 077
 
-pansift_uuid_file=$HOME/p3/pansift_uuid.conf
-pansift_ingest_file=$HOME/p3/pansift_ingest.conf
-pansift_token_file=$HOME/p3/pansift_token.conf
-machine_uuid_file=$HOME/p3/machine_uuid.conf
-annotations_file=$HOME/p3/pansift_annotations.log
+# Configuration and preferences files
+PANSIFT_PREFRENCES="$HOME/Library/Preferences/Pansift"
+mkdir -p $PANSIFT_PREFERENCES
+export PANSIFT_PREFERENCES=$PANSIFT_PREFERENCES
+
+# Scripts and additional executables
+PANSIFT_SCRIPTS="$HOME/Library/Application Scripts/Pansift"
+mkdir -p $PANSIFT_SCRIPTS
+export PANSIFT_SCRIPTS=$PANSIFT_SCRIPTS
+
+# Logs, logs, logs
+PANSIFT_LOGS="$HOME/Library/Logs/Pansift"
+mkdir -p $PANSIFT_LOGS
+export PANSIFT_LOGS=$PANSIFT_LOGS
+
+# PIDs and other flotsam
+PANSIFT_SUPPPORT="$HOME/Library/Application Support/Pansift"
+mkdir -p $PANSIFT_SUPPORT
+export PANSIFT_SUPPORT=$PANSIFT_SUPPORT
+
+# Need to add a first run that adds the plist to the LaunchAgents !!!
+defaults write com.matryer.BitBar pluginsDirectory "$PANSIFT_SCRIPTS/Plugins"
+defaults write com.matryer.BitBar NSNavLastRootDirectory "$PANSIFT_SCRIPTS/Plugins" 
+defaults write com.matryer.BitBar userConfigDisabled -bool true
+
+pansift_uuid_file=$PANSIFT_PREFERENCES/pansift_uuid.conf
+pansift_ingest_file=$PANSIFT_PREFERENCES/pansift_ingest.conf
+pansift_token_file=$PANSIFT_PREFERENCES/pansift_token.conf
+machine_uuid_file=$PANSIFT_PREFERENCES/machine_uuid.conf
+annotations_file=$PANSIFT_LOGS/pansift_annotations.log
 touch "$annotations_file" # This is just to create for tailing if not already there.
 
 # We need a UUID and token to write to DB. 
@@ -27,7 +47,7 @@ if test -f "$pansift_uuid_file"; then
 else
   pansift_uuid=$(uuidgen | tr '[:upper:]' '[:lower:]')
   echo -n "$pansift_uuid" > $pansift_uuid_file
-  token=$($HOME/p3/db-setup.sh "$pansift_uuid") 
+  token=$($scripts/db-setup.sh "$pansift_uuid") 
   echo -n "$token" > $pansift_token_file
   # Call webhook to create DB with UUID
   # If we're gonna create a new UUID here we need to pass it to the DB (also from reset or update UUID)
@@ -35,7 +55,7 @@ else
 fi
 
 # We need the ENV variable for the subshell...
-export pansift_uuid=$pansift_uuid
+export PANSIFT_UUID=$pansift_uuid
 
 # This assumes connectivity on first run to at lesat get the correct DB host (but default fall back too) 
 # Would be good to have a forced kill switch to localhost in the future somehow other than connected restarts
@@ -46,14 +66,14 @@ if test -f "$pansift_ingest_file"; then
   if [[ $line =~ $regex ]]; then
     pansift_ingest=$(echo -n "$line" | xargs | tr ',' '.' | tr -s ' ' | tr '[:upper:]' '[:lower:]' | tr -d '\r')
   else
-    pansift_ingest=$($HOME/p3/ingest.sh "$pansift_uuid" | tr '[:upper:]' '[:lower:]')
+    pansift_ingest=$($PANSIFT_SCRIPTS/ingest.sh "$PANSIFT_UUID" | tr '[:upper:]' '[:lower:]')
     echo -n "$pansift_ingest" > $pansift_ingest_file
   fi
 else
-  pansift_ingest=$($HOME/p3/ingest.sh "$pansift_uuid" | tr '[:upper:]' '[:lower:]')
+  pansift_ingest=$($PANSIFT_SCRIPTS/ingest.sh "$PANSIFT_UUID" | tr '[:upper:]' '[:lower:]')
   echo -n "$pansift_ingest" > $pansift_ingest_file
 fi
-export pansift_ingest=$pansift_ingest
+export PANSIFT_INGEST=$pansift_ingest
 
 
 if test -f "$machine_uuid_file"; then
@@ -85,35 +105,34 @@ else
     # Unknown so create it.
   fi
   # MAC Machine UUID is different but will be our unique  primary key we can read or generate on other platforms
-  echo -n "$machine_uuid" > $HOME/p3/machine_uuid.conf
+  echo -n "$machine_uuid" > $PANSIFT_PREFERENCES/machine_uuid.conf
 fi
 
 
 
-#echo "Exported pansift_uuid=$pansift_uuid"
-export machine_uuid=$machine_uuid
+export MACHINE_UUID=$machine_uuid
 #echo "Exported machine_uuid=$machine_uuid"
-pansift_token_file=$HOME/p3/pansift_token.conf
+pansift_token_file=$PANSIFT_PREFERENCES/pansift_token.conf
 if test -f "$pansift_token_file"; then
   line=$(head -n 1 "$pansift_token_file")
   # Token is case sensitive!!!
   pansift_clean_token=$(echo -n "$line" | awk '{$1=$1;print}' | tr ',' '.' | tr -s ' ' | tr -d '\r' | sed 's! !\\ !g')
-  export pansift_token=$pansift_clean_token
+  export PANSIFT_TOKEN=$pansift_clean_token
 fi
 
-echo "Pansift UUID: $pansift_uuid"
-echo "Machine UUID: $machine_uuid"
-echo "Ingest URL: $pansift_ingest"
-echo "Write Token: $pansift_token"
+echo "Pansift UUID: $PANSIFT_UUID"
+echo "Machine UUID: $MACHINE_UUID"
+echo "Ingest URL: $PANSIFT_INGEST"
+echo "Write Token: $PANSIFT_TOKEN"
 
-tpid="$HOME/p3/telegraf.pid"
+tpid="$PANSIFT_SUPPORT/telegraf.pid"
 if test -f "$tpid"; then
-  pkill -F "$HOME/p3/telegraf.pid"
+  pkill -F "$PANSIFT_SUPPORT/telegraf.pid"
 fi
-pkill "$HOME/p3/telegraf" || true
+pkill "$PANSIFT_SUPPORT/telegraf" || true
 sleep 10
 
-touch "$HOME"/p3/telegraf.pid "$HOME"/p3/telegraf.log
-"$HOME"/p3/telegraf --config "$HOME"/p3/telegraf-osx.conf --pidfile "$HOME"/p3/telegraf.pid >/dev/null 2>&1 &
+touch $PANSIFT_SUPPORT/telegraf.pid $PANSIFT_LOGS/telegraf.log
+$PANSIFTR_SUPPORT/telegraf --config $PANSIFT_PREFERENCES/telegraf-osx.conf --pidfile $PANSIFT_SUPPORT/telegraf.pid >/dev/null 2>&1 &
 disown
 exit 0

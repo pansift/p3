@@ -1,1 +1,1 @@
-This will probably be 2 different repos. One for the OSX app with some embedded scripts and another as the repo for remaining dynamic script updates.
+# Temp file for now but basically aligning with OSX default file structure and adding installer.sh file
