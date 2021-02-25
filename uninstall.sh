@@ -4,6 +4,7 @@
 #set -vx
 
 # Moving things to the right places :)
+# Being super verbose and as careful as can be with "rm"
 
 source "$HOME"/Library/Preferences/Pansift/pansift.conf
 
