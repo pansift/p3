@@ -64,4 +64,8 @@ else
   echo "Not supported on this platform yet"
 fi
 
+pkill telegraf
+
+echo "===================================="
 echo "Now please empty your Trash at your discretion"
+echo "===================================="

@@ -8,28 +8,34 @@ MACHINE_UUID=""
 umask 077
 
 # Configuration and preferences files
-PANSIFT_PREFERENCES="$HOME/Library/Preferences/Pansift"
+PANSIFT_PREFERENCES="$HOME"/Library/Preferences/Pansift
 mkdir -p "$PANSIFT_PREFERENCES"
 export PANSIFT_PREFERENCES="$PANSIFT_PREFERENCES"
+echo "Pansift Preferences Path: \"$PANSIFT_PREFERENCES\""
 
 # Scripts and additional executables
-PANSIFT_SCRIPTS="$HOME/Library/Application Scripts/Pansift"
+PANSIFT_SCRIPTS="$HOME"/Library/Application\ Scripts/Pansift
 mkdir -p "$PANSIFT_SCRIPTS"
 export PANSIFT_SCRIPTS="$PANSIFT_SCRIPTS"
+echo "Pansift Application Scripts Path: \"$PANSIFT_SCRIPTS\""
 
 # Logs, logs, logs
-PANSIFT_LOGS="$HOME/Library/Logs/Pansift"
+PANSIFT_LOGS="$HOME"/Library/Logs/Pansift
 mkdir -p "$PANSIFT_LOGS"
 export PANSIFT_LOGS="$PANSIFT_LOGS"
+echo "Pansift Logs Path: \"$PANSIFT_LOGS\""
 
 # PIDs and other flotsam
-PANSIFT_SUPPPORT="$HOME/Library/Application Support/Pansift"
+PANSIFT_SUPPORT="$HOME"/Library/Application\ Support/Pansift
 mkdir -p "$PANSIFT_SUPPORT"
 export PANSIFT_SUPPORT="$PANSIFT_SUPPORT"
+echo "Pansift Application Support Path: \"$PANSIFT_SUPPORT\""
 
+# Next line will need changing once a full Pansift flip
+defaults write /Library/Preferences/com.matryer.BitBar pluginsDirectory "$PANSIFT_SCRIPTS"/Plugins
 # Need to add a first run that adds the plist to the LaunchAgents !!!
-defaults write com.matryer.BitBar pluginsDirectory "$PANSIFT_SCRIPTS/Plugins"
-defaults write com.matryer.BitBar NSNavLastRootDirectory "$PANSIFT_SCRIPTS/Plugins" 
+defaults write com.matryer.BitBar pluginsDirectory "$PANSIFT_SCRIPTS"/Plugins
+defaults write com.matryer.BitBar NSNavLastRootDirectory "$PANSIFT_SCRIPTS"/Plugins 
 defaults write com.matryer.BitBar userConfigDisabled -bool true
 
 pansift_uuid_file="$PANSIFT_PREFERENCES"/pansift_uuid.conf
@@ -133,6 +139,6 @@ pkill "$PANSIFT_SUPPORT"/telegraf || true
 sleep 10
 
 touch "$PANSIFT_SUPPORT"/telegraf.pid "$PANSIFT_LOGS"/telegraf.log
-"$PANSIFTR_SUPPORT"/telegraf --config "$PANSIFT_PREFERENCES"/telegraf-osx.conf --pidfile "$PANSIFT_SUPPORT"/telegraf.pid >/dev/null 2>&1 &
+"$PANSIFT_SUPPORT"/telegraf --config "$PANSIFT_PREFERENCES"/telegraf-osx.conf --pidfile "$PANSIFT_SUPPORT"/telegraf.pid >/dev/null 2>&1 &
 disown
 exit 0
