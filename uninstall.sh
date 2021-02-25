@@ -10,18 +10,6 @@ source "$HOME"/Library/Preferences/Pansift/pansift.conf
 #launchctl unload ~/Library/LaunchAgents/org.pansift.agent.plist
 defaults delete com.matryer.BitBar
 
-# Configuration and preferences files
-#PANSIFT_PREFERENCES="$HOME"/Library/Preferences/Pansift
-
-# Scripts and additional executables
-#PANSIFT_SCRIPTS="$HOME"/Library/Application\ Scripts/Pansift
-
-# Logs, logs, logs
-#PANSIFT_LOGS="$HOME"/Library/Logs/Pansift
-
-# PIDs and other flotsam
-#PANSIFT_SUPPORT="$HOME"/Library/Application\ Support/Pansift
-
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
   echo "Not supported on Linux yet" 
 elif [[ "$OSTYPE" == "darwin"* ]]; then
@@ -29,7 +17,8 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
   # Scripts to Trash
   if [[ -d "$PANSIFT_SCRIPTS" ]]; then
     cp -R "$PANSIFT_SCRIPTS" "$HOME"/.Trash
-    cd "$PANSIFT_SCRIPTS" && rm -rf ../Pansift
+    cd "$PANSIFT_SCRIPTS" && rm -rf ../Pansift/*
+    cd .. && rmdir ./Pansift
     cd "$HOME"
   fi
   # Conf files
@@ -38,7 +27,8 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
       rm "$PANSIFT_PREFERENCES"/pansift_token.conf 
     fi
     cp -R "$PANSIFT_PREFERENCES" "$HOME"/.Trash
-    cd "$PANSIFT_PREFRENCES" && rm -rf ../Pansift
+    cd "$PANSIFT_PREFERENCES" && rm -rf ../Pansift/*
+    cd .. && rmdir ./Pansift
     cd "$HOME"
   fi
   # /Applications
@@ -49,13 +39,15 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
   # Logs
   if [[ -d "$PANSIFT_LOGS" ]]; then
     cp -R "$PANSIFT_LOGS" "$HOME"/.Trash
-    cd "$PANSIFT_LOGS" && rm -rf ../Pansift
+    cd "$PANSIFT_LOGS" && rm -rf ../Pansift/*
+    cd .. && rmdir ./Pansift
     cd "$HOME"
   fi
   # Telegraf Support
   if [[ -d "$PANSIFT_SUPPORT" ]]; then
     cp -R "$PANSIFT_SUPPORT" "$HOME"/.Trash
-    cd "$PANSIFT_SUPPORT" && rm -rf ../Pansift 
+    cd "$PANSIFT_SUPPORT" && rm -rf ../Pansift/*
+    cd .. && rmdir ./Pansift
     cd "$HOME"
   fi
 elif [[ "$OSTYPE" == "cygwin" ]]; then
