@@ -5,7 +5,7 @@
 
 # Moving things to the right places :)
 
-source ./Preferences/pansift.conf
+source "$HOME"/Library/Preferences/Pansift/pansift.conf
 
 #launchctl unload ~/Library/LaunchAgents/org.pansift.agent.plist
 defaults delete com.matryer.BitBar
@@ -74,8 +74,10 @@ else
   echo "Not supported on this platform yet"
 fi
 
-pkill telegraf
+pkill -9 telegraf
 
-echo "===================================="
+echo "=========================================================="
 echo "Now please empty your Trash at your discretion"
-echo "===================================="
+echo "And log in to https://pansift.com to request data deletion"
+echo "Note: Only account admins can request deletions!"
+echo "=========================================================="
