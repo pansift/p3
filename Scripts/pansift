@@ -41,7 +41,7 @@ annotations_file="$PANSIFT_LOGS"/pansift_annotations.log
 touch "$annotations_file" # This is just to create for tailing if not already there.
 
 # If we're restarting then something changed.
-pkill -9 telegraf || true
+pkill telegraf || true
 
 if test -f "$pansift_uuid_file"; then
   line=$(head -n 1 "$pansift_uuid_file")
