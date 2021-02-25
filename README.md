@@ -1,6 +1,6 @@
 # Pansift Instructions
 
-##### Temp file for now but basically aligning with OSX default file structure and adding installer.sh file
+Pansift is under heavy development and this will get simpler over time.
 
 ## To Install
 
