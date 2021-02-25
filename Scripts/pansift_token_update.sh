@@ -11,7 +11,7 @@ token=$(osascript -e "$applescriptCode");
 
 if [[ $token =~ ^[-_A-Z0-9a-z]{86}==$ ]]; then
     echo $token > "$PANSIFT_PREFERENCES"/pansift_token.conf
-    eval "$PANSIFT_SCRIPTS"/pansift
+    "$PANSIFT_SCRIPTS"/pansift
 else
     exit 1 
 fi
