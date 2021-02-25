@@ -36,14 +36,14 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 elif [[ "$OSTYPE" == "darwin"* ]]; then
   # Mac OSX
   # scripts to ~/Library/Pansift
-  cp -Rf ./Scripts/* "$PANSIFT_SCRIPTS"
+  rsync -r ./Scripts/* "$PANSIFT_SCRIPTS"
   #cp -Rf ./Scripts/Plugins/* "$PANSIFT_SCRIPTS"/Plugins
   # conf to ~/Library/Preferences/Pansift
-  cp -Rf ./Preferences/*.conf "$PANSIFT_PREFERENCES"
+  rsync -r ./Preferences/*.conf "$PANSIFT_PREFERENCES"
   # app to /Applications
-  cp -Rf ./Pansift.app /Applications
+  rsync -r ./Pansift.app /Applications
   # Telegraf Support
-  cp -Rf ./Support/telegraf "$PANSIFT_SUPPORT"
+  rsync -r ./Support/telegraf "$PANSIFT_SUPPORT"
 elif [[ "$OSTYPE" == "cygwin" ]]; then
   # POSIX compatibility layer and Linux environment emulation for Windows
   echo "Not supported on Cygwin yet" 
