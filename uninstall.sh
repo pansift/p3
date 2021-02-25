@@ -90,6 +90,8 @@ else
 fi
 
 pkill -9 telegraf
+#launchctl unload -w ~/Library/LaunchAgents/org.pansift.agent.plist
+#rm -f "$HOME"/Library/LaunchAgents/org.pansift.agent.plist
 
 echo "=========================================================="
 echo "Now please empty your Trash at your discretion"

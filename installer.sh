@@ -40,6 +40,7 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
   #cp -Rf ./Scripts/Plugins/* "$PANSIFT_SCRIPTS"/Plugins
   # conf to ~/Library/Preferences/Pansift
   rsync -a ./Preferences/*.conf "$PANSIFT_PREFERENCES"
+  rsync -a ./Preferences/*.plist "$PANSIFT_PREFERENCES"
   # app to /Applications
   rsync -a ./Pansift.app /Applications
   # Telegraf Support
@@ -59,5 +60,8 @@ elif [[ "$OSTYPE" == "freebsd"* ]]; then
 else
   echo "Not supported on this platform yet"
 fi
+
+#cp "$HOME"/Library/Preferences/Pansift/org.pansift.agent.plist ~/Library/LaunchAgents/org.pansift.agent.plist
+#launchctl unload "$HOME"/Library/LaunchAgents/org.pansift.agent.plist && launchctl load -w "$HOME"/Library/LaunchAgents/org.pansift.agent.plist
 
 cd "$PANSIFT_SCRIPTS" && ./pansift -f && open /Applications/Pansift.app
