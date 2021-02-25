@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
-source $PANSIFT_PREFERENCES/pansift.conf
+source "$PANSIFT_PREFERENCES"/pansift.conf
 
 # Don't kill anything, just check if Telegraf is already running as main script will restart anyway
-tpid="$PANSIFT_SUPPORT/telegraf.pid"
+tpid="$PANSIFT_SUPPORT"/telegraf.pid
 if [[ -f "$tpid" ]] && [[ $(pgrep "telegraf") ]]; then
   true 
 else
-  $PANSIFT_SCRIPTS/pansift  >/dev/null 2>&1
+  "$PANSIFT_SCRIPTS"/pansift  >/dev/null 2>&1
 fi
 
 echo "PS"

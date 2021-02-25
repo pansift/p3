@@ -5,39 +5,34 @@
 
 # Moving things to the right places :)
 
+#launchctl unload ~/Library/LaunchAgents/org.pansift.agent.plist
+defaults delete com.matryer.BitBar
+
 # Configuration and preferences files
 PANSIFT_PREFERENCES="$HOME/Library/Preferences/Pansift"
-mkdir -p "$PANSIFT_PREFERENCES"
-export PANSIFT_PREFERENCES="$PANSIFT_PREFERENCES"
 
 # Scripts and additional executables
 PANSIFT_SCRIPTS="$HOME/Library/Application Scripts/Pansift"
-mkdir -p "$PANSIFT_SCRIPTS"
-export PANSIFT_SCRIPTS="$PANSIFT_SCRIPTS"
 
 # Logs, logs, logs
 PANSIFT_LOGS="$HOME/Library/Logs/Pansift"
-mkdir -p "$PANSIFT_LOGS"
-export PANSIFT_LOGS="$PANSIFT_LOGS"
 
 # PIDs and other flotsam
 PANSIFT_SUPPORT="$HOME/Library/Application Support/Pansift"
-mkdir -p "$PANSIFT_SUPPORT"
-export PANSIFT_SUPPORT="$PANSIFT_SUPPORT"
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
   echo "Not supported on Linux yet" 
 elif [[ "$OSTYPE" == "darwin"* ]]; then
   # Mac OSX
-  # scripts to ~/Library/Pansift
-  cp -R ./Scripts/*.sh "$PANSIFT_SCRIPTS"
-  cp -R ./Scripts/pansift "$PANSIFT_SCRIPTS"
-  # conf to ~/Library/Preferences/Pansift
-  cp -R ./Preferences/*.conf "$PANSIFT_PREFERENCES"
+  # scripts to Trash
+  mv "$PANSIFT_SCRIPTS" "$HOME"/.Trash
+  # conf files
+  rm "$PANSIFT_PREFERENCES"/pansift_token.conf 
+  mv "$PANSIFT_PREFERENCES" "$HOME"/.Trash
   # app to /Applications
-  cp -R ./Pansift.app /Applications
+  mv /Applications/Pansift.app "$HOME"/.Trash
   # Telegraf Support
-  cp -R ./Support/telegraf "$PANSIFT_SUPPORT"
+  mv "$PANSIFT_SUPPORT" "$HOME"/.Trash
 elif [[ "$OSTYPE" == "cygwin" ]]; then
   # POSIX compatibility layer and Linux environment emulation for Windows
   echo "Not supported on Cygwin yet" 

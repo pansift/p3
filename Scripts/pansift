@@ -8,35 +8,35 @@ MACHINE_UUID=""
 umask 077
 
 # Configuration and preferences files
-PANSIFT_PREFRENCES="$HOME/Library/Preferences/Pansift"
-mkdir -p $PANSIFT_PREFERENCES
-export PANSIFT_PREFERENCES=$PANSIFT_PREFERENCES
+PANSIFT_PREFERENCES="$HOME/Library/Preferences/Pansift"
+mkdir -p "$PANSIFT_PREFERENCES"
+export PANSIFT_PREFERENCES="$PANSIFT_PREFERENCES"
 
 # Scripts and additional executables
 PANSIFT_SCRIPTS="$HOME/Library/Application Scripts/Pansift"
-mkdir -p $PANSIFT_SCRIPTS
-export PANSIFT_SCRIPTS=$PANSIFT_SCRIPTS
+mkdir -p "$PANSIFT_SCRIPTS"
+export PANSIFT_SCRIPTS="$PANSIFT_SCRIPTS"
 
 # Logs, logs, logs
 PANSIFT_LOGS="$HOME/Library/Logs/Pansift"
-mkdir -p $PANSIFT_LOGS
-export PANSIFT_LOGS=$PANSIFT_LOGS
+mkdir -p "$PANSIFT_LOGS"
+export PANSIFT_LOGS="$PANSIFT_LOGS"
 
 # PIDs and other flotsam
 PANSIFT_SUPPPORT="$HOME/Library/Application Support/Pansift"
-mkdir -p $PANSIFT_SUPPORT
-export PANSIFT_SUPPORT=$PANSIFT_SUPPORT
+mkdir -p "$PANSIFT_SUPPORT"
+export PANSIFT_SUPPORT="$PANSIFT_SUPPORT"
 
 # Need to add a first run that adds the plist to the LaunchAgents !!!
 defaults write com.matryer.BitBar pluginsDirectory "$PANSIFT_SCRIPTS/Plugins"
 defaults write com.matryer.BitBar NSNavLastRootDirectory "$PANSIFT_SCRIPTS/Plugins" 
 defaults write com.matryer.BitBar userConfigDisabled -bool true
 
-pansift_uuid_file=$PANSIFT_PREFERENCES/pansift_uuid.conf
-pansift_ingest_file=$PANSIFT_PREFERENCES/pansift_ingest.conf
-pansift_token_file=$PANSIFT_PREFERENCES/pansift_token.conf
-machine_uuid_file=$PANSIFT_PREFERENCES/machine_uuid.conf
-annotations_file=$PANSIFT_LOGS/pansift_annotations.log
+pansift_uuid_file="$PANSIFT_PREFERENCES"/pansift_uuid.conf
+pansift_ingest_file="$PANSIFT_PREFERENCES"/pansift_ingest.conf
+pansift_token_file="$PANSIFT_PREFERENCES"/pansift_token.conf
+machine_uuid_file="$PANSIFT_PREFERENCES"/machine_uuid.conf
+annotations_file="$PANSIFT_LOGS"/pansift_annotations.log
 touch "$annotations_file" # This is just to create for tailing if not already there.
 
 # We need a UUID and token to write to DB. 
@@ -66,11 +66,11 @@ if test -f "$pansift_ingest_file"; then
   if [[ $line =~ $regex ]]; then
     pansift_ingest=$(echo -n "$line" | xargs | tr ',' '.' | tr -s ' ' | tr '[:upper:]' '[:lower:]' | tr -d '\r')
   else
-    pansift_ingest=$($PANSIFT_SCRIPTS/ingest.sh "$PANSIFT_UUID" | tr '[:upper:]' '[:lower:]')
+    pansift_ingest=$("$PANSIFT_SCRIPTS"/ingest.sh "$PANSIFT_UUID" | tr '[:upper:]' '[:lower:]')
     echo -n "$pansift_ingest" > $pansift_ingest_file
   fi
 else
-  pansift_ingest=$($PANSIFT_SCRIPTS/ingest.sh "$PANSIFT_UUID" | tr '[:upper:]' '[:lower:]')
+  pansift_ingest=$("$PANSIFT_SCRIPTS"/ingest.sh "$PANSIFT_UUID" | tr '[:upper:]' '[:lower:]')
   echo -n "$pansift_ingest" > $pansift_ingest_file
 fi
 export PANSIFT_INGEST=$pansift_ingest
@@ -105,14 +105,14 @@ else
     # Unknown so create it.
   fi
   # MAC Machine UUID is different but will be our unique  primary key we can read or generate on other platforms
-  echo -n "$machine_uuid" > $PANSIFT_PREFERENCES/machine_uuid.conf
+  echo -n "$machine_uuid" > "$PANSIFT_PREFERENCES"/machine_uuid.conf
 fi
 
 
 
 export MACHINE_UUID=$machine_uuid
 #echo "Exported machine_uuid=$machine_uuid"
-pansift_token_file=$PANSIFT_PREFERENCES/pansift_token.conf
+pansift_token_file="$PANSIFT_PREFERENCES"/pansift_token.conf
 if test -f "$pansift_token_file"; then
   line=$(head -n 1 "$pansift_token_file")
   # Token is case sensitive!!!
@@ -125,14 +125,14 @@ echo "Machine UUID: $MACHINE_UUID"
 echo "Ingest URL: $PANSIFT_INGEST"
 echo "Write Token: $PANSIFT_TOKEN"
 
-tpid="$PANSIFT_SUPPORT/telegraf.pid"
+tpid="$PANSIFT_SUPPORT"/telegraf.pid
 if test -f "$tpid"; then
-  pkill -F "$PANSIFT_SUPPORT/telegraf.pid"
+  pkill -F "$PANSIFT_SUPPORT"/telegraf.pid
 fi
-pkill "$PANSIFT_SUPPORT/telegraf" || true
+pkill "$PANSIFT_SUPPORT"/telegraf || true
 sleep 10
 
-touch $PANSIFT_SUPPORT/telegraf.pid $PANSIFT_LOGS/telegraf.log
-$PANSIFTR_SUPPORT/telegraf --config $PANSIFT_PREFERENCES/telegraf-osx.conf --pidfile $PANSIFT_SUPPORT/telegraf.pid >/dev/null 2>&1 &
+touch "$PANSIFT_SUPPORT"/telegraf.pid "$PANSIFT_LOGS"/telegraf.log
+"$PANSIFTR_SUPPORT"/telegraf --config "$PANSIFT_PREFERENCES"/telegraf-osx.conf --pidfile "$PANSIFT_SUPPORT"/telegraf.pid >/dev/null 2>&1 &
 disown
 exit 0

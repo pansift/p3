@@ -10,7 +10,7 @@ LDIFS=$IFS
 
 script_name=$(basename "$0")
 # Get configuration targets etc
-source ~/p3/pansift.conf
+source "$PANSIFT_PREFERENCES"/pansift.conf
 
 if [[ ${#1} = 0 ]]; then
   echo "Usage: Pass one parameter -n|--network -m|--machine"
@@ -138,8 +138,8 @@ network_measure () {
 internet_measure () {
   # We need basic ICMP response times from lighthouse too?
   #
-  internet4_connected=$(ping -o -c3 -i1 -t5 $pansift_icmp4_target > /dev/null 2>&1 || { echo -n "false"; exit 0;}; echo -n "true")
-  internet6_connected=$(ping6 -o -c3 -i1 $pansift_icmp6_target > /dev/null 2>&1 || { echo -n "false"; exit 0;}; echo -n "true")
+  internet4_connected=$(ping -o -c3 -i1 -t5 $PANSIFT_ICMP4_TARGET > /dev/null 2>&1 || { echo -n "false"; exit 0;}; echo -n "true")
+  internet6_connected=$(ping6 -o -c3 -i1 $PANSIFT_ICMP6_TARGET > /dev/null 2>&1 || { echo -n "false"; exit 0;}; echo -n "true")
   internet_connected="false" # Default to be overwritten below
   internet_dualstack="false" # "
   ipv4_only="false" # "
@@ -160,8 +160,8 @@ internet_measure () {
     ipv4_only="false"
     ipv6_only="false"
     internet_dualstack="true"
-    lighthouse4=$($curl_binary -m3 -sN -4 -k -L -i "$pansift_lighthouse" 2>&1 || exit 0)
-    lighthouse6=$($curl_binary -m3 -sN -6 -k -L -i "$pansift_lighthouse" 2>&1 || exit 0)
+    lighthouse4=$($curl_binary -m3 -sN -4 -k -L -i "$PANSIFT_LIGHTHOUSE" 2>&1 || exit 0)
+    lighthouse6=$($curl_binary -m3 -sN -6 -k -L -i "$PANSIFT_LIGHTHOUSE" 2>&1 || exit 0)
     internet_asn=$(echo -n "$lighthouse4" | grep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse4" | grep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
     internet4_public_ip=$(echo -n "$lighthouse4" | grep -qi "x-pansift-client-ip" || { echo -n '0.0.0.0'; exit 0;}; echo -n "$lighthouse4" | grep -i "x-pansift-client-ip" | cut -d' ' -f2 | remove_chars )
     internet6_public_ip=$(echo -n "$lighthouse6" | grep -qi "x-pansift-client-ip" || { echo -n '::'; exit 0;}; echo -n "$lighthouse6" | grep -i "x-pansift-client-ip" | cut -d' ' -f2 | remove_chars )
@@ -170,7 +170,7 @@ internet_measure () {
     ipv4_only="true"
     ipv6_only="false"
     internet_dualstack="false"
-    lighthouse4=$($curl_binary -m3 -sN -4 -k -L -v "$pansift_lighthouse" --stderr - || exit 0)
+    lighthouse4=$($curl_binary -m3 -sN -4 -k -L -v "$PANSIFT_LIGHTOUSE" --stderr - || exit 0)
     internet_asn=$(echo -n "$lighthouse4" | egrep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse4" | egrep -i "x-pansift-client-asn" | cut -d' ' -f3 | remove_chars )i
     internet4_public_ip=$(echo -n "$lighthouse4" | egrep -qi "x-pansift-client-ip" || { echo -n '0.0.0.0'; exit 0;}; echo -n "$lighthouse4" | egrep -i "x-pansift-client-ip" | cut -d' ' -f3 | remove_chars )
     internet6_public_ip="::"
@@ -179,7 +179,7 @@ internet_measure () {
     ipv4_only="false"
     ipv6_only="true"
     internet_dualstack="false"
-    lighthouse6=$($curl_binary -m3 -sN -6 -k -L -v "$pansift_lighthouse" --stderr - || exit 0)
+    lighthouse6=$($curl_binary -m3 -sN -6 -k -L -v "$PANSIFT_LIGHTHOUSE" --stderr - || exit 0)
     internet_asn=$(echo -n "$lighthouse6" | egrep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse6" | egrep -i "x-pansift-client-asn" | cut -d' ' -f3 | remove_chars )i
     internet4_public_ip="0.0.0.0"
     internet6_public_ip=$(echo -n "$lighthouse6" | egrep -qi "x-pansift-client-ip" || { echo -n '::'; exit 0;}; echo -n "$lighthouse6" | egrep -i "x-pansift-client-ip" | cut -d' ' -f3 | remove_chars )
@@ -294,7 +294,7 @@ http_checks () {
   measurement="pansift_http"
   i=0
   IFS=","
-  for host in $pansift_http_hosts_csv
+  for host in $PANSIFT_HTTP_HOSTS_CSV
   do
     if [ ! -z "$host" ]; then
       http_url=$(echo -n "$host" | remove_chars)
