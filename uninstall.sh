@@ -75,6 +75,14 @@ else
 fi
 
 pkill -9 telegraf
+unset PANSIFT_HTTP_HOSTS
+unset PANSIFT_ICMP4_TARGET
+unset PANSIFT_ICMP6_TARGET
+unset PANSIFT_LIGHTHOUSE
+unset PANSIFT_PREFERENCES
+unset PANSIFT_SCRIPTS
+unset PANSIFT_SUPPORT
+
 
 echo "=========================================================="
 echo "Now please empty your Trash at your discretion"
