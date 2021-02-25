@@ -8,26 +8,28 @@
 defaults delete com.matryer.BitBar
 defaults delete /Library/Preferences/com.matryer.BitBar
 
+source ./Preferences/pansift.conf
+
 # Configuration and preferences files
-PANSIFT_PREFERENCES="$HOME"/Library/Preferences/Pansift
+#PANSIFT_PREFERENCES="$HOME"/Library/Preferences/Pansift
 mkdir -p "$PANSIFT_PREFERENCES"
-export PANSIFT_PREFERENCES="$PANSIFT_PREFERENCES"
+#export PANSIFT_PREFERENCES="$PANSIFT_PREFERENCES"
 
 # Scripts and additional executables
-PANSIFT_SCRIPTS="$HOME"/Library/Application\ Scripts/Pansift
+#PANSIFT_SCRIPTS="$HOME"/Library/Application\ Scripts/Pansift
 mkdir -p "$PANSIFT_SCRIPTS"
 mkdir -p "$PANSIFT_SCRIPTS"/Plugins
-export PANSIFT_SCRIPTS="$PANSIFT_SCRIPTS"
+#export PANSIFT_SCRIPTS="$PANSIFT_SCRIPTS"
 
 # Logs, logs, logs
-PANSIFT_LOGS="$HOME"/Library/Logs/Pansift
+#PANSIFT_LOGS="$HOME"/Library/Logs/Pansift
 mkdir -p "$PANSIFT_LOGS"
-export PANSIFT_LOGS="$PANSIFT_LOGS"
+#export PANSIFT_LOGS="$PANSIFT_LOGS"
 
 # PIDs and other flotsam
-PANSIFT_SUPPORT="$HOME"/Library/Application\ Support/Pansift
+#PANSIFT_SUPPORT="$HOME"/Library/Application\ Support/Pansift
 mkdir -p "$PANSIFT_SUPPORT"
-export PANSIFT_SUPPORT="$PANSIFT_SUPPORT"
+#export PANSIFT_SUPPORT="$PANSIFT_SUPPORT"
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
   echo "Not supported on Linux yet" 
