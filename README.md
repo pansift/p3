@@ -1,8 +1,15 @@
-# Pansift Instructions
+# Pansift Summary 
 
-Pansift is under heavy development and this will get simpler over time.
+Pansift is a Mac OSX laptop network and system monitoring tool. It is for those who support others *remotely* and enables them to rapidly find and fix issues (especially WiFi related). Whether you are a family member doing Zoom calls, or a developer or gamer who can't afford to be disconnected or slowed down, Pansift makes the invisible visible.
 
-## To Install
+Pansift is about helping others to stay sane and productive with optimally functioning tools. It's about saving you time, maintaining situational awareness, and getting to root causes quickly and remotely. Whether it's WiFi problems, DNS latency, IPv4, IPv6 or simple disk utilization issues, PanSift allows you to keep an eye on many machines. More info: [https://pansift.com](pansift.com) 
+ 
+Pansift is under heavy development and eventually will be installed with a few clicks via the App Store (so less technical people can easily set it up). It will also have a Web/SaaS front end for individuals and teams to provide lots of add value troubleshooting, anomaly detection, and clear fixes.
+
+
+## Install Instructions
+
+### *Note:* Currently only intended for the more technical people to install on their own or other's machines.
 
 You will need `git` installed for this method of install until we have a native OSX installer. Just type `git` in your terminal and if you don't have `git` installed then OSX should offer to install (or try `xcode-select --install`) to ensure you have the command line tools.
 
