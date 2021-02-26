@@ -50,7 +50,9 @@ else
   pansift_uuid=$(uuidgen | tr '[:upper:]' '[:lower:]')
   echo -n "$pansift_uuid" > $pansift_uuid_file
   token=$("$PANSIFT_SCRIPTS"/db-setup.sh "$pansift_uuid") 
-  echo -n "$token" > $pansift_token_file
+  if [[ $token =~ ^[-_A-Z0-9a-z]{86}==$ ]]; then
+    echo -n "$token" > $pansift_token_file
+  fi
   # Call webhook to create DB with UUID
   # If we're gonna create a new UUID here we need to pass it to the DB (also from reset or update UUID)
   # Call script to set up DB db-setup.sh
