@@ -29,7 +29,7 @@ echo "=========================================================="
 read -n 1 -s -r -p "Press any key to continue..."
 echo
 
-pkill -9 Pansift.app
+pkill -9 -f Pansift.app
 #launchctl unload ~/Library/LaunchAgents/org.pansift.agent.plist
 defaults delete com.matryer.BitBar
 
