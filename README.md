@@ -18,7 +18,7 @@ Then once you have `git`, from your CLI / command line in OSX cut and paste the 
 
 *Note:* Everything is transparent so feel free to take a wander round the scripts and suggest improvements to any and all jankiness!
 
-**P.S.** If you'd like access to the intermediate dashboards (i.e. not the front end final product) then email `donal@pansift.com` with your Pansift `UUID` and access to something like the below will be arranged for you. Please understand it's not production ready and there is much movement, so only if you're a willing alpha tester :)
+**P.S.** If you'd like access to the intermediate dashboards (i.e. not the front end final product) then email `donal@pansift.com` with your Pansift `UUID` for access to something like the below. Please understand this is still an interim Proof of Concept, it's not production ready, and there is much change happening, so your data might not be there tomorrow! Only embark if you're a willing alpha tester and are confident enough to check the install/uninstall scripts to spot errors :)
 
 ![Intermediate Dashboard](https://github.com/pansift/p3/blob/main/Images/publicity_cap_v1.png?raw=true)
 
