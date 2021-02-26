@@ -21,5 +21,5 @@ Then from your CLI / command line in OSX:
 
 If you'd like access to the intermediate dashboards (i.e. not the front end final product) then email `donal@pansift.com` with your Pansift `UUID` and something like the below will be arranged for you.
 
-![Intermediate Dashboard](https://github.com/pansift/p3/blob/main/publicity_cap_v1.png?raw=true)
+![Intermediate Dashboard](https://github.com/pansift/p3/main/publicity_cap_v1.png?raw=true)
 
