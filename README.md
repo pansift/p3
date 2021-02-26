@@ -9,7 +9,7 @@ Pansift is under heavy development and eventually will be installed with a few c
 
 ## Install Instructions
 
-### *Note:* Currently only intended for the more technical people to install on their own or other's machines.
+### *Note:* Currently only intended for more technical people (who can use the terminal) to install on their own or other's machines.
 
 You will need `git` installed for this method of install until we have a native OSX installer. Just type `git` in your terminal and if you don't have `git` installed then OSX should offer to install (or try `xcode-select --install`) to ensure you have the command line tools.
 
@@ -18,3 +18,8 @@ Then from your CLI / command line in OSX:
 `cd /tmp && git clone https://git@github.com/pansift/p3.git && cd p3 && ./installer.sh`
 
 *Note:* Everything is transparent so feel free to take a wander round the scripts and suggest improvements to any and all jankiness!
+
+If you'd like access to the intermediate dashboards (i.e. not the front end final product) then email `donal@pansift.com` with your Pansift `UUID` and something like the below will be arranged for you.
+
+![Intermediate Dashboard](https://github.com/pansift/p3/blob/main/publicity_cap_v1.png?raw=true)
+
