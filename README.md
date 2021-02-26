@@ -1,6 +1,6 @@
 # Pansift Summary 
 
-Pansift is a Mac OSX laptop network and system monitoring tool. It is for those who support others *remotely* and enables them to rapidly find and fix issues (especially WiFi related). Whether you are a family member doing Zoom calls, or a developer or gamer who can't afford to be disconnected or slowed down, Pansift makes the invisible visible.
+Pansift is a Mac OSX laptop network and system monitoring tool. It is for those who support others **remotely** and enables them to rapidly find and fix issues (especially WiFi related). Whether you are a family member doing Zoom calls, or a developer or gamer who can't afford to be disconnected or slowed down, Pansift makes the invisible visible.
 
 Pansift is about helping others to stay sane and productive with optimally functioning tools. It's about saving you time, maintaining situational awareness, and getting to root causes quickly and remotely. Whether it's WiFi problems, DNS latency, IPv4, IPv6 or simple disk utilization issues, PanSift allows you to keep an eye on many machines. More info: [https://pansift.com](pansift.com) 
  
@@ -19,7 +19,7 @@ Then from your CLI / command line in OSX:
 
 *Note:* Everything is transparent so feel free to take a wander round the scripts and suggest improvements to any and all jankiness!
 
-If you'd like access to the intermediate dashboards (i.e. not the front end final product) then email `donal@pansift.com` with your Pansift `UUID` and access to something like the below will be arranged for you. Please understand it's not production ready and there is much movement, so only if you're a willing alpha tester :)
+**P.S.**: If you'd like access to the intermediate dashboards (i.e. not the front end final product) then email `donal@pansift.com` with your Pansift `UUID` and access to something like the below will be arranged for you. Please understand it's not production ready and there is much movement, so only if you're a willing alpha tester :)
 
 ![Intermediate Dashboard](https://github.com/pansift/p3/blob/main/Images/publicity_cap_v1.png?raw=true)
 
