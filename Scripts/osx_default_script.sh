@@ -244,7 +244,7 @@ wlan_scan () {
     wlan_scan_data="none"
     measurement="pansift_wlanscan"
     tagset=$(echo -n "wlan_scan_on=$wlan_scan_on")
-    fieldset=$( echo -n "")
+    fieldset=$( echo -n "wlan_on=false")
     results
   else
     # Need to migrate this to XML output and a data structure that Influx can ingest that includes taking in to account spaces in SSID hence XML
