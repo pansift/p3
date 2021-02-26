@@ -11,12 +11,12 @@ source "$HOME"/Library/Preferences/Pansift/pansift.conf
 pansift_uuid_file="$PANSIFT_PREFERENCES"/pansift_uuid.conf
 if test -f "$pansift_uuid_file"; then
     line=$(head -n 1 $pansift_uuid_file)
-    uuid=$(echo -n "$line" | awk '{$1=$1;print}' | tr ',' '.' | tr -s ' ' | tr '[:upper:]' '[:lower:]' | tr -d '\r' | sed 's! !\\ !g')
+    uuid=$(echo -n "$line" | xargs)
 fi
 pansift_token_file=$PANSIFT_PREFERENCES/pansift_token.conf
 if test -f "$pansift_token_file"; then
     line=$(head -n 1 $pansift_token_file)
-    token=$(echo -n "$line" | awk '{$1=$1;print}' | tr ',' '.' | tr -s ' ' | tr -d '\r')
+    token=$(echo -n "$line" | xargs)
 fi
 
 echo "=========================================================="
@@ -57,7 +57,7 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
   # /Applications
     if [[ -f "/Applications/Pansift.app" ]]; then
   cp -R /Applications/Pansift.app "$HOME"/.Trash
-  cd /Applications && rm -rf Pansift.app
+  cd /Applications && rm -rf ./Pansift.app
   fi
   # Logs
   if [[ -d "$PANSIFT_LOGS" ]]; then
