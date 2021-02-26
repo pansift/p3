@@ -27,8 +27,8 @@ mkdir -p "$PANSIFT_SUPPORT"
 echo "Pansift Application Support Path: \"$PANSIFT_SUPPORT\""
 
 # Next line will need changing once a full Pansift flip
-defaults write /Library/Preferences/com.matryer.BitBar pluginsDirectory "$PANSIFT_SCRIPTS"/Plugins
-# Need to add a first run that adds the plist to the LaunchAgents !!!
+#defaults write /Library/Preferences/com.matryer.BitBar pluginsDirectory "$PANSIFT_SCRIPTS"/Plugins
+# Need to add a first run that adds the plist to the LaunchAgents !!! Although this happens on open...
 defaults write com.matryer.BitBar pluginsDirectory "$PANSIFT_SCRIPTS"/Plugins
 defaults write com.matryer.BitBar NSNavLastRootDirectory "$PANSIFT_SCRIPTS"/Plugins 
 defaults write com.matryer.BitBar userConfigDisabled -bool true
