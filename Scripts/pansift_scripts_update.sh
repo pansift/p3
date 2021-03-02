@@ -13,16 +13,16 @@ curl_response=$(curl -s -o /dev/null -w "%{http_code}" -L "$host" --stderr -)
 
 if [[ $curl_response == 200 ]]; then
 
-  curl -s https://raw.githubusercontent.com/pansift/p3/main/Scripts/ingest.sh > "$PANSIFT_PREFERENCES"/ingest.sh
-  curl -s https://raw.githubusercontent.com/pansift/p3/main/Scripts/db-setup.sh > "$PANSIFT_PREFERENCES"/db-setup.sh
-  curl -s https://raw.githubusercontent.com/pansift/p3/main/Scripts/pansift_webapp.sh > "$PANSIFT_PREFERENCES"/pansift_webapp.sh
-  curl -s https://raw.githubusercontent.com/pansift/p3/main/Scripts/pansift_token_show.sh > "$PANSIFT_PREFERENCES"/pansift_token_show.sh
-  curl -s https://raw.githubusercontent.com/pansift/p3/main/Scripts/pansift_token_show.sh > "$PANSIFT_PREFERENCES"/pansift_token_show.sh
-  curl -s https://raw.githubusercontent.com/pansift/p3/main/Scripts/pansift_uuid_show.sh > "$PANSIFT_PREFERENCES"/pansift_uuid_show.sh
-  curl -s https://raw.githubusercontent.com/pansift/p3/main/Scripts/pansift_uuid_update.sh > "$PANSIFT_PREFERENCES"/pansift_uuid_update.sh
-  curl -s https://raw.githubusercontent.com/pansift/p3/main/Scripts/pansift_token_update.sh > "$PANSIFT_PREFERENCES"/pansift_token_update.sh
-  curl -s https://raw.githubusercontent.com/pansift/p3/main/Scripts/pansift_annotate_update.sh > "$PANSIFT_PREFERENCES"/pansift_annotate_update.sh
-  curl -s https://raw.githubusercontent.com/pansift/p3/main/Scripts/osx_network_default_script.sh > "$PANSIFT_PREFERENCES"/osx_network_default_script.sh
+  curl -s https://raw.githubusercontent.com/pansift/p3/main/Scripts/ingest.sh > "$PANSIFT_SCRIPTS"/ingest.sh
+  curl -s https://raw.githubusercontent.com/pansift/p3/main/Scripts/db-setup.sh > "$PANSIFT_SCRIPTS"/db-setup.sh
+  curl -s https://raw.githubusercontent.com/pansift/p3/main/Scripts/pansift_webapp.sh > "$PANSIFT_SCRIPTS"/pansift_webapp.sh
+  curl -s https://raw.githubusercontent.com/pansift/p3/main/Scripts/pansift_token_show.sh > "$PANSIFT_SCRIPTS"/pansift_token_show.sh
+  curl -s https://raw.githubusercontent.com/pansift/p3/main/Scripts/pansift_token_show.sh > "$PANSIFT_SCRIPTS"/pansift_token_show.sh
+  curl -s https://raw.githubusercontent.com/pansift/p3/main/Scripts/pansift_uuid_show.sh > "$PANSIFT_SCRIPTS"/pansift_uuid_show.sh
+  curl -s https://raw.githubusercontent.com/pansift/p3/main/Scripts/pansift_uuid_update.sh > "$PANSIFT_SCRIPTS"/pansift_uuid_update.sh
+  curl -s https://raw.githubusercontent.com/pansift/p3/main/Scripts/pansift_token_update.sh > "$PANSIFT_SCRIPTS"/pansift_token_update.sh
+  curl -s https://raw.githubusercontent.com/pansift/p3/main/Scripts/pansift_annotate_update.sh > "$PANSIFT_SCRIPTS"/pansift_annotate_update.sh
+  curl -s https://raw.githubusercontent.com/pansift/p3/main/Scripts/osx_network_default_script.sh > "$PANSIFT_SCRIPTS"/osx_network_default_script.sh
 
 
   applescriptCode="display dialog \"Updated all scripts with HTTP status code $curl_response.\" buttons {\"OK\"} default button \"OK\""
