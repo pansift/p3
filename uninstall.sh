@@ -22,7 +22,7 @@ fi
 echo "=========================================================="
 echo " This uninstaller only works if you've previously used the"
 echo " installer.sh due to the directory locations." 
-echo " Recommendation is to make a note of your UUID and token."
+echo " Strongly recommend making a note of your UUID and token."
 echo " Pansift UUID: ${uuid}" 
 echo " Pansift Token: ${token}" 
 echo "=========================================================="
