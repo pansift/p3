@@ -66,7 +66,7 @@ asn_trace () {
   for host in $PANSIFT_HOSTS_CSV
   do
     if [ ! -z "$host" ]; then
-      asn_trace=$(timeout 5 traceroute -I -w1 -S -an "$host" 2>&1 | egrep -v --line-buffered "trace" | awk '{ORS=":"}{gsub("[][]",""); print $2}' | remove_chars)
+      asn_trace=$(timeout 10 traceroute -I -w1 -S -an "$host" 2>&1 | egrep -v --line-buffered "trace" | awk '{ORS=":"}{gsub("[][]",""); print $2}' | remove_chars)
       tagset=$(echo -n "from_asn=$internet_asn")
       target_host=$(echo -n "$host" | remove_chars)
       fieldset=$( echo -n "destination=$target_host,asn_trace=$asn_trace")
