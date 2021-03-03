@@ -55,7 +55,7 @@ timeout () {
   perl -e 'alarm shift; exec @ARGV' "$@" 
 }
 
-asn_traceroute () {
+asn_trace () {
   # Requires internet_measure to be called in advance
   internet_measure
   # This is not an explicit ASN path but rather the ASNs from a traceroute so it's not a BGP metric but a representation of AS zones 
