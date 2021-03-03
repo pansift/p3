@@ -55,9 +55,10 @@ timeout () {
   perl -e 'alarm shift; exec @ARGV' "$@" 
 }
 
-asn_paths () {
+asn_traceroute () {
   # Requires internet_measure to be called in advance
-  internet_measure 
+  internet_measure
+  # This is not an explicit ASN path but rather the ASNs from a traceroute so it's not a BGP metric but a representation of AS zones 
   measurement="pansift_paths"
   if [ "$internet_connected" == "true" ]; then
   i=0
@@ -65,9 +66,10 @@ asn_paths () {
   for host in $PANSIFT_HOSTS_CSV
   do
     if [ ! -z "$host" ]; then
-      asn_path=$(timeout 5 traceroute -I -w1 -S -an "$host" 2>&1 | egrep -v --line-buffered "trace" | awk '{ORS=":"}{gsub("[][]",""); print $2}' | remove_chars)
+      asn_trace=$(timeout 5 traceroute -I -w1 -S -an "$host" 2>&1 | egrep -v --line-buffered "trace" | awk '{ORS=":"}{gsub("[][]",""); print $2}' | remove_chars)
       tagset=$(echo -n "from_asn=$internet_asn")
-      fieldset=$( echo -n "destination=$host,asn_path=$asn_path" | remove_chars)
+      target_host=$(echo -n "$host" | remove_chars)
+      fieldset=$( echo -n "destination=$target_host,asn_trace=$asn_trace")
       timesuffix=$(expr 1000000000 + $i + 1) # This is to get around duplicates in Influx with measurement, tag, and timestamp the same.
       timesuffix=${timesuffix:1} # We drop the leading "1" and end up with incrementing nanoseconds 9 digits long
       timestamp=$(date +%s)$timesuffix
@@ -78,7 +80,7 @@ asn_paths () {
   IFS=$OLDIFS
   else
   tagset="from_asn=AS0"
-  fieldset="destination_host=localhost,asn_path=AS0"
+  fieldset="destination_host=localhost,asn_trace=AS0"
   timestamp=$(date +%s)$timesuffix
   echo -ne "$measurement,$tagset $fieldset $timestamp\n"
   fi
@@ -384,9 +386,9 @@ while :; do
       # The reason we don't set the single measurement here is we are looping in the checks
       http_checks
       ;;
-    -p|--path)
+    -t|--trace)
       # The reason we don't set the single measurement here is we are looping in the checks
-      asn_paths
+      asn_trace
       ;;
     *) break
   esac
