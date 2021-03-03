@@ -23,6 +23,7 @@ airport="/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current
 curl_path="/opt/local/bin/curl"
 curl_user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.146 Safari/537.36"
 #curl_user_agent="pansift.com/0.1"
+#curl_user_agent=""
 dns_query_host=$(uuidgen)
 dns_query_domain="doesnotexist.pansift.com"
 dns_query="$dns_query_host.$dns_query_domain"
@@ -48,6 +49,40 @@ remove_chars_except_spaces () {
   read data
   newdata=$(echo -n "$data" | awk '{$1=$1;print}' | tr ',' '.' | tr -s ' ' | tr '[:upper:]' '[:lower:]' | tr -d '\r')
   echo -n $newdata
+}
+
+timeout () { 
+  perl -e 'alarm shift; exec @ARGV' "$@" 
+}
+
+asn_paths () {
+  # Requires internet_measure to be called in advance
+  internet_measure 
+  measurement="pansift_paths"
+  if [ "$internet_connected" == "true" ]; then
+  i=0
+  IFS=","
+  for host in $PANSIFT_HOSTS_CSV
+  do
+    if [ ! -z "$host" ]; then
+      asn_path=$(timeout 5 traceroute -I -w1 -S -an "$host" 2>&1 | egrep -v --line-buffered "trace" | awk '{ORS=":"}{gsub("[][]",""); print $2}' | remove_chars)
+      tagset=$(echo -n "from_asn=$internet_asn")
+      fieldset=$( echo -n "destination=$host,asn_path=$asn_path" | remove_chars)
+      timesuffix=$(expr 1000000000 + $i + 1) # This is to get around duplicates in Influx with measurement, tag, and timestamp the same.
+      timesuffix=${timesuffix:1} # We drop the leading "1" and end up with incrementing nanoseconds 9 digits long
+      timestamp=$(date +%s)$timesuffix
+      echo -ne "$measurement,$tagset $fieldset $timestamp\n"
+      ((i++))
+    fi
+  done
+  IFS=$OLDIFS
+  else
+  tagset="from_asn=AS0"
+  fieldset="destination_host=localhost,asn_path=AS0"
+  timestamp=$(date +%s)$timesuffix
+  echo -ne "$measurement,$tagset $fieldset $timestamp\n"
+  fi
+  
 }
 
 system_measure () {
@@ -295,11 +330,12 @@ http_checks () {
   measurement="pansift_http"
   i=0
   IFS=","
-  for host in $PANSIFT_HTTP_HOSTS_CSV
+  for host in $PANSIFT_HOSTS_CSV
   do
     if [ ! -z "$host" ]; then
       http_url=$(echo -n "$host" | remove_chars)
-      curl_response=$(curl -A "$curl_user_agent" -k -s -o /dev/null -w "%{http_code}:%{speed_download}" -L "$host" --stderr - | remove_chars)
+      target_host="https://"$host
+      curl_response=$(curl -A "$curl_user_agent" -k -s -o /dev/null -w "%{http_code}:%{speed_download}" -L "$target_host" --stderr - | remove_chars)
       http_status=$(echo -n "$curl_response" | cut -d':' -f1 | sed 's/^000/0/' | remove_chars)i
       http_speed_bytes=$(echo -n "$curl_response" | cut -d':' -f2)
       # bc doesn't print a leading zero and this confuses poor influx
@@ -347,6 +383,10 @@ while :; do
     -w|--web)
       # The reason we don't set the single measurement here is we are looping in the checks
       http_checks
+      ;;
+    -p|--path)
+      # The reason we don't set the single measurement here is we are looping in the checks
+      asn_paths
       ;;
     *) break
   esac
