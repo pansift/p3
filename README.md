@@ -10,7 +10,7 @@ Pansift is under heavy development and eventually will be installed with a few c
 
 ### *Note:* Currently only intended for more technical people (who can use the terminal) to install on their own or other's machines.
 
-You will need `git` for this method of install (until we have a native OSX installer). Just type `git version` in your terminal to see if it's there. If you don't have `git` installed then OSX should offer to install (or try `xcode-select --install`) to ensure you have the command line tools.
+You will need `git` for this method of install (until we have a native OSX installer or are using the App Store). Just type `git version` in your terminal to see if it's there. If you don't have `git` installed then OSX should offer to install (or try `xcode-select --install`) to ensure you have the command line tools.
 
 Then once you have `git`, from your CLI / command line in OSX cut and paste the below:
 
