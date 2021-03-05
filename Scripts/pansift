@@ -49,8 +49,8 @@ if test -f "$pansift_uuid_file"; then
 else
   pansift_uuid=$(uuidgen | tr '[:upper:]' '[:lower:]')
   echo -n "$pansift_uuid" > $pansift_uuid_file
-  setup_outcome=$("$PANSIFT_SCRIPTS"/db-setup.sh "$pansift_uuid")
-  token=$(echo -n "$token_outcome" | cut -d',' -f1)
+  setup_outcome=$("$PANSIFT_SCRIPTS"/ztp.sh "$pansift_uuid")
+  token=$(echo -n "$setup_outcome" | cut -d',' -f1)
   if [[ $token =~ ^[-_A-Z0-9a-z]{86}==$ ]]; then
     echo -n "$token" > $pansift_token_file
   fi
@@ -71,11 +71,11 @@ if test -f "$pansift_ingest_file"; then
   if [[ $line =~ $regex ]]; then
     pansift_ingest=$(echo -n "$line" | xargs | tr ',' '.' | tr -s ' ' | tr '[:upper:]' '[:lower:]' | tr -d '\r')
   else
-    pansift_ingest=$(echo -n "$token_outcome" | cut -d',' -f2 | tr '[:upper:]' '[:lower:]')
+    pansift_ingest=$(echo -n "$setup_outcome" | cut -d',' -f2 | tr '[:upper:]' '[:lower:]')
     echo -n "$pansift_ingest" > $pansift_ingest_file
   fi
 else
-  pansift_ingest=$(echo -n "$token_outcome" | cut -d',' -f2 | tr '[:upper:]' '[:lower:]')
+  pansift_ingest=$(echo -n "$setup_outcome" | cut -d',' -f2 | tr '[:upper:]' '[:lower:]')
   echo -n "$pansift_ingest" > $pansift_ingest_file
 fi
 export PANSIFT_INGEST=$pansift_ingest
