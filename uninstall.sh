@@ -55,7 +55,7 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     cd "$HOME"
   fi
   # /Applications
-    if [[ -f "/Applications/Pansift.app" ]]; then
+    if [[ -d "/Applications/Pansift.app" ]]; then
   cp -R /Applications/Pansift.app "$HOME"/.Trash
   cd /Applications 
   rm -rf ./Pansift.app &
