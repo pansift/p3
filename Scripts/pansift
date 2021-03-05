@@ -71,11 +71,11 @@ if test -f "$pansift_ingest_file"; then
   if [[ $line =~ $regex ]]; then
     pansift_ingest=$(echo -n "$line" | xargs | tr ',' '.' | tr -s ' ' | tr '[:upper:]' '[:lower:]' | tr -d '\r')
   else
-    pansift_ingest=$(echo -n "$token_outcome" | cut -d',' -f2)
+    pansift_ingest=$(echo -n "$token_outcome" | cut -d',' -f2 | tr '[:upper:]' '[:lower:]')
     echo -n "$pansift_ingest" > $pansift_ingest_file
   fi
 else
-  pansift_ingest=$("$PANSIFT_SCRIPTS"/ingest.sh "$PANSIFT_UUID" | tr '[:upper:]' '[:lower:]')
+  pansift_ingest=$(echo -n "$token_outcome" | cut -d',' -f2 | tr '[:upper:]' '[:lower:]')
   echo -n "$pansift_ingest" > $pansift_ingest_file
 fi
 export PANSIFT_INGEST=$pansift_ingest
