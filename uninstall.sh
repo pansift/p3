@@ -29,7 +29,7 @@ echo " Strongly recommend making a note of your UUID and token."
 echo " Pansift UUID: ${uuid}" 
 echo " Pansift Token: ${token}" 
 echo "=========================================================="
-read -n 1 -s -r -p "Press any key to continue..."
+read -n 1 -s -r -p "Press any key to continue or Ctrl+C to stop."
 echo
 
 pkill -9 -f Pansift.app
