@@ -49,11 +49,6 @@ if test -f "$pansift_uuid_file"; then
 else
   pansift_uuid=$(uuidgen | tr '[:upper:]' '[:lower:]')
   echo -n "$pansift_uuid" > $pansift_uuid_file
-  setup_outcome=$("$PANSIFT_SCRIPTS"/ztp.sh "$pansift_uuid")
-  token=$(echo -n "$setup_outcome" | cut -d',' -f1)
-  if [[ $token =~ ^[-_A-Z0-9a-z]{86}==$ ]]; then
-    echo -n "$token" > $pansift_token_file
-  fi
   # Call webhook to create DB with UUID
   # If we're gonna create a new UUID here we need to pass it to the DB (also from reset or update UUID)
   # Call script to set up DB db-setup.sh
@@ -71,10 +66,14 @@ if test -f "$pansift_ingest_file"; then
   if [[ $line =~ $regex ]]; then
     pansift_ingest=$(echo -n "$line" | xargs | tr ',' '.' | tr -s ' ' | tr '[:upper:]' '[:lower:]' | tr -d '\r')
   else
-    pansift_ingest=$(echo -n "$setup_outcome" | cut -d',' -f2 | tr '[:upper:]' '[:lower:]')
-    echo -n "$pansift_ingest" > $pansift_ingest_file
+    echo -n "Problem with ingest_file contents at: ${pansift_ingest_file}"
   fi
 else
+  setup_outcome=$("$PANSIFT_SCRIPTS"/ztp.sh "$PANSIFT_UUID")
+  token=$(echo -n "$setup_outcome" | cut -d',' -f1)
+  if [[ $token =~ ^[-_A-Z0-9a-z]{86}==$ ]]; then
+    echo -n "$token" > $pansift_token_file
+  fi
   pansift_ingest=$(echo -n "$setup_outcome" | cut -d',' -f2 | tr '[:upper:]' '[:lower:]')
   echo -n "$pansift_ingest" > $pansift_ingest_file
 fi
