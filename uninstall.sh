@@ -6,17 +6,20 @@
 # Moving things to the right places :)
 # Being super verbose and as careful as can be with "rm"
 
-source "$HOME"/Library/Preferences/Pansift/pansift.conf
+preferences="$HOME"/Library/Preferences/Pansift/pansift.conf
+if test -f "$preferences"; then
+  source "$preferences"
+fi
 
 pansift_uuid_file="$PANSIFT_PREFERENCES"/pansift_uuid.conf
 if test -f "$pansift_uuid_file"; then
-    line=$(head -n 1 $pansift_uuid_file)
-    uuid=$(echo -n "$line" | xargs)
+  line=$(head -n 1 $pansift_uuid_file)
+  uuid=$(echo -n "$line" | xargs)
 fi
 pansift_token_file=$PANSIFT_PREFERENCES/pansift_token.conf
 if test -f "$pansift_token_file"; then
-    line=$(head -n 1 $pansift_token_file)
-    token=$(echo -n "$line" | xargs)
+  line=$(head -n 1 $pansift_token_file)
+  token=$(echo -n "$line" | xargs)
 fi
 
 echo "=========================================================="
@@ -55,11 +58,11 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     cd "$HOME"
   fi
   # /Applications
-    if [[ -d "/Applications/Pansift.app" ]]; then
-  cp -R /Applications/Pansift.app "$HOME"/.Trash
-  cd /Applications 
-  rm -rf ./Pansift.app &
-  wait $!
+  if [[ -d "/Applications/Pansift.app" ]]; then
+    cp -R /Applications/Pansift.app "$HOME"/.Trash
+    cd /Applications 
+    rm -rf ./Pansift.app &
+    wait $!
   fi
   # Logs
   if [[ -d "$PANSIFT_LOGS" ]]; then
