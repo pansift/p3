@@ -38,6 +38,7 @@ pansift_ingest_file="$PANSIFT_PREFERENCES"/pansift_ingest.conf
 pansift_token_file="$PANSIFT_PREFERENCES"/pansift_token.conf
 machine_uuid_file="$PANSIFT_PREFERENCES"/machine_uuid.conf
 annotations_file="$PANSIFT_LOGS"/pansift_annotations.log
+setup_outcome=""
 touch "$annotations_file" # This is just to create for tailing if not already there.
 
 # If we're restarting then something changed.
