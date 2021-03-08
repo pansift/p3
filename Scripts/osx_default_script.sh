@@ -27,8 +27,12 @@ curl_user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537
 dns_query_host=$(uuidgen)
 dns_query_domain="doesnotexist.pansift.com"
 dns_query="$dns_query_host.$dns_query_domain"
+
+# These commands we want to and are happy to run each time as they may change frequently enough that we want to globally
+# make decisions about them or reference them in more than one function or type of switch.
 systemsoftware=$(sw_vers)
 osx_mainline=$(echo -n "$systemsoftware" | grep -i "productversion" | cut -d':' -f2- | cut -d'.' -f1 | xargs)
+hardware_interfaces=$(networksetup -listallhardwareports | awk -F ":" '/Hardware Port:|Device:/{print $2}' | paste -d',' - - )
 
 # Old versions of curl will fail with status 53 on SSL/TLS negotiation on newer hosts
 # User really needs a newer curl binary but can also put defaults here
@@ -113,7 +117,6 @@ network_measure () {
   else 
     netstat4_print_position=6 # 10.x 
   fi
-  hardware_interfaces=$(networksetup -listallhardwareports | awk -F ":" '/Hardware Port:|Device:/{print $2}' | paste -d',' - - )
   netstat4=$(netstat -rn -f inet)
   netstat6=$(netstat -rn -f inet6)
   dg4_ip=$(echo -n "$netstat4" | grep -qi default || { echo -n 'none'; exit 0;}; echo -n "$netstat4" | grep -i default | awk '{print $2}' | remove_chars)
