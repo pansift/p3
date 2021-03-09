@@ -32,7 +32,7 @@ dns_query="$dns_query_host.$dns_query_domain"
 # make decisions about them or reference them in more than one function or type of switch.
 systemsoftware=$(sw_vers)
 osx_mainline=$(echo -n "$systemsoftware" | grep -i "productversion" | cut -d':' -f2- | cut -d'.' -f1 | xargs)
-hardware_interfaces=$(networksetup -listallhardwareports | awk -F ":" '/Hardware Port:|Device:/{print $2}' | paste -d',' - - )
+network_interfaces=$(networksetup -listallhardwareports)
 
 # Old versions of curl will fail with status 53 on SSL/TLS negotiation on newer hosts
 # User really needs a newer curl binary but can also put defaults here
@@ -125,6 +125,8 @@ network_measure () {
   dg4_interface=$(echo -n "$netstat4" | grep -qi default || { echo -n 'none'; exit 0;}; echo -n "$netstat4" | grep -i default | awk -v x=$netstat4_print_position '{print $x}' | remove_chars)
   dg6_interface=$(echo -n "$netstat6" | grep -qi default || { echo -n 'none'; exit 0; }; echo -n "$netstat6" | grep -i default | awk '{print $2}'| remove_chars)
   dg6_interface_device_only=$(echo -n "$dg6_interface" | cut -d'%' -f2)
+  # Grabbing network interfaces from global 
+  hardware_interfaces=$(echo -n "$network_interfaces" | awk -F ":" '/Hardware Port:|Device:/{print $2}' | paste -d',' - - )
   dg4_hardware_type=$(echo -n "$hardware_interfaces" | grep -qi "$dg4_interface" || { echo -n 'unknown'; exit 0; }; echo -n "$hardware_interfaces" | grep -i "$dg4_interface" | cut -d',' -f1 | xargs)
   dg6_hardware_type=$(echo -n "$hardware_interfaces" | grep -qi "$dg6_interface_device_only" || { echo -n 'unknown'; exit 0; }; echo -n "$hardware_interfaces" | grep -i "$dg6_interface_device_only" | cut -d',' -f1 | xargs)
   if [ ! "$dg4_ip" == "none" ]; then
