@@ -230,7 +230,7 @@ internet_measure () {
 }
 
 wlan_measure () {
-  # This can probably be re-written with PlistBuddy for simplicity?
+  # Need to add a separate PlistBuddy to extract keys rather than below as is cleaner + can get NSS (Number of Spatial Streams)
   airport_output=$($airport -I)
   wlan_connected=$(echo -n "$airport_output" | grep -q 'AirPort: Off' && echo -n 'false' || echo -n 'true')
   if [ $wlan_connected == "true" ]; then
@@ -239,6 +239,7 @@ wlan_measure () {
     wlan_rssi=$(echo -n "$airport_output" | egrep -i '[[:space:]]agrCtlRSSI' | cut -d':' -f2- | remove_chars)
     wlan_noise=$(echo -n "$airport_output" | egrep -i '[[:space:]]agrCtlNoise' | cut -d':' -f2- | remove_chars)
     wlan_snr=$(var=$(( $(( $wlan_noise * -1)) - $(( $wlan_rssi * -1)) )); echo -n $var)i
+		wlan_spatial_streams=$(echo -n "$airport_output" | egrep -i '[[:space:]]agrCtlNoise' | cut -d':' -f2- | remove_chars)
     # because of mathematical operation, add back in i
     wlan_rssi="$wlan_rssi"i
     wlan_noise="$wlan_noise"i
@@ -255,6 +256,8 @@ wlan_measure () {
     wlan_spairportdatatype=$(system_profiler SPAirPortDataType)
     wlan_supportedphymode=$(echo -n "$wlan_spairportdatatype" | egrep -i "Supported PHY Modes" | cut -d':' -f2- | remove_chars)
     wlan_currentphymode=$(echo -n "$wlan_spairportdatatype" | egrep -i "PHY Mode:" | head -n1 | cut -d':' -f2- | remove_chars)
+
+		# Here we need to add airport -I -x for PLIST and then extract the NSS if available. Also can direct extract channel width value as BANDWIDTH
 
   else
     #set all values null as can not have an empty tag
@@ -291,7 +294,7 @@ wlan_scan () {
   else
     # Need to migrate this to XML output and a data structure that Influx can ingest that includes taking in to account spaces in SSID hence XML
     #scandata="/tmp/airport.plist"
-    scandata="$PANSIFT_LOGS"/airport.plist #Need a better way to do the install location, assuming ~/p3 for now. 
+    scandata="$PANSIFT_LOGS"/airport-scan.plist #Need a better way to do the install location, assuming ~/p3 for now. 
     #test -f $scandata || touch $scandata
     #if [[ ! -e $scandata ]]; then
     #  touch $scandata
