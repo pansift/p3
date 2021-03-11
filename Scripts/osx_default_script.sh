@@ -235,7 +235,7 @@ wlan_measure () {
   wlan_connected=$(echo -n "$airport_output" | grep -q 'AirPort: Off' && echo -n 'false' || echo -n 'true')
   if [ $wlan_connected == "true" ]; then
     wlan_state=$(echo -n "$airport_output" | egrep -i '[[:space:]]state' | cut -d':' -f2- | remove_chars)
-    wlan_opmode=$(echo -n "$airport_output"| egrep -i '[[:space:]]op mode' | cut -d':' -f2- | remove_chars)
+    wlan_op_mode=$(echo -n "$airport_output"| egrep -i '[[:space:]]op mode' | cut -d':' -f2- | remove_chars)
     wlan_rssi=$(echo -n "$airport_output" | egrep -i '[[:space:]]agrCtlRSSI' | cut -d':' -f2- | remove_chars)
     wlan_noise=$(echo -n "$airport_output" | egrep -i '[[:space:]]agrCtlNoise' | cut -d':' -f2- | remove_chars)
     wlan_snr=$(var=$(( $(( $wlan_noise * -1)) - $(( $wlan_rssi * -1)) )); echo -n $var)i
@@ -243,41 +243,51 @@ wlan_measure () {
     # because of mathematical operation, add back in i
     wlan_rssi="$wlan_rssi"i
     wlan_noise="$wlan_noise"i
-    wlan_lasttxrate=$(echo -n "$airport_output"| egrep -i '[[:space:]]lastTxRate' | cut -d':' -f2- | remove_chars)i
-    wlan_maxrate=$(echo -n "$airport_output" | egrep -i '[[:space:]]maxRate' | cut -d':' -f2- | remove_chars)i
+    wlan_last_tx_rate=$(echo -n "$airport_output"| egrep -i '[[:space:]]lastTxRate' | cut -d':' -f2- | remove_chars)i
+    wlan_max_rate=$(echo -n "$airport_output" | egrep -i '[[:space:]]maxRate' | cut -d':' -f2- | remove_chars)i
     wlan_ssid=$(echo -n "$airport_output" | egrep -i '[[:space:]]ssid' | cut -d':' -f2- | awk '{$1=$1;print}')
     wlan_bssid=$(echo -n "$airport_output" | egrep -i '[[:space:]]bssid' | awk '{$1=$1;print}' | cut -d' ' -f2)
     wlan_mcs=$(echo -n "$airport_output"| egrep -i '[[:space:]]mcs' | cut -d':' -f2 | remove_chars)i
-    wlan_80211auth=$(echo -n "$airport_output"| egrep -i '[[:space:]]802\.11 auth' |  cut -d':' -f2 | remove_chars)
-    wlan_linkauth=$(echo -n "$airport_output" | egrep -i '[[:space:]]link auth' |  cut -d':' -f2 | remove_chars)
-    wlan_lastassocstatus=$(echo -n "$airport_output" | egrep -i 'lastassocstatus' |  cut -d':' -f2 | remove_chars)i
+    wlan_80211_auth=$(echo -n "$airport_output"| egrep -i '[[:space:]]802\.11 auth' |  cut -d':' -f2 | remove_chars)
+    wlan_link_auth=$(echo -n "$airport_output" | egrep -i '[[:space:]]link auth' |  cut -d':' -f2 | remove_chars)
+    wlan_last_assoc_status=$(echo -n "$airport_output" | egrep -i 'lastassocstatus' |  cut -d':' -f2 | remove_chars)i
     wlan_channel=$(echo -n "$airport_output"| egrep -i '[[:space:]]channel' |  cut -d':' -f2 | awk '{$1=$1;print}' | cut -d',' -f1 | remove_chars)i
-    wlan_width=$(echo -n "$airport_output"| egrep -i '[[:space:]]channel' |  cut -d':' -f2 | awk '{$1=$1;print}' | cut -d',' -f2 | remove_chars)i
-    wlan_spairportdatatype=$(system_profiler SPAirPortDataType)
-    wlan_supportedphymode=$(echo -n "$wlan_spairportdatatype" | egrep -i "Supported PHY Modes" | cut -d':' -f2- | remove_chars)
-    wlan_currentphymode=$(echo -n "$wlan_spairportdatatype" | egrep -i "PHY Mode:" | head -n1 | cut -d':' -f2- | remove_chars)
+    wlan_sp_airport_data_type=$(system_profiler SPAirPortDataType)
+    wlan_supported_phy_mode=$(echo -n "$wlan_sp_air_port_data_type" | egrep -i "Supported PHY Modes" | cut -d':' -f2- | remove_chars)
+    wlan_current_phy_mode=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "PHY Mode:" | head -n1 | cut -d':' -f2- | remove_chars)
+    wlan_supported_channels=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "PHY Mode:" | head -n1 | cut -d':' -f2- | remove_chars)
 
 		# Here we need to add airport -I -x for PLIST and then extract the NSS if available. Also can direct extract channel width value as BANDWIDTH
-
+		# Turns out that (other than using native API) the airport -I vs -Ix give additional information
+		airport_more_data="$PANSIFT_LOGS"/airport-more-info.plist #Need a better way to do the install location, assuming ~/p3 for now.
+		airport_info_xml=$($airport -Ix)
+    printf "%s" "$airport_info_xml" > "$airport_more_data" &
+    pid=$!
+    wait $pid
+    plistbuddy="/usr/libexec/PlistBuddy"
+    wlan_number_spatial_streams=$("$plistbuddy" "${airport_more_data}" -c "print NSS" | remove_chars)i
+    wlan_width=$("$plistbuddy" "${airport_more_data}" -c "print BANDWIDTH" | remove_chars)i
   else
     #set all values null as can not have an empty tag
     wlan_state="none"
-    wlan_opmode="none"
-    wlan_80211auth="none"
-    wlan_linkauth="none"
-    wlan_currentphymode="none"
-    wlan_supportedphymode="none"
+    wlan_op_mode="none"
+    wlan_80211_auth="none"
+    wlan_link_auth="none"
+    wlan_current_phy_mode="none"
+    wlan_supported_phy_mode="none"
     wlan_channel=0i
-    wlan_width=0i
+    wlan_width=20i # Can we default to 20 (20MHz) i.e. does 0 mean 20, what about .ax?
     wlan_rssi=0i
     wlan_noise=0i
     wlan_snr=0i
-    wlan_lasttxrate=0i
-    wlan_maxrate=0i
+    wlan_last_tx_rate=0i
+    wlan_max_rate=0i
     wlan_ssid=""
     wlan_bssid=""
     wlan_mcs=0i
-    wlan_lastassocstatus=-1i
+    wlan_last_assoc_status=-1i
+		wlan_number_spatial_streams=1i
+		wlan_supported_channels=""
   fi
 }
 
@@ -382,8 +392,8 @@ while :; do
       network_measure
       wlan_measure
       measurement="pansift_network"
-      tagset=$(echo -n "internet_connected=$internet_connected,internet_dualstack=$internet_dualstack,ipv4_only=$ipv4_only,ipv6_only=$ipv6_only,locally_connected=$locally_connected,wlan_connected=$wlan_connected,wlan_state=$wlan_state,wlan_opmode=$wlan_opmode,wlan_80211auth=$wlan_80211auth,wlan_linkauth=$wlan_linkauth,wlan_currentphymode=$wlan_currentphymode,wlan_supportedphymode=$wlan_supportedphymode")            
-      fieldset=$( echo -n "internet4_public_ip=\"$internet4_public_ip\",internet6_public_ip=\"$internet6_public_ip\",internet_asn=$internet_asn,dg4_ip=\"$dg4_ip\",dg6_ip=\"$dg6_ip\",dg4_hardware_type=\"$dg4_hardware_type\",dg6_hardware_type=\"$dg6_hardware_type\",dg4_interface=\"$dg4_interface\",dg6_interface=\"$dg6_interface\",dg4_interface_ether=\"$dg4_interface_ether\",dg6_interface_ether=\"$dg6_interface_ether\",dg4_response=$dg4_response,dg6_response=$dg6_response,dns4_primary=\"$dns4_primary\",dns6_primary=\"$dns6_primary\",dns4_query_response=$dns4_query_response,dns6_query_response=$dns6_query_response,wlan_rssi=$wlan_rssi,wlan_noise=$wlan_noise,wlan_snr=$wlan_snr,wlan_lasttxrate=$wlan_lasttxrate,wlan_maxrate=$wlan_maxrate,wlan_ssid=\"$wlan_ssid\",wlan_bssid=\"$wlan_bssid\",wlan_mcs=$wlan_mcs,wlan_lastassocstatus=$wlan_lastassocstatus,wlan_channel=$wlan_channel,wlan_width=$wlan_width")
+      tagset=$(echo -n "internet_connected=$internet_connected,internet_dualstack=$internet_dualstack,ipv4_only=$ipv4_only,ipv6_only=$ipv6_only,locally_connected=$locally_connected,wlan_connected=$wlan_connected,wlan_state=$wlan_state,wlan_op_mode=$wlan_op_mode,wlan_80211_auth=$wlan_80211_auth,wlan_link_auth=$wlan_link_auth,wlan_current_phy_mode=$wlan_current_phy_mode,wlan_supported_phy_mode=$wlan_supported_phy_mode") 
+      fieldset=$( echo -n "internet4_public_ip=\"$internet4_public_ip\",internet6_public_ip=\"$internet6_public_ip\",internet_asn=$internet_asn,dg4_ip=\"$dg4_ip\",dg6_ip=\"$dg6_ip\",dg4_hardware_type=\"$dg4_hardware_type\",dg6_hardware_type=\"$dg6_hardware_type\",dg4_interface=\"$dg4_interface\",dg6_interface=\"$dg6_interface\",dg4_interface_ether=\"$dg4_interface_ether\",dg6_interface_ether=\"$dg6_interface_ether\",dg4_response=$dg4_response,dg6_response=$dg6_response,dns4_primary=\"$dns4_primary\",dns6_primary=\"$dns6_primary\",dns4_query_response=$dns4_query_response,dns6_query_response=$dns6_query_response,wlan_rssi=$wlan_rssi,wlan_noise=$wlan_noise,wlan_snr=$wlan_snr,wlan_last_tx_rate=$wlan_last_tx_rate,wlan_max_rate=$wlan_max_rate,wlan_ssid=\"$wlan_ssid\",wlan_bssid=\"$wlan_bssid\",wlan_mcs=$wlan_mcs,wlan_number_spatial_streams=$wlan_number_spatial_streams,wlan_last_assoc_status=$wlan_last_assoc_status,wlan_channel=$wlan_channel,wlan_width=$wlan_width")
       results
       ;;
     -s|--scan)
