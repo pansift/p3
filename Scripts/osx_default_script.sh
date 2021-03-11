@@ -20,6 +20,7 @@ if [[ ${#1} = 0 ]]; then
 fi
 
 airport="/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport"
+plistbuddy="/usr/libexec/PlistBuddy"
 curl_path="/opt/local/bin/curl"
 agent[0]="Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36"
 agent[1]="Mozilla/5.0 (Macintosh; Intel Mac OS X 11.2; rv:86.0) Gecko/20100101 Firefox/86.0"
@@ -269,7 +270,6 @@ wlan_measure () {
     printf "%s" "$airport_info_xml" > "$airport_more_data" &
     pid=$!
     wait $pid
-    plistbuddy="/usr/libexec/PlistBuddy"
     wlan_number_spatial_streams=$("$plistbuddy" "${airport_more_data}" -c "print NSS" | remove_chars)i
     wlan_width=$("$plistbuddy" "${airport_more_data}" -c "print BANDWIDTH" | remove_chars)i
     
@@ -325,7 +325,6 @@ wlan_scan () {
     pid=$!
     wait $pid
     wlan_scan_on="true"
-    plistbuddy="/usr/libexec/PlistBuddy"
     precount=$(
     "$plistbuddy" "${scandata}" -c "print ::" | # Extract array items
     cat -v |                                  # Convert from binary output to ascii
