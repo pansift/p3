@@ -253,7 +253,7 @@ wlan_measure () {
     wlan_last_assoc_status=$(echo -n "$airport_output" | egrep -i 'lastassocstatus' |  cut -d':' -f2 | remove_chars)i
     wlan_channel=$(echo -n "$airport_output"| egrep -i '[[:space:]]channel' |  cut -d':' -f2 | awk '{$1=$1;print}' | cut -d',' -f1 | remove_chars)i
     wlan_sp_airport_data_type=$(system_profiler SPAirPortDataType)
-    wlan_supported_phy_mode=$(echo -n "$wlan_sp_air_port_data_type" | egrep -i "Supported PHY Modes" | cut -d':' -f2- | remove_chars)
+    wlan_supported_phy_mode=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "Supported PHY Modes" | cut -d':' -f2- | remove_chars)
     wlan_current_phy_mode=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "PHY Mode:" | head -n1 | cut -d':' -f2- | remove_chars)
     wlan_supported_channels=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "PHY Mode:" | head -n1 | cut -d':' -f2- | remove_chars)
 
