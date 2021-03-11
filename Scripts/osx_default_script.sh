@@ -14,7 +14,7 @@ PANSIFT_PREFERENCES="$HOME"/Library/Preferences/Pansift
 source "$PANSIFT_PREFERENCES"/pansift.conf
 
 if [[ ${#1} = 0 ]]; then
-  echo "Usage: Pass one parameter -n|--network -m|--machine -t|--trace"
+  echo "Usage: Pass one parameter -n|--network -m|--machine -t|--trace -s|--scan -w|--web"
   echo "Usage: ./$script_name -i"
   exit 0;
 fi
@@ -81,9 +81,9 @@ asn_trace () {
   do
     if [ ! -z "$host" ]; then
       asn_trace=$(timeout 10 traceroute -I -w1 -S -an "$host" 2>/dev/null | grep -v "trace" | awk '{ORS=":"}{gsub("[][]",""); print $2}' | sed 's/.$//' | remove_chars)
-      tagset=$(echo -n "from_asn=$internet_asn")
       target_host=$(echo -n "$host" | remove_chars)
-      fieldset=$( echo -n "destination=\"$target_host\",asn_trace=\"$asn_trace\"")
+      tagset=$(echo -n "from_asn=$internet_asn,destination=$target_host")
+      fieldset=$( echo -n "asn_trace=\"$asn_trace\"")
       timesuffix=$(expr 1000000000 + $i + 1) # This is to get around duplicates in Influx with measurement, tag, and timestamp the same.
       timesuffix=${timesuffix:1} # We drop the leading "1" and end up with incrementing nanoseconds 9 digits long
       timestamp=$(date +%s)$timesuffix
@@ -93,8 +93,8 @@ asn_trace () {
   done
   IFS=$OLDIFS
   else
-  tagset="from_asn=AS0"
-  fieldset="destination_host=localhost,asn_trace=AS0"
+  tagset="from_asn=AS0,destination=localhost"
+  fieldset="asn_trace=AS0"
   timestamp=$(date +%s)000000000
   echo -ne "$measurement,$tagset $fieldset $timestamp\n"
   fi
