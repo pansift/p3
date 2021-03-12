@@ -132,7 +132,7 @@ echo "Write Token: $PANSIFT_TOKEN"
 if [[ "$1" == "-t" ]]; then 
   true
 else
-  sleep 7 # Give Telegraf a little more time to flush buffers and shut down
+  sleep 10 # Give Telegraf a little more time to flush buffers and shut down
 fi
 
 touch "$PANSIFT_SUPPORT"/telegraf.pid "$PANSIFT_LOGS"/telegraf.log
