@@ -18,7 +18,7 @@ remove_chars () {
 note=$(echo -n "$note" | remove_chars)
 if [ -n "$note" ]; then
   fieldset=$(echo -n "note=\"$note\"") 
-  measurement="annotation"
+  measurement="pansift_osx_annotations"
   timestamp=$(date +%s)000000000
   echo "$measurement $fieldset $timestamp" >> "$PANSIFT_LOGS"/pansift_annotations.log
   exit 0 
