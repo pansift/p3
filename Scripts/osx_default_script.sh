@@ -73,7 +73,7 @@ asn_trace () {
   # Requires internet_measure to be called in advance
   internet_measure
   # This is not an explicit ASN path but rather the ASNs from a traceroute so it's not a BGP metric but a representation of AS zones 
-  measurement="pansift_paths"
+  measurement="pansift_osx_paths"
   if [ "$internet_connected" == "true" ]; then
   i=0
   IFS=","
@@ -308,7 +308,7 @@ wlan_scan () {
     #echo -n "No airport output in scan"
     wlan_scan_on="false"
     wlan_scan_data="none"
-    measurement="pansift_wlanscan"
+    measurement="pansift_osx_wlanscan"
     tagset=$(echo -n "wlan_scan_on=$wlan_scan_on")
     fieldset=$( echo -n "wlan_on=false")
     results
@@ -342,7 +342,7 @@ wlan_scan () {
       wlan_scan_rssi=$("${plistbuddy}" "${scandata}" -c "print :$i:RSSI")i
       wlan_scan_noise=$("${plistbuddy}" "${scandata}" -c "print :$i:NOISE")i
       wlan_scan_ht_secondary_chan_offset=$("${plistbuddy}" "${scandata}" -c "print :$i:HT_IE:HT_SECONDARY_CHAN_OFFSET")i
-      measurement="pansift_wlanscan"
+      measurement="pansift_osx_wlanscan"
       #tagset=$(echo -n "wlan_scan_on=$wlan_scan_on,wlan_scan_bssid_tag=$wlan_scan_bssid_tag")
       tagset=$(echo -n "wlan_scan_on=$wlan_scan_on")
       fieldset=$( echo -n "wlan_scan_ssid=\"$wlan_scan_ssid\",wlan_scan_bssid=\"$wlan_scan_bssid\",wlan_scan_channel=$wlan_scan_channel,wlan_scan_rssi=$wlan_scan_rssi,wlan_scan_noise=$wlan_scan_noise,wlan_scan_ht_secondary_chan_offset=$wlan_scan_ht_secondary_chan_offset")
@@ -357,7 +357,7 @@ wlan_scan () {
 
 http_checks () {
   # Yes we know this curl speed_download is single stream and not multithreaded/pipelined, it's just indicative of over X
-  measurement="pansift_http"
+  measurement="pansift_osx_http"
   i=0
   IFS=","
   for host in $PANSIFT_HOSTS_CSV
@@ -392,7 +392,7 @@ while :; do
   case $1 in
     -m|--machine) 
       system_measure
-      measurement="pansift_machine"            
+      measurement="pansift_osx_machine"            
       tagset=$(echo -n "product_name=$product_name,model_name=$model_name,model_identifier=$model_identifier,serial_number=$serial_number")
       fieldset=$(echo -n "product_version=\"$product_version\",boot_romversion=\"$boot_romversion\",smc_version=\"$smc_version\",memory=\"$memory\"")
       results
@@ -401,7 +401,7 @@ while :; do
       internet_measure
       network_measure
       wlan_measure
-      measurement="pansift_network"
+      measurement="pansift_osx_network"
       tagset=$(echo -n "internet_connected=$internet_connected,internet_dualstack=$internet_dualstack,ipv4_only=$ipv4_only,ipv6_only=$ipv6_only,locally_connected=$locally_connected,wlan_connected=$wlan_connected,wlan_state=$wlan_state,wlan_op_mode=$wlan_op_mode,wlan_supported_phy_mode=$wlan_supported_phy_mode") 
       fieldset=$( echo -n "internet4_public_ip=\"$internet4_public_ip\",internet6_public_ip=\"$internet6_public_ip\",internet_asn=$internet_asn,dg4_ip=\"$dg4_ip\",dg6_ip=\"$dg6_ip\",dg4_hardware_type=\"$dg4_hardware_type\",dg6_hardware_type=\"$dg6_hardware_type\",dg4_interface=\"$dg4_interface\",dg6_interface=\"$dg6_interface\",dg4_interface_ether=\"$dg4_interface_ether\",dg6_interface_ether=\"$dg6_interface_ether\",dg4_response=$dg4_response,dg6_response=$dg6_response,dns4_primary=\"$dns4_primary\",dns6_primary=\"$dns6_primary\",dns4_query_response=$dns4_query_response,dns6_query_response=$dns6_query_response,wlan_rssi=$wlan_rssi,wlan_noise=$wlan_noise,wlan_snr=$wlan_snr,wlan_last_tx_rate=$wlan_last_tx_rate,wlan_max_rate=$wlan_max_rate,wlan_ssid=\"$wlan_ssid\",wlan_bssid=\"$wlan_bssid\",wlan_mcs=$wlan_mcs,wlan_number_spatial_streams=$wlan_number_spatial_streams,wlan_last_assoc_status=$wlan_last_assoc_status,wlan_channel=$wlan_channel,wlan_width=$wlan_width,wlan_current_phy_mode=\"$wlan_current_phy_mode\",wlan_supported_channels=\"$wlan_supported_channels\",wlan_80211_auth=\"$wlan_80211_auth\",wlan_link_auth=\"$wlan_link_auth\"")
       results
