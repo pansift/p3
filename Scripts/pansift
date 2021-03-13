@@ -42,6 +42,7 @@ touch "$annotations_file" # This is just to create for tailing if not already th
 
 # If we're restarting then something changed.
 pkill telegraf || true
+rm "$PANSIFT_SUPPORT"/telegraf.pid || true
 
 if test -f "$pansift_uuid_file"; then
   line=$(head -n 1 "$pansift_uuid_file")
