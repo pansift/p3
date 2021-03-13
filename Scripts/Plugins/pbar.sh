@@ -34,4 +34,4 @@ echo "-- Agent Config | bash='$PANSIFT_SCRIPTS/pansift_agent_config_update.sh' t
 echo "-- Scripts | bash='$PANSIFT_SCRIPTS/pansift_scripts_update.sh' terminal=false"
 echo "---"
 echo "Log In / Web App | bash='$PANSIFT_SCRIPTS/pansift_webapp.sh' terminal=false"
-echo "Open Log | bash='tail -f -n50 $PANSIFT_LOGS/telegraf.log'"
+echo "Open Log | bash='$PANSIFT_SCRIPTS/telegraf_log_show.sh' terminal=false"
