@@ -4,42 +4,35 @@
 #set -vx
 
 # Moving things to the right places :)
-
-defaults delete com.matryer.BitBar
+# Fresh start just in case! Will get updated...
+defaults delete com.matryer.BitBar # This can't coexist etc.
 defaults delete com.pansift.p3bar
-defaults delete /Library/Preferences/com.matryer.BitBar
+defaults delete /Library/Preferences/com.matryer.BitBar # Nor this...
 defaults delete /Library/Preferences/com.pansift.p3bar
 
+# Speed ingest but could be dangerous if you don't look
 source ./Preferences/pansift.conf
 
 # Configuration and preferences files
-#PANSIFT_PREFERENCES="$HOME"/Library/Preferences/Pansift
 mkdir -p "$PANSIFT_PREFERENCES"
-#export PANSIFT_PREFERENCES="$PANSIFT_PREFERENCES"
 
 # Scripts and additional executables
-#PANSIFT_SCRIPTS="$HOME"/Library/Application\ Scripts/Pansift
 mkdir -p "$PANSIFT_SCRIPTS"
 mkdir -p "$PANSIFT_SCRIPTS"/Plugins
-#export PANSIFT_SCRIPTS="$PANSIFT_SCRIPTS"
 
 # Logs, logs, logs
-#PANSIFT_LOGS="$HOME"/Library/Logs/Pansift
 mkdir -p "$PANSIFT_LOGS"
-#export PANSIFT_LOGS="$PANSIFT_LOGS"
 
 # PIDs and other flotsam
-#PANSIFT_SUPPORT="$HOME"/Library/Application\ Support/Pansift
 mkdir -p "$PANSIFT_SUPPORT"
-#export PANSIFT_SUPPORT="$PANSIFT_SUPPORT"
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
   echo "Not supported on Linux yet" 
 elif [[ "$OSTYPE" == "darwin"* ]]; then
   # Mac OSX
+	# Main scripts and settings need to get moved...
   # scripts to ~/Library/Pansift
   rsync -a ./Scripts/* "$PANSIFT_SCRIPTS"
-  #cp -Rf ./Scripts/Plugins/* "$PANSIFT_SCRIPTS"/Plugins
   # conf to ~/Library/Preferences/Pansift
   rsync -a ./Preferences/*.conf "$PANSIFT_PREFERENCES"
   rsync -a ./Preferences/*.plist "$PANSIFT_PREFERENCES"
