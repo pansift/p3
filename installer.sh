@@ -6,7 +6,9 @@
 # Moving things to the right places :)
 
 defaults delete com.matryer.BitBar
+defaults delete com.pansift.p3bar
 defaults delete /Library/Preferences/com.matryer.BitBar
+defaults delete /Library/Preferences/com.pansift.p3bar
 
 source ./Preferences/pansift.conf
 
