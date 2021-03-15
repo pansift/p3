@@ -59,4 +59,4 @@ fi
 #cp "$HOME"/Library/Preferences/Pansift/org.pansift.agent.plist ~/Library/LaunchAgents/org.pansift.agent.plist
 #launchctl unload "$HOME"/Library/LaunchAgents/org.pansift.agent.plist && launchctl load -w "$HOME"/Library/LaunchAgents/org.pansift.agent.plist
 
-cd "$PANSIFT_SCRIPTS" && ./pansift -f && open /Applications/Pansift.app
+cd "$PANSIFT_SCRIPTS" && ./pansift -t && open /Applications/Pansift.app
