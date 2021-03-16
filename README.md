@@ -7,7 +7,7 @@ Pansift is about helping others to stay sane and productive with optimally funct
 ## Install Instructions (Alpha)
 
 
-**Download this [Pansift DMG](https://github.com/pansift/p3/raw/main/Pansift.dmg), double click (open) it, and drag `Pansift.app` to the Applications folder and run (open) it**
+**Download [Pansift DMG](https://github.com/pansift/p3/raw/main/Pansift.dmg), open it, and drag `Pansift.app` to the Applications folder and run.**
 
 Currently the official web app (front-end) is not ready yet but you can get an account on the intermediate dashboard by contacting `support@pansift.com` with your `UUID` from the app. This is only intended for more technical people (who can also use, or would be wiliing to use the terminal for any debugging). This repository is also where the updates for scripts will come from so you can see all the most important internals. Feel free to suggest improvements or raise issues and PR (Pull Requests) to any and all jankiness!
 
