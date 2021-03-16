@@ -7,8 +7,6 @@ PANSIFT_UUID=""
 PANSIFT_INGEST=""
 PANSIFT_TOKEN=""
 MACHINE_UUID=""
-export PANSIFT_LIGHTHOUSE=https://lighthouse.pansift.com
-export PANSIFT_HOSTS_CSV="www.google.com,www.cisco.com,www.cloudflare.com,www.fastly.com"
 umask 077
 
 # Macro settings for paths etc.
