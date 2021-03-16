@@ -4,6 +4,8 @@
 #set -vx
 
 PANSIFT_UUID=""
+PANSIFT_INGEST=""
+PANSIFT_TOKEN=""
 MACHINE_UUID=""
 umask 077
 
@@ -29,9 +31,9 @@ echo "Pansift Application Support Path: \"$PANSIFT_SUPPORT\""
 # Next line will need changing once a full Pansift flip
 #defaults write /Library/Preferences/com.matryer.BitBar pluginsDirectory "$PANSIFT_SCRIPTS"/Plugins
 # Need to add a first run that adds the plist to the LaunchAgents !!! Although this happens on open...
-defaults write com.matryer.BitBar pluginsDirectory "$PANSIFT_SCRIPTS"/Plugins
-defaults write com.matryer.BitBar NSNavLastRootDirectory "$PANSIFT_SCRIPTS"/Plugins 
-defaults write com.matryer.BitBar userConfigDisabled -bool true
+defaults write com.pansift.p3bar pluginsDirectory "$PANSIFT_SCRIPTS"/Plugins
+defaults write com.pansift.p3bar NSNavLastRootDirectory "$PANSIFT_SCRIPTS"/Plugins 
+defaults write com.pansift.p3bar userConfigDisabled -bool true
 
 pansift_uuid_file="$PANSIFT_PREFERENCES"/pansift_uuid.conf
 pansift_ingest_file="$PANSIFT_PREFERENCES"/pansift_ingest.conf
@@ -40,19 +42,25 @@ machine_uuid_file="$PANSIFT_PREFERENCES"/machine_uuid.conf
 annotations_file="$PANSIFT_LOGS"/pansift_annotations.log
 touch "$annotations_file" # This is just to create for tailing if not already there.
 
-# If we're restarting then something changed.
-pkill telegraf || true
-rm "$PANSIFT_SUPPORT"/telegraf.pid || true
+# If we're restarting then clean up...
+telegraf_pid_file="$PANSIFT_SUPPORT"/telegraf.pid
+if test -f "$telegraf_pidi_file"; then
+	telegraf_pid_from_file=$(<"$telegraf_pid_file") 
+	rm "$PANSIFT_SUPPORT"/telegraf.pid || true
+	kill -15 "$telegraf_pid_from_file"
+else
+	pkill -9 telegraf || true
+fi
 
 if test -f "$pansift_uuid_file"; then
-  line=$(head -n 1 "$pansift_uuid_file")
-  pansift_uuid=$(echo -n "$line" | awk '{$1=$1;print}' | tr ',' '.' | tr -s ' ' | tr '[:upper:]' '[:lower:]' | tr -d '\r')
+	line=$(head -n 1 "$pansift_uuid_file")
+	pansift_uuid=$(echo -n "$line" | awk '{$1=$1;print}' | tr ',' '.' | tr -s ' ' | tr '[:upper:]' '[:lower:]' | tr -d '\r')
 else
-  pansift_uuid=$(uuidgen | tr '[:upper:]' '[:lower:]')
-  echo -n "$pansift_uuid" > $pansift_uuid_file
-  # Call webhook to create DB with UUID
-  # If we're gonna create a new UUID here we need to pass it to the DB (also from reset or update UUID)
-  # Call script to set up DB db-setup.sh
+	pansift_uuid=$(uuidgen | tr '[:upper:]' '[:lower:]')
+	echo -n "$pansift_uuid" > $pansift_uuid_file
+	# Call webhook to create DB with UUID
+	# If we're gonna create a new UUID here we need to pass it to the DB (also from reset or update UUID)
+	# Call script to set up DB db-setup.sh
 fi
 
 # We need the ENV variable for the subshell...
@@ -61,56 +69,62 @@ export PANSIFT_UUID=$pansift_uuid
 # This assumes connectivity on first run to at lesat get the correct DB host (but default fall back too) 
 # Would be good to have a forced kill switch to localhost in the future somehow other than connected restarts
 # See ingest router webhook service.
+url_regex='(https?|ftp|file)://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]'
+
 if test -f "$pansift_ingest_file"; then
-  line=$(head -n 1 "$pansift_ingest_file")
-  regex='(https?|ftp|file)://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]'
-  if [[ $line =~ $regex ]]; then
-    pansift_ingest=$(echo -n "$line" | xargs | tr ',' '.' | tr -s ' ' | tr '[:upper:]' '[:lower:]' | tr -d '\r')
-  else
-    echo -n "Problem with ingest_file contents at: ${pansift_ingest_file}"
-  fi
+	line=$(head -n 1 "$pansift_ingest_file")
+	if [[ $line =~ $url_regex ]]; then
+		pansift_ingest=$(echo -n "$line" | xargs | tr ',' '.' | tr -s ' ' | tr '[:upper:]' '[:lower:]' | tr -d '\r')
+	else
+		echo -n "Problem with ingest_file contents at: ${pansift_ingest_file}"
+	fi
 else
-  setup_outcome=$("$PANSIFT_SCRIPTS"/ztp.sh "$PANSIFT_UUID")
-  token=$(echo -n "$setup_outcome" | cut -d',' -f1)
-  if [[ $token =~ ^[-_A-Z0-9a-z]{86}==$ ]]; then
-    echo -n "$token" > $pansift_token_file
-  fi
-  pansift_ingest=$(echo -n "$setup_outcome" | cut -d',' -f2 | tr '[:upper:]' '[:lower:]')
-  echo -n "$pansift_ingest" > $pansift_ingest_file
+	#setup_outcome="" #temp while debugging XCode
+	setup_outcome=$("$PANSIFT_SCRIPTS"/ztp.sh "$PANSIFT_UUID")
+	token=$(echo -n "$setup_outcome" | cut -d',' -f1)
+	if [[ $token =~ ^[-_A-Z0-9a-z]{86}==$ ]]; then
+		echo -n "$token" > $pansift_token_file
+	fi
+	pansift_ingest=$(echo -n "$setup_outcome" | cut -d',' -f2 | tr '[:upper:]' '[:lower:]')
+	if [[ $pansift_ingest =~ $url_regex ]]; then
+		echo -n "$pansift_ingest" > $pansift_ingest_file
+	else
+		echo -n "Bad Ingestion URL Location" > $pansift_ingest_file
+	fi
 fi
 export PANSIFT_INGEST=$pansift_ingest
 
 
 if test -f "$machine_uuid_file"; then
-  line=$(head -n 1 "$machine_uuid_file")
-  machine_uuid=$(echo -n "$line" | awk '{$1=$1;print}' | tr ',' '.' | tr -s ' ' | tr '[:upper:]' '[:lower:]' | tr -d '\r')
+	line=$(head -n 1 "$machine_uuid_file")
+	machine_uuid=$(echo -n "$line" | awk '{$1=$1;print}' | tr ',' '.' | tr -s ' ' | tr '[:upper:]' '[:lower:]' | tr -d '\r')
 else
-  if [[ "$OSTYPE" == linux-gnu* ]]; then
-    # ... coerce hostid in to uuid?
-    true
-  elif [[ "$OSTYPE" == darwin* ]]; then
-    # Mac OSX
-    machine_uuid=$(ioreg -d2 -c IOPlatformExpertDevice | awk -F\" '/IOPlatformUUID/{print $(NF-1)}' | tr '[:upper:]' '[:lower:]')
-  elif [[ "$OSTYPE" == "cygwin" ]]; then
-    # POSIX compatibility layer and Linux environment emulation for Windows
-    true
-  elif [[ "$OSTYPE" == "msys" ]]; then
-    # Lightweight shell and GNU utilities compiled for Windows (part of MinGW)
-    true
-  elif [[ "$OSTYPE" == "win32" ]]; then
-    # I'm not sure this can happen.
-    true
-  elif [[ "$OSTYPE" == "freebsd"* ]]; then
-    true
-    # ...
-  else
-    machine_uuid=$(uuidgen | tr '[:upper:]' '[:lower:]')
-    # Or perhaps another approach?
-    # od -x /dev/urandom | head -1 | awk '{OFS="-"; print $2$3,$4,$5,$6,$7$8$9}'
-    # Unknown so create it.
-  fi
-  # MAC Machine UUID is different but will be our unique  primary key we can read or generate on other platforms
-  echo -n "$machine_uuid" > "$PANSIFT_PREFERENCES"/machine_uuid.conf
+	if [[ "$OSTYPE" == linux-gnu* ]]; then
+		# ... coerce hostid in to uuid?
+		true
+	elif [[ "$OSTYPE" == darwin* ]]; then
+		# Mac OSX
+		machine_uuid=$(ioreg -d2 -c IOPlatformExpertDevice | awk -F\" '/IOPlatformUUID/{print $(NF-1)}' | tr '[:upper:]' '[:lower:]')
+	elif [[ "$OSTYPE" == "cygwin" ]]; then
+		# POSIX compatibility layer and Linux environment emulation for Windows
+		true
+	elif [[ "$OSTYPE" == "msys" ]]; then
+		# Lightweight shell and GNU utilities compiled for Windows (part of MinGW)
+		true
+	elif [[ "$OSTYPE" == "win32" ]]; then
+		# I'm not sure this can happen.
+		true
+	elif [[ "$OSTYPE" == "freebsd"* ]]; then
+		true
+		# ...
+	else
+		machine_uuid=$(uuidgen | tr '[:upper:]' '[:lower:]')
+		# Or perhaps another approach?
+		# od -x /dev/urandom | head -1 | awk '{OFS="-"; print $2$3,$4,$5,$6,$7$8$9}'
+		# Unknown so create it.
+	fi
+	# MAC Machine UUID is different but will be our unique  primary key we can read or generate on other platforms
+	echo -n "$machine_uuid" > "$PANSIFT_PREFERENCES"/machine_uuid.conf
 fi
 
 
@@ -119,10 +133,10 @@ export MACHINE_UUID=$machine_uuid
 #echo "Exported machine_uuid=$machine_uuid"
 pansift_token_file="$PANSIFT_PREFERENCES"/pansift_token.conf
 if test -f "$pansift_token_file"; then
-  line=$(head -n 1 "$pansift_token_file")
-  # Token is case sensitive!!!
-  pansift_clean_token=$(echo -n "$line" | awk '{$1=$1;print}' | tr ',' '.' | tr -s ' ' | tr -d '\r' | sed 's! !\\ !g')
-  export PANSIFT_TOKEN=$pansift_clean_token
+	line=$(head -n 1 "$pansift_token_file")
+	# Token is case sensitive!!!
+	pansift_clean_token=$(echo -n "$line" | awk '{$1=$1;print}' | tr ',' '.' | tr -s ' ' | tr -d '\r' | sed 's! !\\ !g')
+	export PANSIFT_TOKEN=$pansift_clean_token
 fi
 
 echo "Pansift UUID: $PANSIFT_UUID"
@@ -131,9 +145,9 @@ echo "Ingest URL: $PANSIFT_INGEST"
 echo "Write Token: $PANSIFT_TOKEN"
 
 if [[ "$1" == "-t" ]]; then 
-  true
+	true
 else
-  sleep 10 # Give Telegraf a little more time to flush buffers and shut down
+	sleep 3 # Give Telegraf a little more time to flush buffers and shut down
 fi
 
 touch "$PANSIFT_SUPPORT"/telegraf.pid "$PANSIFT_LOGS"/telegraf.log
