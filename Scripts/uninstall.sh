@@ -34,7 +34,6 @@ echo
 
 pkill -9 -f Pansift.app
 #launchctl unload ~/Library/LaunchAgents/org.pansift.agent.plist
-defaults delete com.matryer.BitBar
 defaults delete com.pansift.p3bar
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
