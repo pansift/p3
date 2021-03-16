@@ -23,8 +23,6 @@ if test -f "$pansift_token_file"; then
 fi
 
 echo "=========================================================="
-echo " This uninstaller only works if you've previously used the"
-echo " installer.sh due to the directory locations." 
 echo " Strongly recommend making a note of your UUID and token."
 echo " Pansift UUID: ${uuid}" 
 echo " Pansift Token: ${token}" 
@@ -33,7 +31,6 @@ read -n 1 -s -r -p "Press any key to continue or Ctrl+C to stop."
 echo
 
 pkill -9 -f Pansift.app
-#launchctl unload ~/Library/LaunchAgents/org.pansift.agent.plist
 defaults delete com.pansift.p3bar
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
@@ -95,8 +92,8 @@ else
 fi
 
 pkill -9 telegraf
-#launchctl unload -w ~/Library/LaunchAgents/org.pansift.agent.plist
-#rm -f "$HOME"/Library/LaunchAgents/org.pansift.agent.plist
+#launchctl unload -w ~/Library/LaunchAgents/com.pansift.p3bar
+# Need to find where the launchagent went in Big Sur?
 
 echo "=========================================================="
 echo "Now please empty your Trash at your discretion"
