@@ -8,18 +8,31 @@
 
 source "$HOME"/Library/Preferences/Pansift/pansift.conf
 
-host="https://raw.githubusercontent.com/pansift/p3/main/Preferences/telegraf-osx.conf"
-curl_response=$(curl -s -o /dev/null -w "%{http_code}" -L "$host" --stderr -)
+bad_answers=()
+preferences_location="https://raw.githubusercontent.com/pansift/p3/main/Scripts"
+file_list=("pansift.com" "telegraf-osx.conf")
+# Note we don't want to update ourselves in case we break but what about script additions? Shame we can't use rsync?
+mkdir -p "$PANSIFT_PREFERENCES"
 
-if [[ $curl_response == 200 ]]; then
+for file in ${file_list[@]};
+do
+  curl_response=$(curl -s -o /dev/null -w "%{http_code}" -L "$preferences_location"/"$file" --stderr -)
+  echo "$curl_response for $file"
+  sleep 1
+  if [[ $curl_response == 200 ]]; then
+    curl -s "$preferences_location"/"$file" > "$PANSIFT_PREFERENCES"/"$file"
+    # Ensure execution permissions
+    chmod +x "$PANSIFT_PREFERENCES"/"$file"
+  else
+    bad_answers+=("Status: $curl_response for $file\n" )
+  fi
+done
 
-  curl -s https://raw.githubusercontent.com/pansift/p3/main/Preferences/telegraf-osx.conf > "$PANSIFT_PREFERENCES"/telegraf-osx.conf
-
-  applescriptCode="display dialog \"Updated agent config with HTTP status code $curl_response.\" buttons {\"OK\"} default button \"OK\""
+if [[ ${#bad_answers[@]} == 0 ]];
+then
+  applescriptCode="display dialog \"Pansift updated all scripts successfully.\" buttons {\"OK\"} default button \"OK\""
   show=$(osascript -e "$applescriptCode");
 else
-  applescriptCode="display dialog \"Can not reach repository with HTTP error code $curl_response\" buttons {\"OK\"} default button \"OK\""
+  applescriptCode="display dialog \"Pansift failed some updates with:\n$bad_answers \" buttons {\"OK\"} default button \"OK\""
   show=$(osascript -e "$applescriptCode");
-
 fi
-
