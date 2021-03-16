@@ -7,7 +7,7 @@ source "$HOME"/Library/Preferences/Pansift/pansift.conf
   if [[ -f "$tpid" ]] && [[ $(pgrep "telegraf") ]]; then
     true 
   else
-    "$PANSIFT_SCRIPTS"/pansift  >/dev/null 2>&1
+    "$PANSIFT_SCRIPTS"/pansift -t >/dev/null 2>&1
   fi
 
 echo "PS"

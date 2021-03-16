@@ -8,26 +8,30 @@
 
 source "$HOME"/Library/Preferences/Pansift/pansift.conf
 
-host="https://raw.githubusercontent.com/pansift/p3/main/README.md"
-curl_response=$(curl -s -o /dev/null -w "%{http_code}" -L "$host" --stderr -)
+bad_answers=()
+scripts_location="https://raw.githubusercontent.com/pansift/p3/main/Scripts"
+file_list=("ztp.sh" "pansift_agent_config_update.sh" "pansift_webapp.sh" "pansift_token_show.sh" "pansift_uuid_show.sh" "pansift_token_update.sh" "pansift_uuid_update.sh" "pansift_annotate_update.sh" "osx_default_script.sh" "uninstall.sh" "telegraf_log_show.sh")
+# Note we don't want to update ourselves in case we break but what about script additions? Shame we can't use rsync?
 
-if [[ $curl_response == 200 ]]; then
+for file in ${file_list[@]};
+do
+	curl_response=$(curl -s -o /dev/null -w "%{http_code}" -L "$scripts_location"/"$file" --stderr -)
+	echo "$curl_response for $file"
+	sleep 1
+	if [[ $curl_response == 200 ]]; then
+		curl -s "$scripts_location"/"$file" > "$PANSIFT_SCRIPTS"/"$file"
+		# Ensure execution permissions
+    chmod +x "$PANSIFT_SCRIPTS"/"$file"
+	else
+		bad_answers+=("Status: $curl_response for $file\n" )
+	fi
+done
 
-  curl -s https://raw.githubusercontent.com/pansift/p3/main/Scripts/ztp.sh > "$PANSIFT_SCRIPTS"/ztp.sh
-  curl -s https://raw.githubusercontent.com/pansift/p3/main/Scripts/pansift_webapp.sh > "$PANSIFT_SCRIPTS"/pansift_webapp.sh
-  curl -s https://raw.githubusercontent.com/pansift/p3/main/Scripts/pansift_token_show.sh > "$PANSIFT_SCRIPTS"/pansift_token_show.sh
-  curl -s https://raw.githubusercontent.com/pansift/p3/main/Scripts/pansift_token_show.sh > "$PANSIFT_SCRIPTS"/pansift_token_show.sh
-  curl -s https://raw.githubusercontent.com/pansift/p3/main/Scripts/pansift_uuid_show.sh > "$PANSIFT_SCRIPTS"/pansift_uuid_show.sh
-  curl -s https://raw.githubusercontent.com/pansift/p3/main/Scripts/pansift_uuid_update.sh > "$PANSIFT_SCRIPTS"/pansift_uuid_update.sh
-  curl -s https://raw.githubusercontent.com/pansift/p3/main/Scripts/pansift_token_update.sh > "$PANSIFT_SCRIPTS"/pansift_token_update.sh
-  curl -s https://raw.githubusercontent.com/pansift/p3/main/Scripts/pansift_annotate_update.sh > "$PANSIFT_SCRIPTS"/pansift_annotate_update.sh
-  curl -s https://raw.githubusercontent.com/pansift/p3/main/Scripts/osx_network_default_script.sh > "$PANSIFT_SCRIPTS"/osx_network_default_script.sh
-
-
-  applescriptCode="display dialog \"Updated all scripts with initial HTTP status code $curl_response.\" buttons {\"OK\"} default button \"OK\""
-  show=$(osascript -e "$applescriptCode");
+if [[ ${#bad_answers[@]} == 0 ]];
+then
+	applescriptCode="display dialog \"Updated all scripts successfully.\" buttons {\"OK\"} default button \"OK\""
+	show=$(osascript -e "$applescriptCode");
 else 
-  applescriptCode="display dialog \"Can not reach repository with HTTP error code $curl_response\" buttons {\"OK\"} default button \"OK\""
-  show=$(osascript -e "$applescriptCode");
-
+	applescriptCode="display dialog \"Can not reach repository or non-200 status codes for\n$bad_answers \" buttons {\"OK\"} default button \"OK\""
+	show=$(osascript -e "$applescriptCode");
 fi
