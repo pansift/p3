@@ -10,7 +10,7 @@ source "$HOME"/Library/Preferences/Pansift/pansift.conf
 
 bad_answers=()
 preferences_location="https://raw.githubusercontent.com/pansift/p3/main/Preferences"
-file_list=("pansift.com" "telegraf-osx.conf")
+file_list=("pansift.conf" "telegraf-osx.conf")
 # Note we don't want to update ourselves in case we break but what about script additions? Shame we can't use rsync?
 mkdir -p "$PANSIFT_PREFERENCES"
 
