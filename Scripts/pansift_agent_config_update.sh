@@ -8,7 +8,7 @@
 
 source "$HOME"/Library/Preferences/Pansift/pansift.conf
 
-host="https://raw.githubusercontent.com/pansift/p3/main/README.md"
+host="https://raw.githubusercontent.com/pansift/p3/main/Preferences/telegraf-osx.conf"
 curl_response=$(curl -s -o /dev/null -w "%{http_code}" -L "$host" --stderr -)
 
 if [[ $curl_response == 200 ]]; then
