@@ -6,9 +6,11 @@ Pansift is about helping others to stay sane and productive with optimally funct
  
 ## Install Instructions (Alpha)
 
-### *Note:* Currently the official web front-end is not ready but you can get an account on the intermediate dashboard by contacting `support@pansift.com` with your `UUID` from the app. This is only intended for more technical people (who can also use the terminal for any debugging) i.e. to install on their own or other's machines.
+**Note:** Currently the official web front-end is not ready but you can get an account on the intermediate dashboard by contacting `support@pansift.com` with your `UUID` from the app. This is only intended for more technical people (who can also use the terminal for any debugging) i.e. to install on their own or other's machines.
 
-**Download, open, and drag to the Applications folder**  [Pansift DMG](https://github.com/pansift/p3/blob/main/Pansift.dmg?raw=true)
+```
+**Download this [Pansift DMG](https://github.com/pansift/p3/raw/main/Pansift.dmg), double click (open) it, and drag `Pansift.app` to the Applications folder and run (open) it**
+```
 
 *Note:* This repository is where the updates for scripts come from so you can see all the important internals. Feel free to suggest improvements or raise issues and PRs to any and all jankiness!
 
