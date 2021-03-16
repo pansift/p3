@@ -29,9 +29,9 @@ done
 
 if [[ ${#bad_answers[@]} == 0 ]];
 then
-	applescriptCode="display dialog \"Updated all scripts successfully.\" buttons {\"OK\"} default button \"OK\""
+	applescriptCode="display dialog \"Pansift updated all scripts successfully.\" buttons {\"OK\"} default button \"OK\""
 	show=$(osascript -e "$applescriptCode");
 else 
-	applescriptCode="display dialog \"Can not reach repository or non-200 status codes for\n$bad_answers \" buttons {\"OK\"} default button \"OK\""
+	applescriptCode="display dialog \"Pansift failed some updates with:\n$bad_answers \" buttons {\"OK\"} default button \"OK\""
 	show=$(osascript -e "$applescriptCode");
 fi
