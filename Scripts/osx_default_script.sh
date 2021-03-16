@@ -275,7 +275,7 @@ wlan_measure () {
 			wlan_width=$("$plistbuddy" "${airport_more_data}" -c "print BANDWIDTH" | remove_chars)i
 		else 
 			wlan_number_spatial_streams=0i
-			width_increment=$(echo -n "$airport_output"| egrep -i '[[:space:]]channel' |  cut -d':' -f2 | awk '{$1=$1;print}' | cut -d',' -f2 | remove_chars)i
+			width_increment=$(echo -n "$airport_output"| egrep -i '[[:space:]]channel' |  cut -d':' -f2 | awk '{$1=$1;print}' | cut -d',' -f2 | remove_chars)
 			if [[ "$width_increment" == 1 ]]; then
 				wlan_width=40i
 			elif [[ "$width_increment" == 2 ]]; then
