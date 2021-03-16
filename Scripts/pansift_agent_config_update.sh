@@ -13,7 +13,7 @@ curl_response=$(curl -s -o /dev/null -w "%{http_code}" -L "$host" --stderr -)
 
 if [[ $curl_response == 200 ]]; then
 
-  curl -s https://raw.githubusercontent.com/pansift/p3/main/preferences/telegraf-osx.conf > "$PANSIFT_PREFERENCES"/telegraf-osx.conf
+  curl -s https://raw.githubusercontent.com/pansift/p3/main/Preferences/telegraf-osx.conf > "$PANSIFT_PREFERENCES"/telegraf-osx.conf
 
   applescriptCode="display dialog \"Updated agent config with HTTP status code $curl_response.\" buttons {\"OK\"} default button \"OK\""
   show=$(osascript -e "$applescriptCode");
