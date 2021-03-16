@@ -1,4 +1,4 @@
-# Pansift Intro 
+# Intro 
 
 Pansift is a Mac OSX laptop network and system monitoring tool. It is for those who support others **remotely** and enables them to rapidly find and fix issues (especially WiFi related). Whether you are a family member doing Zoom calls, a developer, or gamer who can't afford to be disconnected, interrupted, or slowed down, Pansift makes the invisible visible for a quick fix.
 
