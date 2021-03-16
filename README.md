@@ -6,15 +6,11 @@ Pansift is about helping others to stay sane and productive with optimally funct
  
 ## Install Instructions (Alpha)
 
-**Note:** Currently the official web front-end is not ready but you can get an account on the intermediate dashboard by contacting `support@pansift.com` with your `UUID` from the app. This is only intended for more technical people (who can also use the terminal for any debugging) i.e. to install on their own or other's machines.
 
-```
 **Download this [Pansift DMG](https://github.com/pansift/p3/raw/main/Pansift.dmg), double click (open) it, and drag `Pansift.app` to the Applications folder and run (open) it**
-```
 
-*Note:* This repository is where the updates for scripts come from so you can see all the important internals. Feel free to suggest improvements or raise issues and PRs to any and all jankiness!
+Currently the official web app (front-end) is not ready yet but you can get an account on the intermediate dashboard by contacting `support@pansift.com` with your `UUID` from the app. This is only intended for more technical people (who can also use, or would be wiliing to use the terminal for any debugging). This repository is also where the updates for scripts will come from so you can see all the most important internals. Feel free to suggest improvements or raise issues and PR (Pull Requests) to any and all jankiness!
 
-**P.S.** If you'd like access to the intermediate dashboards below (i.e. the front end final product is still being built) then email `support@pansift.com` with your Pansift `UUID` for access to something like the below. Please understand this is still a _Work In Progress_, and it's not yet production ready (there is much change happening, so your data might not be there tomorrow)! Only embark if you're a willing alpha tester and are confident enough to check the uninstall scripts to spot any rrors :)
+**Important Note** Please understand this is still heavily a _Work In Progress_ and is not yet production ready. It runs with the logged in user permissions and you can inspect the scripts, however your server side data / bucket might not be there tomorrow! Only embark on using if you're a willing alpha tester and are confident enough to check the uninstall scripts to spot any errors :)
 
 ![Intermediate Dashboard](https://github.com/pansift/p3/blob/main/Images/publicity_cap_v1.png?raw=true)
-
