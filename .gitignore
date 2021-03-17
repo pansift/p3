@@ -6,6 +6,7 @@ pansift_uuid.conf
 pansift_ingest.conf
 pansift_token.conf
 airport.plist
+**/localsync.sh
 
 # Rails etc.
 

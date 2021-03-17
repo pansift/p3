@@ -9,7 +9,8 @@
 #set -e
 #set -vx
 
-# Note: We are passing in the app bundle path via $1
+# Note: We are passing in the app bundle path via $1 so it works
+# irrespective of the drag/install location on dev or prod
 
 # Get Basic script settings
 source "$1"/Contents/Resources/Preferences/pansift.conf
