@@ -4,6 +4,7 @@
 
 if [[ $1 =~ ^\{?[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{12}\}?$ ]]; then
   url="https://webrouter.pansift.com/hooks/ztp"
+  #url="https://localapp.pansift.com/ztp"
   uuid=$(echo -n "$1" | tr '[:upper:]' '[:lower:]')
   user_agent="pansift-"$uuid
   curl_response=$(curl -A "$user_agent" -k -s --data "uuid=$uuid" $url)
