@@ -80,7 +80,7 @@ if test -f "$pansift_ingest_file"; then
 	fi
 else
 	#setup_outcome="" #temp while debugging XCode
-	setup_outcome=$("$PANSIFT_SCRIPTS"/ztp.sh "$PANSIFT_UUID")
+	setup_outcome=$("$PANSIFT_SCRIPTS"/ztp.sh -p "$PANSIFT_UUID")
 	token=$(echo -n "$setup_outcome" | cut -d',' -f1)
 	if [[ $token =~ ^[-_A-Z0-9a-z]{86}==$ ]]; then
 		echo -n "$token" > $pansift_token_file
