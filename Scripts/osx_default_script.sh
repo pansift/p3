@@ -136,7 +136,7 @@ network_measure () {
 	dg6_interface=$(echo -n "$netstat6" | grep -qi default || { echo -n 'none'; exit 0; }; echo -n "$netstat6" | grep -i default | awk '{print $2}'| remove_chars)
 	dg6_interface_device_only=$(echo -n "$dg6_interface" | cut -d'%' -f2)
 	if [ $dg6_interface == "none" ]; then
-		dg6_interface_device_only = "none"
+  	dg6_interface_device_only = "none"
 	fi
 	# Grabbing network interfaces from global 
 	hardware_interfaces=$(echo -n "$network_interfaces" | awk -F ":" '/Hardware Port:|Device:/{print $2}' | paste -d',' - - )

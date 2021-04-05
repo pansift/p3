@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# Note: Should we really expose stagingapp.pansift.com ? It's on the Internets anyway?
 # Require an target environment switch and UUID argument or just exit.
 
 usage() { echo -e "Usage: [-t] [-s] [-p] <uuid>\nWhere '-t' is test, '-s' staging, and '-p' for production" 1>&2; exit 0; }
@@ -16,7 +17,8 @@ while getopts ":t:s:p" o; do
 			;;
 		p)
 			uuid=${OPTARG}
-			url="https://webrouter.pansift.com/hooks/ztp"
+			#url="https://webrouter.pansift.com/hooks/ztp"
+			url="https://app.pansift.com/ztp"
 			;;
 		*)
 			#exit 1;

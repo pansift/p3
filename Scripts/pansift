@@ -89,7 +89,8 @@ else
 	if [[ $pansift_ingest =~ $url_regex ]]; then
 		echo -n "$pansift_ingest" > $pansift_ingest_file
 	else
-		echo -n "Bad Ingestion URL Location" > $pansift_ingest_file
+		# Default ingest location in case of problems
+		echo -n "https://default-ingest.pansift.com" > $pansift_ingest_file
 	fi
 fi
 export PANSIFT_INGEST=$pansift_ingest
