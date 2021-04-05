@@ -5,7 +5,7 @@
 
 usage() { echo -e "Usage: [-t] [-s] [-p] <uuid>\nWhere '-t' is test, '-s' staging, and '-p' for production" 1>&2; exit 0; }
 
-while getopts ":t:s:p" o; do
+while getopts "t:s:p:" o; do
 	case "${o}" in
 		t)
 			uuid=${OPTARG}
