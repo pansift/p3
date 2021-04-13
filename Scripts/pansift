@@ -58,13 +58,27 @@ if test -f "$pansift_uuid_file"; then
 else
 	pansift_uuid=$(uuidgen | tr '[:upper:]' '[:lower:]')
 	echo -n "$pansift_uuid" > $pansift_uuid_file
-	# Call webhook to create DB with UUID
-	# If we're gonna create a new UUID here we need to pass it to the DB (also from reset or update UUID)
-	# Call script to set up DB db-setup.sh
 fi
 
 # We need the ENV variable for the subshell...
 export PANSIFT_UUID=$pansift_uuid
+
+# ZTP Function
+function ztp () {
+  setup_outcome=$("$PANSIFT_SCRIPTS"/ztp.sh -p "$PANSIFT_UUID")
+  token=$(echo -n "$setup_outcome" | cut -d',' -f1)
+  if [[ $token =~ ^[-_A-Z0-9a-z]{86}==$ ]]; then
+    echo -n "$token" > $pansift_token_file
+  fi
+  pansift_ingest=$(echo -n "$setup_outcome" | cut -d',' -f2 | tr '[:upper:]' '[:lower:]')
+  if [[ $pansift_ingest =~ $url_regex ]]; then
+    echo -n "$pansift_ingest" > $pansift_ingest_file
+  else
+    # Default ingest location in case of problems
+    echo -n "https://default-ingest.pansift.com" > $pansift_ingest_file
+  fi	
+}
+
 
 # This assumes connectivity on first run to at lesat get the correct DB host (but default fall back too) 
 # Would be good to have a forced kill switch to localhost in the future somehow other than connected restarts
@@ -79,19 +93,7 @@ if test -f "$pansift_ingest_file"; then
 		echo -n "Problem with ingest_file contents at: ${pansift_ingest_file}"
 	fi
 else
-	#setup_outcome="" #temp while debugging XCode
-	setup_outcome=$("$PANSIFT_SCRIPTS"/ztp.sh -p "$PANSIFT_UUID")
-	token=$(echo -n "$setup_outcome" | cut -d',' -f1)
-	if [[ $token =~ ^[-_A-Z0-9a-z]{86}==$ ]]; then
-		echo -n "$token" > $pansift_token_file
-	fi
-	pansift_ingest=$(echo -n "$setup_outcome" | cut -d',' -f2 | tr '[:upper:]' '[:lower:]')
-	if [[ $pansift_ingest =~ $url_regex ]]; then
-		echo -n "$pansift_ingest" > $pansift_ingest_file
-	else
-		# Default ingest location in case of problems
-		echo -n "https://default-ingest.pansift.com" > $pansift_ingest_file
-	fi
+	ztp
 fi
 export PANSIFT_INGEST=$pansift_ingest
 
@@ -127,18 +129,14 @@ else
 	# MAC Machine UUID is different but will be our unique  primary key we can read or generate on other platforms
 	echo -n "$machine_uuid" > "$PANSIFT_PREFERENCES"/machine_uuid.conf
 fi
-
-
-
 export MACHINE_UUID=$machine_uuid
-#echo "Exported machine_uuid=$machine_uuid"
+
 pansift_token_file="$PANSIFT_PREFERENCES"/pansift_token.conf
 if test -f "$pansift_token_file"; then
-	line=$(head -n 1 "$pansift_token_file")
 	# Token is case sensitive!!!
-	pansift_clean_token=$(echo -n "$line" | awk '{$1=$1;print}' | tr ',' '.' | tr -s ' ' | tr -d '\r' | sed 's! !\\ !g')
-	export PANSIFT_TOKEN=$pansift_clean_token
+	pansift_clean_token=$(head -n 1 "$pansift_token_file" | awk '{$1=$1;print}' | tr ',' '.' | tr -s ' ' | tr -d '\r' | sed 's! !\\ !g')
 fi
+export PANSIFT_TOKEN=$pansift_clean_token
 
 echo "Pansift UUID: $PANSIFT_UUID"
 echo "Machine UUID: $MACHINE_UUID"
