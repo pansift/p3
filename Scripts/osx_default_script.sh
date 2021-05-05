@@ -252,6 +252,10 @@ wlan_measure () {
 			wlan_state="running" # This is increasing the cardinality needlessly, can revert if queries actually need scanning time
 		fi
 		wlan_op_mode=$(echo -n "$airport_output"| egrep -i '[[:space:]]op mode' | cut -d':' -f2- | remove_chars)
+		# In an enviornment with the Airport on and no known or previously connected networks this needs to be set
+		if [ ${#wlan_op_mode} == 0 ]; then
+			wlan_op_mode="none"
+		fi
 		wlan_rssi=$(echo -n "$airport_output" | egrep -i '[[:space:]]agrCtlRSSI' | cut -d':' -f2- | remove_chars)
 		wlan_noise=$(echo -n "$airport_output" | egrep -i '[[:space:]]agrCtlNoise' | cut -d':' -f2- | remove_chars)
 		wlan_snr=$(var=$(( $(( $wlan_noise * -1)) - $(( $wlan_rssi * -1)) )); echo -n $var)i
@@ -277,8 +281,13 @@ wlan_measure () {
 		pid=$!
 		wait $pid
 		if [ $osx_mainline == 11 ]; then
+			if [ $wlan_op_mode != "none" ]; then
 			wlan_number_spatial_streams=$("$plistbuddy" "${airport_more_data}" -c "print NSS" | remove_chars)i
 			wlan_width=$("$plistbuddy" "${airport_more_data}" -c "print BANDWIDTH" | remove_chars)i
+			else
+			wlan_number_spatial_streams=0i
+			wlan_width=0i
+			fi
 		else 
 			wlan_number_spatial_streams=0i
 			width_increment=$(echo -n "$airport_output"| egrep -i '[[:space:]]channel' |  cut -d':' -f2 | awk '{$1=$1;print}' | cut -d',' -f2 | remove_chars)
