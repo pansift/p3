@@ -75,7 +75,8 @@ function ztp () {
     echo -n "$pansift_ingest" > $pansift_ingest_file
   else
     # Default ingest location in case of problems
-    echo -n "https://default-ingest.pansift.com" > $pansift_ingest_file
+		# Note: This doesn't address when ibucket or token creation fails?
+    echo -n "https://problem.pansift.com" > $pansift_ingest_file
   fi	
 }
 
