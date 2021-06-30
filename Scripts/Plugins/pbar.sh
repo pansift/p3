@@ -1,22 +1,56 @@
 #!/usr/bin/env bash
 
 source "$HOME"/Library/Preferences/Pansift/pansift.conf
+pansift_ingest_file="$PANSIFT_PREFERENCES"/pansift_ingest.conf
+pansift_uuid_file="$PANSIFT_PREFERENCES"/pansift_uuid.conf
+url_regex='(https?|ftp|file)://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]'
 
 # Don't kill anything, just check if Telegraf is already running as main script will restart anyway
-  tpid="$PANSIFT_SUPPORT"/telegraf.pid
-  if [[ -f "$tpid" ]] && [[ $(pgrep "telegraf") ]]; then
-    true 
+tpid="$PANSIFT_SUPPORT"/telegraf.pid
+if [[ -f "$tpid" ]] && [[ $(pgrep "telegraf") ]]; then
+	true 
+else
+	"$PANSIFT_SCRIPTS"/pansift -t >/dev/null 2>&1
+fi
+
+curl_user_agent() {
+if test -f "$pansift_uuid_file"; then
+  line=$(head -n 1 "$pansift_uuid_file")
+  pansift_uuid=$(echo -n "$line" | awk '{$1=$1;print}' | tr ',' '.' | tr -s ' ' | tr '[:upper:]' '[:lower:]' | tr -d '\r')
+	curl_user_agent="pansift_"$pansift_uuid
+else
+  curl_user_agent="pansift_no_agent_or_uuid_available"
+fi
+}
+curl_user_agent # Set the curl agent
+
+db_check() {
+  if test -f "$pansift_ingest_file"; then
+    line=$(head -n 1 "$pansift_ingest_file")
+    if [[ $line =~ $url_regex ]]; then
+      pansift_ingest=$(echo -n "$line" | xargs | tr ',' '.' | tr -s ' ' | tr '[:upper:]' '[:lower:]' | tr -d '\r')
+      db_code=$(curl -A "$curl_user_agent" --no-keepalive -k -s -o /dev/null -w "%{http_code}" "$pansift_ingest/health" --stderr -)
+      if [[ $db_code == "200" ]]; then
+        echo "DB OK | color=green"
+      else
+        echo "DB Issue Check Log | color=red"
+      fi
+    else
+      echo "DB Issue Check Log | color=red"
+    fi
   else
-    "$PANSIFT_SCRIPTS"/pansift -t >/dev/null 2>&1
+    echo "DB Issue Check Log | color=red"
   fi
+}
 
 echo "PS"
 echo "---"
 echo "Add an Issue / Note | bash='$PANSIFT_SCRIPTS/pansift_annotate_update.sh' terminal=false"
 echo "---"
-echo "Internet Connectivity"
+echo "Connectivity"
 ping -o -c2 -i1 -t5 $PANSIFT_ICMP4_TARGET > /dev/null 2>&1 && echo "IPv4 OK | color=green" || echo "No IPv4 Reachability | color=red"
 ping6 -o -c2 -i1 $PANSIFT_ICMP6_TARGET > /dev/null 2>&1 && echo "IPv6 OK | color=green" || echo "No IPv6 Reachability | color=red"
+db_check
 echo "  ↺ Refresh | refresh=true"
 echo "---"
 echo "Dashboard"
