@@ -30,16 +30,19 @@ db_check() {
     if [[ $line =~ $url_regex ]]; then
       pansift_ingest=$(echo -n "$line" | xargs | tr ',' '.' | tr -s ' ' | tr '[:upper:]' '[:lower:]' | tr -d '\r')
       db_code=$(curl -A "$curl_user_agent" --no-keepalive -k -s -o /dev/null -w "%{http_code}" "$pansift_ingest/health" --stderr -)
+			db_code="${db_code:-$?}"
       if [[ $db_code == "200" ]]; then
-        echo "DB OK | color=green"
+        echo "DB (HTTP 200) | color=green"
       else
-        echo "DB Issue Check Log | color=red"
+        echo "DB (HTTP $db_code) | color=red"
       fi
     else
-      echo "DB Issue Check Log | color=red"
+			db_code="${db_code:-ingest_url_issue}"
+      echo "DB ($db_code) | color=red"
     fi
   else
-    echo "DB Issue Check Log | color=red"
+		db_code="${db_code:-missing_ingest_file}"
+    echo "DB ($db_code) | color=red"
   fi
 }
 
@@ -47,28 +50,29 @@ echo "PS"
 echo "---"
 echo "Add an Issue / Note | bash='$PANSIFT_SCRIPTS/pansift_annotate_update.sh' terminal=false"
 echo "---"
-echo "Connectivity"
-ping -o -c2 -i1 -t5 $PANSIFT_ICMP4_TARGET > /dev/null 2>&1 && echo "IPv4 OK | color=green" || echo "No IPv4 Reachability | color=red"
-ping6 -o -c2 -i1 $PANSIFT_ICMP6_TARGET > /dev/null 2>&1 && echo "IPv6 OK | color=green" || echo "No IPv6 Reachability | color=red"
+echo "Reachability Status"
+ping -o -c2 -i1 -t5 $PANSIFT_ICMP4_TARGET > /dev/null 2>&1 && echo "IPv4 (OK) | color=green" || echo "No IPv4 | color=red"
+ping6 -o -c2 -i1 $PANSIFT_ICMP6_TARGET > /dev/null 2>&1 && echo "IPv6 (OK) | color=green" || echo "No IPv6 | color=orange"
 db_check
 echo "  ↺ Refresh | refresh=true"
 echo "---"
-echo "Dashboard"
+echo "Web Dashboard"
+echo "Investigate | bash='$PANSIFT_SCRIPTS/pansift_webapp.sh' terminal=false"
 echo "Claim Agent | bash='$PANSIFT_SCRIPTS/pansift_webapp.sh' terminal=false"
-echo "Web Login | bash='$PANSIFT_SCRIPTS/pansift_webapp.sh' terminal=false"
 echo "---"
 echo "Internals"
 echo "Bucket UUID"
 echo "-- Show | bash='$PANSIFT_SCRIPTS/pansift_uuid_show.sh' terminal=false"
 echo "-- Update | bash='$PANSIFT_SCRIPTS/pansift_uuid_update.sh' terminal=false"
-echo "-- Get UUID from Web | bash='$PANSIFT_SCRIPTS/pansift_webapp.sh' param1=-w terminal=false"
 echo "Token"
 echo "-- Show | bash='$PANSIFT_SCRIPTS/pansift_token_show.sh' terminal=false"
 echo "-- Update | bash='$PANSIFT_SCRIPTS/pansift_token_update.sh' terminal=false"
-echo "-- Get Token from Web | bash='$PANSIFT_SCRIPTS/pansift_webapp.sh' param1=-w terminal=false"
-echo "Update Components"
-echo "-- Scripts | bash='$PANSIFT_SCRIPTS/pansift_scripts_update.sh' terminal=false"
-echo "-- Agent Config | bash='$PANSIFT_SCRIPTS/pansift_agent_config_update.sh' terminal=false"
+echo "Config"
+echo "-- Update Scripts | bash='$PANSIFT_SCRIPTS/pansift_scripts_update.sh' terminal=false"
+echo "-- Update Config | bash='$PANSIFT_SCRIPTS/pansift_agent_config_update.sh' terminal=false"
+echo "System"
+echo "-- Restart ZTP | bash='$PANSIFT_SCRIPTS/pansift_restart_ztp.sh' terminal=false"
+echo "-- Uninstall | bash='$PANSIFT_SCRIPTS/uninstall.sh' terminal=true"
 echo "---"
 echo "Restart Metrics | bash='$PANSIFT_SCRIPTS/pansift' terminal=false"
 echo "---"
