@@ -14,36 +14,22 @@ else
 fi
 
 curl_user_agent() {
-if test -f "$pansift_uuid_file"; then
-  line=$(head -n 1 "$pansift_uuid_file")
-  pansift_uuid=$(echo -n "$line" | awk '{$1=$1;print}' | tr ',' '.' | tr -s ' ' | tr '[:upper:]' '[:lower:]' | tr -d '\r')
-	curl_user_agent="pansift_"$pansift_uuid
-else
-  curl_user_agent="pansift_no_agent_or_uuid_available"
-fi
+	if test -f "$pansift_uuid_file"; then
+		line=$(head -n 1 "$pansift_uuid_file")
+		pansift_uuid=$(echo -n "$line" | awk '{$1=$1;print}' | tr ',' '.' | tr -s ' ' | tr '[:upper:]' '[:lower:]' | tr -d '\r')
+		curl_user_agent="pansift_"$pansift_uuid
+	else
+		curl_user_agent="pansift_no_agent_or_uuid_available"
+	fi
 }
 curl_user_agent # Set the curl agent
 
-db_check() {
-  if test -f "$pansift_ingest_file"; then
-    line=$(head -n 1 "$pansift_ingest_file")
-    if [[ $line =~ $url_regex ]]; then
-      pansift_ingest=$(echo -n "$line" | xargs | tr ',' '.' | tr -s ' ' | tr '[:upper:]' '[:lower:]' | tr -d '\r')
-      db_code=$(curl -A "$curl_user_agent" --no-keepalive -k -s -o /dev/null -w "%{http_code}" "$pansift_ingest/health" --stderr -)
-			db_code="${db_code:-$?}"
-      if [[ $db_code == "200" ]]; then
-        echo "DB (HTTP 200) | color=green"
-      else
-        echo "DB (HTTP $db_code) | color=red"
-      fi
-    else
-			db_code="${db_code:-ingest_url_issue}"
-      echo "DB ($db_code) | color=red"
-    fi
-  else
-		db_code="${db_code:-missing_ingest_file}"
-    echo "DB ($db_code) | color=red"
-  fi
+agent_check() {
+	# This currently runs every 30s by default... this won't scale?
+	log="$(tail -n 3 "$PANSIFT_LOGS"/telegraf.log | egrep -i "\[agent\] error" | cut -d":" -f6-8 | sort -u)"
+	if [ -z "$log" ]; then
+		echo "$log | color=red"
+	fi
 }
 
 echo "PS"
@@ -53,7 +39,7 @@ echo "---"
 echo "Reachability Status"
 ping -o -c2 -i1 -t5 $PANSIFT_ICMP4_TARGET > /dev/null 2>&1 && echo "IPv4 (OK) | color=green" || echo "No IPv4 | color=red"
 ping6 -o -c2 -i1 $PANSIFT_ICMP6_TARGET > /dev/null 2>&1 && echo "IPv6 (OK) | color=green" || echo "No IPv6 | color=orange"
-db_check
+agent_check
 echo "  ↺ Refresh | refresh=true"
 echo "---"
 echo "Web Dashboard"

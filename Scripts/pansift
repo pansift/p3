@@ -69,6 +69,7 @@ curl_user_agent="pansift_"$pansift_uuid
 
 # ZTP Function
 function ztp () {
+	sleep $[($RANDOM % 5)+1]
 	app_code=$(curl -A "$curl_user_agent" --no-keepalive -k -s -o /dev/null -w "%{http_code}" "https://app.pansift.com" --stderr -)
 	app_code="${app_code:-$?}"
 	if [[ $app_code == "200" ]]; then
