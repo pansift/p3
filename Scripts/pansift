@@ -74,17 +74,6 @@ function ztp () {
 	app_code="${app_code:-$?}"
 	if [[ $app_code == "200" ]]; then
 		setup_outcome=$("$PANSIFT_SCRIPTS"/ztp.sh -p "$PANSIFT_UUID")
-		token=$(echo -n "$setup_outcome" | cut -d',' -f1)
-		if [[ $token =~ ^[-_A-Z0-9a-z]{86}==$ ]]; then
-			echo -n "$token" > $pansift_token_file # Otherwise there should be no file!
-		fi
-		pansift_ingest=$(echo -n "$setup_outcome" | cut -d',' -f2 | tr '[:upper:]' '[:lower:]')
-		if [[ $pansift_ingest =~ $url_regex ]]; then
-			echo -n "$pansift_ingest" > $pansift_ingest_file
-		fi	
-		echo "ZTP app ping (HTTP 200)"
-	else
-		echo "ZTP app ping  ($app_code) connectivity issue? Doing nothing..."
 	fi
 }
 

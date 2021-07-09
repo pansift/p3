@@ -34,6 +34,13 @@ if [ -z "${uuid}" ]; then
 fi
 # echo "uuid = ${uuid} and url = ${url}"
 
+preferences="$HOME"/Library/Preferences/Pansift/pansift.conf
+if test -f "$preferences"; then
+	source "$preferences"
+	pansift_ingest_file="$PANSIFT_PREFERENCES"/pansift_ingest.conf
+	pansift_token_file="$PANSIFT_PREFERENCES"/pansift_token.conf
+fi
+
 if [[ $uuid =~ ^\{?[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{12}\}?$ ]]; then
 	#uuid=$(echo -n "$1" | tr '[:upper:]' '[:lower:]')
 	user_agent="pansift-"$uuid
@@ -41,17 +48,20 @@ if [[ $uuid =~ ^\{?[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[
 	token=$(echo -n "$curl_response" | cut -d',' -f2 | tr -d '\r')
 	ingest=$(echo -n "$curl_response" | cut -d',' -f3 | tr -d '\r')
 	if [[ $token =~ ^[-_A-Z0-9a-z]{86}==$ ]]; then 
+		echo -n "$token" > $pansift_token_file 
 		ingest_regex='(https?|ftp|file)://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]'
 		if [[ $ingest =~ $ingest_regex ]]; then
+			echo -n "$ingest" > $pansift_ingest_file
 			echo -n "${token},${ingest}"
 		else
 			echo "null,null,ingest_url_problem"
-			exit 0
+			exit 1
 		fi    
 	else
 		echo "null,null,token_format_problem"
+		exit 1
 	fi
 else
 	echo "null,null,arg_format_problem"
-	exit 0
+	exit 1
 fi
