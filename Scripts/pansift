@@ -49,8 +49,11 @@ telegraf_pid_file="$PANSIFT_SUPPORT"/telegraf.pid
 if test -f "$telegraf_pid_file"; then
 	telegraf_pid_from_file=$(<"$telegraf_pid_file") 
 	rm "$PANSIFT_SUPPORT"/telegraf.pid || true
-	kill -15 "$telegraf_pid_from_file"
+	pkill -15 telegraf || true
+	sleep 3
 else
+	pkill -15 telegraf || true
+	sleep 3
 	pkill -9 telegraf || true
 fi
 
@@ -68,21 +71,21 @@ export PANSIFT_UUID=$pansift_uuid
 curl_user_agent="pansift_"$pansift_uuid
 
 
-if [[ "$1" == "-t" ]]; then 
-	ztp_host="https://localapp.pansift.com"
-	ztp_switch="-t"
-else
-	ztp_host="https://app.pansift.com"
-	ztp_switch="-p"
-fi
 
 # ZTP Function
 function ztp () {
-	sleep $[($RANDOM % 5)+1]
+	#sleep $[($RANDOM % 5)+1]
+	if [[ "$1" == "-t" ]]; then 
+		ztp_host="https://localapp.pansift.com"
+	else
+		ztp_host="https://app.pansift.com"
+	fi
 	app_code=$(curl -A "$curl_user_agent" --no-keepalive -k -s -o /dev/null -w "%{http_code}" "$ztp_host" --stderr -)
 	app_code="${app_code:-$?}"
-	if [[ $app_code == "200" ]]; then
-		setup_outcome=$("$PANSIFT_SCRIPTS"/ztp.sh "$ztp_swtich" "$PANSIFT_UUID")
+	if [[ "$app_code" == "200" ]] && [[ "$1" == "-t" ]]; then
+		setup_outcome=$("$PANSIFT_SCRIPTS"/ztp.sh -t "$PANSIFT_UUID") # Shell expansion for further switches was proving difficult
+	else
+		setup_outcome=$("$PANSIFT_SCRIPTS"/ztp.sh -p "$PANSIFT_UUID")
 	fi
 }
 
@@ -91,7 +94,7 @@ if test -f "$pansift_token_file"; then
 	pansift_clean_token=$(head -n 1 "$pansift_token_file" | awk '{$1=$1;print}' | tr ',' '.' | tr -s ' ' | tr -d '\r')
 	# pansift_clean_token=$(head -n 1 "$pansift_token_file" | awk '{$1=$1;print}' | tr ',' '.' | tr -s ' ' | tr -d '\r' | sed 's! !\\ !g')
 else
-	ztp
+	ztp $1
 	wait $!
 	if test -f "$pansift_token_file"; then
 		pansift_clean_token=$(head -n 1 "$pansift_token_file" | awk '{$1=$1;print}' | tr ',' '.' | tr -s ' ' | tr -d '\r')
@@ -111,7 +114,7 @@ if test -f "$pansift_ingest_file"; then
 		echo -n "Problem with ingest_file contents at: ${pansift_ingest_file}"
 	fi
 else
-	ztp
+	ztp $1
 	wait $!
 	if test -f "$pansift_ingest_file"; then
 		line=$(head -n 1 "$pansift_ingest_file")
