@@ -10,7 +10,7 @@ tpid="$PANSIFT_SUPPORT"/telegraf.pid
 if [[ -f "$tpid" ]] && [[ $(pgrep "telegraf") ]]; then
 	true 
 else
-	"$PANSIFT_SCRIPTS"/pansift -t >/dev/null 2>&1
+	"$PANSIFT_SCRIPTS"/pansift -n >/dev/null 2>&1
 fi
 
 curl_user_agent() {
@@ -25,11 +25,8 @@ curl_user_agent() {
 curl_user_agent # Set the curl agent
 
 agent_check() {
-	# This currently runs every 30s by default... this won't scale?
-	log="$(tail -n 3 "$PANSIFT_LOGS"/telegraf.log | egrep -i "\[agent\] error" | cut -d":" -f6-8 | sort -u)"
-	if [ -z "$log" ]; then
-		echo "$log | color=red"
-	fi
+	log="$(tail -n 3 "$PANSIFT_LOGS"/telegraf.log | egrep -qi "\[agent\] error" || { echo -n 'Agent/DB (OK) | color=green'; exit 0; }; egrep -i "\[agent\] error" | cut -d":" -f6-8 | sort -u | awk '{print $1"| color=red"}')"
+		echo "$log"
 }
 
 echo "PS"

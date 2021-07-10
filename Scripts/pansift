@@ -46,7 +46,7 @@ url_regex='(https?|ftp|file)://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=
 
 # If we're restarting then clean up...
 telegraf_pid_file="$PANSIFT_SUPPORT"/telegraf.pid
-if test -f "$telegraf_pidi_file"; then
+if test -f "$telegraf_pid_file"; then
 	telegraf_pid_from_file=$(<"$telegraf_pid_file") 
 	rm "$PANSIFT_SUPPORT"/telegraf.pid || true
 	kill -15 "$telegraf_pid_from_file"
@@ -67,13 +67,22 @@ fi
 export PANSIFT_UUID=$pansift_uuid
 curl_user_agent="pansift_"$pansift_uuid
 
+
+if [[ "$1" == "-t" ]]; then 
+	ztp_host="https://localapp.pansift.com"
+	ztp_switch="-t"
+else
+	ztp_host="https://app.pansift.com"
+	ztp_switch="-p"
+fi
+
 # ZTP Function
 function ztp () {
 	sleep $[($RANDOM % 5)+1]
-	app_code=$(curl -A "$curl_user_agent" --no-keepalive -k -s -o /dev/null -w "%{http_code}" "https://app.pansift.com" --stderr -)
+	app_code=$(curl -A "$curl_user_agent" --no-keepalive -k -s -o /dev/null -w "%{http_code}" "$ztp_host" --stderr -)
 	app_code="${app_code:-$?}"
 	if [[ $app_code == "200" ]]; then
-		setup_outcome=$("$PANSIFT_SCRIPTS"/ztp.sh -p "$PANSIFT_UUID")
+		setup_outcome=$("$PANSIFT_SCRIPTS"/ztp.sh "$ztp_swtich" "$PANSIFT_UUID")
 	fi
 }
 
@@ -83,6 +92,7 @@ if test -f "$pansift_token_file"; then
 	# pansift_clean_token=$(head -n 1 "$pansift_token_file" | awk '{$1=$1;print}' | tr ',' '.' | tr -s ' ' | tr -d '\r' | sed 's! !\\ !g')
 else
 	ztp
+	wait $!
 	if test -f "$pansift_token_file"; then
 		pansift_clean_token=$(head -n 1 "$pansift_token_file" | awk '{$1=$1;print}' | tr ',' '.' | tr -s ' ' | tr -d '\r')
 	fi
@@ -102,6 +112,7 @@ if test -f "$pansift_ingest_file"; then
 	fi
 else
 	ztp
+	wait $!
 	if test -f "$pansift_ingest_file"; then
 		line=$(head -n 1 "$pansift_ingest_file")
 		pansift_ingest=$(echo -n "$line" | xargs | tr ',' '.' | tr -s ' ' | tr '[:upper:]' '[:lower:]' | tr -d '\r')
@@ -149,13 +160,16 @@ echo "Machine UUID: $MACHINE_UUID"
 echo "Ingest URL: $PANSIFT_INGEST"
 echo "ZTP Token: $PANSIFT_TOKEN"
 
-if [[ "$1" == "-t" ]]; then 
+if [[ "$1" == "-n" ]]; then 
 	true
 else
 	sleep 3 # Give Telegraf a little more time to flush buffers and shut down
 fi
 
 touch "$PANSIFT_SUPPORT"/telegraf.pid "$PANSIFT_LOGS"/telegraf.log
+# We need to get the pansift_osx_machine data up fast and not have to wait for the longet interval...
+"$PANSIFT_SUPPORT"/telegraf --once --config "$PANSIFT_PREFERENCES"/telegraf-osx.conf --pidfile "$PANSIFT_SUPPORT"/telegraf.pid >/dev/null 2>&1 &
+wait $!
 "$PANSIFT_SUPPORT"/telegraf --config "$PANSIFT_PREFERENCES"/telegraf-osx.conf --pidfile "$PANSIFT_SUPPORT"/telegraf.pid >/dev/null 2>&1 &
 disown
 exit 0
