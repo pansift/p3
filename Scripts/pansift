@@ -47,11 +47,10 @@ url_regex='(https?|ftp|file)://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=
 # If we're restarting then clean up...
 telegraf_pid_file="$PANSIFT_SUPPORT"/telegraf.pid
 if test -f "$telegraf_pid_file"; then
-	telegraf_pid_from_file=$(<"$telegraf_pid_file") 
 	rm "$PANSIFT_SUPPORT"/telegraf.pid || true
-	pkill -15 "Pansift/telegraf"; sleep 5 || true
-else
-	pkill -9 "Pansift/telegraf"; sleep 5 || true
+fi 
+if [[ $(pgrep "telegraf") ]]; then
+	pkill -9 -f "$PANSIFT_SUPPORT"/telegraf; sleep 5 || true
 fi
 
 if test -f "$pansift_uuid_file"; then
