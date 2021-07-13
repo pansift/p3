@@ -49,12 +49,9 @@ telegraf_pid_file="$PANSIFT_SUPPORT"/telegraf.pid
 if test -f "$telegraf_pid_file"; then
 	telegraf_pid_from_file=$(<"$telegraf_pid_file") 
 	rm "$PANSIFT_SUPPORT"/telegraf.pid || true
-	pkill -15 telegraf || true
-	sleep 3
+	pkill -15 "Pansift/telegraf"; sleep 5 || true
 else
-	pkill -15 telegraf || true
-	sleep 3
-	pkill -9 telegraf || true
+	pkill -9 "Pansift/telegraf"; sleep 5 || true
 fi
 
 if test -f "$pansift_uuid_file"; then

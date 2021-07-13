@@ -25,8 +25,9 @@ curl_user_agent() {
 curl_user_agent # Set the curl agent
 
 agent_check() {
-	log="$(tail -n 3 "$PANSIFT_LOGS"/telegraf.log | egrep -qi "\[agent\] error" || { echo -n 'Agent/DB (OK) | color=green'; exit 0; }; egrep -i "\[agent\] error" | cut -d":" -f6-8 | sort -u | awk '{print $1"| color=red"}')"
-		echo "$log"
+	logs=$(tail -n 3 "$PANSIFT_LOGS"/telegraf.log)
+	log_msg="$(echo -n "$logs" | egrep -qi "\[agent\] error" || { echo -n 'Agent (OK) | color=green'; exit 0; }; echo -n "$logs" | egrep -i "\[agent\] error" | cut -d":" -f3 | awk '{print $0"| color=red"}')"
+		echo "$log_msg"
 }
 
 echo "PS"
@@ -40,7 +41,7 @@ agent_check
 echo "  ↺ Refresh | refresh=true"
 echo "---"
 echo "Web Dashboard"
-echo "Investigate | bash='$PANSIFT_SCRIPTS/pansift_webapp.sh' terminal=false"
+echo "Investigate / Troubleshoot | bash='$PANSIFT_SCRIPTS/pansift_webapp.sh' terminal=false"
 echo "Claim Agent | bash='$PANSIFT_SCRIPTS/pansift_webapp.sh' terminal=false"
 echo "---"
 echo "Internals"
