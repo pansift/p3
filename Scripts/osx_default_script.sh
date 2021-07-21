@@ -122,7 +122,7 @@ system_measure () {
 
 
 network_measure () {
-	if [ $osx_mainline == 11 ]; then
+	if [[ "$osx_mainline" == "11" ]]; then
 		netstat4_print_position=4 # 11.x Big Sur onwards
 	else 
 		netstat4_print_position=6 # 10.x 
@@ -159,9 +159,9 @@ network_measure () {
 		dg6_interface_ether="none"
 		dg6_router_ether="none"
 	fi
-
-	dg4_response=$(echo -n "$netstat4" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg4_ip" == "none" ]] && ping -c1 -i1 -o "$dg4_ip" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
-	dg6_response=$(echo -n "$netstat6" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg6_ip" == "none" ]] && ping6 -c1 -i1 -o "$dg6_fullgw" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
+	# We've possibly been hitting WLAN powersave in quiet times with dropping packets so increased count to 3
+	dg4_response=$(echo -n "$netstat4" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg4_ip" == "none" ]] && ping -c3 -i1 -o "$dg4_ip" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
+	dg6_response=$(echo -n "$netstat6" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg6_ip" == "none" ]] && ping6 -c3 -i1 -o "$dg6_fullgw" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
 
 	if [[ "$dg4_response" > 0 ]] || [[ "$dg6_respone" > 0 ]]; then
 		locally_connected="true"
