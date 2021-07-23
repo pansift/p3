@@ -122,7 +122,7 @@ system_measure () {
 
 
 network_measure () {
-	if [[ "$osx_mainline" == "11" ]]; then
+	if [[ "$osx_mainline" -ge 11 ]]; then
 		netstat4_print_position=4 # 11.x Big Sur onwards
 	else 
 		netstat4_print_position=6 # 10.x 
