@@ -52,6 +52,12 @@ remove_chars () {
 	echo -n $newdata
 }
 
+remove_chars_except_case () {
+  read data
+  newdata=$(echo -n "$data" | awk '{$1=$1;print}' | tr ',' '.' | tr -s ' ' | tr -d '\r' | sed 's! !\\ !g')
+  echo -n $newdata
+}
+
 remove_chars_except_spaces () {
 	# This is for fieldset fields where there may be a space, as telegraf will add it's own backslash \ and if we already have one then we get "\\ "
 	read data
@@ -107,13 +113,13 @@ system_measure () {
 	# Uptime and uptime_format are already covered by the default plugin.
 	#uptime=$(sysctl kern.boottime | cut -d' ' -f5 | cut -d',' -f1)
 
-	product_name=$(echo -n "$systemsoftware" | egrep -i "productname" | cut -d':' -f2- | remove_chars)
-	product_version=$(echo -n "$systemsoftware" | egrep -i "productversion" | cut -d':' -f2- | remove_chars)
+	product_name=$(echo -n "$systemsoftware" | egrep -i "productname" | cut -d':' -f2- | remove_chars_except_case)
+	product_version=$(echo -n "$systemsoftware" | egrep -i "productversion" | cut -d':' -f2- | remove_chars_except_case)
 	build_version=$(echo -n "$systemsoftware" | egrep -i "buildversion" | cut -d':' -f2- | remove_chars)
 
 	systemprofile_sphardwaredatatype=$(system_profiler SPHardwareDataType)
-	model_name=$(echo -n "$systemprofile_sphardwaredatatype" | egrep -i "model name" | cut -d':' -f2- | remove_chars)
-	model_identifier=$(echo -n "$systemprofile_sphardwaredatatype" | egrep -i "model identifier" | cut -d':' -f2- | remove_chars)
+	model_name=$(echo -n "$systemprofile_sphardwaredatatype" | egrep -i "model name" | cut -d':' -f2- | remove_chars_except_case)
+	model_identifier=$(echo -n "$systemprofile_sphardwaredatatype" | egrep -i "model identifier" | cut -d':' -f2- | remove_chars_except_case)
 	memory=$(echo -n "$systemprofile_sphardwaredatatype" | egrep -i "memory" | cut -d':' -f2- | remove_chars_except_spaces)
 	boot_romversion=$(echo -n "$systemprofile_sphardwaredatatype" | egrep -i "boot rom version" | cut -d':' -f2- | remove_chars)
 	smc_version=$(echo -n "$systemprofile_sphardwaredatatype" | egrep -i "smc version" | cut -d':' -f2- | remove_chars)
