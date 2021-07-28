@@ -178,22 +178,22 @@ network_measure () {
 	dns6_query_response="0"
 	RESOLV=/etc/resolv.conf
 	if test -f "$RESOLV"; then
-		dns4_primary=$(cat /etc/resolv.conf | grep -q '\..*\..*\.' || { echo -n '0.0.0.0'; exit 0; }; cat /etc/resolv.conf | grep '\..*\..*\.' | head -n1 | cut -d' ' -f2 | remove_chars)
-		dns6_primary=$(cat /etc/resolv.conf | grep -q 'nameserver.*:' || { echo -n '::'; exit 0; }; cat /etc/resolv.conf | grep 'nameserver.*:' | head -n1 | cut -d' ' -f2 | remove_chars)
-		if [ $dns4_primary != "0.0.0.0" ]; then
+		dns4_primary=$(cat /etc/resolv.conf | grep -q '\..*\..*\.' || { echo -n 'none'; exit 0; }; cat /etc/resolv.conf | grep '\..*\..*\.' | head -n1 | cut -d' ' -f2 | remove_chars)
+		dns6_primary=$(cat /etc/resolv.conf | grep -q 'nameserver.*:' || { echo -n 'none'; exit 0; }; cat /etc/resolv.conf | grep 'nameserver.*:' | head -n1 | cut -d' ' -f2 | remove_chars)
+		if [ $dns4_primary != "none" ]; then
 			dns4_query_response=$(dig -4 +tries=2 @"$dns4_primary" "$dns_query" | grep -m1 -i "query time" | cut -d' ' -f4 | remove_chars)
 		else
 			dns4_query_response="0"
 		fi
-		if [ $dns6_primary != "::" ]; then
+		if [ $dns6_primary != "none" ]; then
 			dns6_query_response=$(dig -6 +tries=2 @"$dns6_primary" "$dns_query" | grep -m1 -i "query time" | cut -d' ' -f4 | remove_chars)
 			[ -z "$dns6_query_response" ] && dns6_query_response="0"
 		else 
 			dns6_query_response="0"
 		fi
 	else
-		dns4_primary="0.0.0.0"
-		dns6_primary="::"
+		dns4_primary="none"
+		dns6_primary="none"
 	fi
 }
 
@@ -206,16 +206,16 @@ internet_measure () {
 	internet_dualstack="false" # "
 	ipv4_only="false" # "
 	ipv6_only="false" # "
-	internet4_public_ip="0.0.0.0"
-	internet6_public_ip="::"
+	internet4_public_ip="none"
+	internet6_public_ip="none"
 	internet_asn="0i"
 
 	if [ "$internet4_connected" == "true" ] || [ "$internet6_connected" == "true" ]; then
 		internet_connected="true"
 	else
 		internet_connected="false"
-		internet4_public_ip="0.0.0.0"
-		internet6_public_ip="::"
+		internet4_public_ip="none"
+		internet6_public_ip="none"
 		internet_asn="0i"
 	fi
 	if [ "$internet4_connected" == "true" ] && [ "$internet6_connected" == "true" ]; then
@@ -225,8 +225,8 @@ internet_measure () {
 		lighthouse4=$($curl_binary -m3 -sN -4 -k -L -i "$PANSIFT_LIGHTHOUSE" 2>&1 || exit 0)
 		lighthouse6=$($curl_binary -m3 -sN -6 -k -L -i "$PANSIFT_LIGHTHOUSE" 2>&1 || exit 0)
 		internet_asn=$(echo -n "$lighthouse4" | grep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse4" | grep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
-		internet4_public_ip=$(echo -n "$lighthouse4" | grep -qi "x-pansift-client-ip" || { echo -n '0.0.0.0'; exit 0;}; echo -n "$lighthouse4" | grep -i "x-pansift-client-ip" | cut -d' ' -f2 | remove_chars )
-		internet6_public_ip=$(echo -n "$lighthouse6" | grep -qi "x-pansift-client-ip" || { echo -n '::'; exit 0;}; echo -n "$lighthouse6" | grep -i "x-pansift-client-ip" | cut -d' ' -f2 | remove_chars )
+		internet4_public_ip=$(echo -n "$lighthouse4" | grep -qi "x-pansift-client-ip" || { echo -n 'none'; exit 0;}; echo -n "$lighthouse4" | grep -i "x-pansift-client-ip" | cut -d' ' -f2 | remove_chars )
+		internet6_public_ip=$(echo -n "$lighthouse6" | grep -qi "x-pansift-client-ip" || { echo -n 'none'; exit 0;}; echo -n "$lighthouse6" | grep -i "x-pansift-client-ip" | cut -d' ' -f2 | remove_chars )
 	fi
 	if [ "$internet4_connected" == "true" ] && [ "$internet6_connected" == "false" ]; then
 		ipv4_only="true"
@@ -234,8 +234,8 @@ internet_measure () {
 		internet_dualstack="false"
 		lighthouse4=$($curl_binary -m3 -sN -4 -k -L -i "$PANSIFT_LIGHTHOUSE" 2>&1 || exit 0)
 		internet_asn=$(echo -n "$lighthouse4" | egrep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse4" | egrep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
-		internet4_public_ip=$(echo -n "$lighthouse4" | egrep -qi "x-pansift-client-ip" || { echo -n '0.0.0.0'; exit 0;}; echo -n "$lighthouse4" | egrep -i "x-pansift-client-ip" | cut -d' ' -f2 | remove_chars )
-		internet6_public_ip="::"
+		internet4_public_ip=$(echo -n "$lighthouse4" | egrep -qi "x-pansift-client-ip" || { echo -n 'none'; exit 0;}; echo -n "$lighthouse4" | egrep -i "x-pansift-client-ip" | cut -d' ' -f2 | remove_chars )
+		internet6_public_ip="none"
 	fi
 	if [ "$internet4_connected" == "false" ] && [ "$internet6_connected" == "true" ]; then
 		ipv4_only="false"
@@ -243,8 +243,8 @@ internet_measure () {
 		internet_dualstack="false"
 		lighthouse6=$($curl_binary -m3 -sN -6 -k -L -i "$PANSIFT_LIGHTHOUSE" 2>&1 || exit 0)
 		internet_asn=$(echo -n "$lighthouse6" | egrep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse6" | egrep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
-		internet4_public_ip="0.0.0.0"
-		internet6_public_ip=$(echo -n "$lighthouse6" | egrep -qi "x-pansift-client-ip" || { echo -n '::'; exit 0;}; echo -n "$lighthouse6" | egrep -i "x-pansift-client-ip" | cut -d' ' -f2 | remove_chars )
+		internet4_public_ip="none"
+		internet6_public_ip=$(echo -n "$lighthouse6" | egrep -qi "x-pansift-client-ip" || { echo -n 'none'; exit 0;}; echo -n "$lighthouse6" | egrep -i "x-pansift-client-ip" | cut -d' ' -f2 | remove_chars )
 	fi
 }
 
