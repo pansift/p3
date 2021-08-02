@@ -53,9 +53,9 @@ remove_chars () {
 }
 
 remove_chars_except_case () {
-  read data
-  newdata=$(echo -n "$data" | awk '{$1=$1;print}' | tr ',' '.' | tr -s ' ' | tr -d '\r' | sed 's! !\\ !g')
-  echo -n $newdata
+	read data
+	newdata=$(echo -n "$data" | awk '{$1=$1;print}' | tr ',' '.' | tr -s ' ' | tr -d '\r' | sed 's! !\\ !g')
+	echo -n $newdata
 }
 
 remove_chars_except_spaces () {
@@ -126,10 +126,16 @@ system_measure () {
 	serial_number=$(echo -n "$systemprofile_sphardwaredatatype" | egrep -i "serial number" | cut -d':' -f2- | remove_chars)
 }
 
-
 network_measure () {
+	product_sub_version=$(echo -n "$product_version" | cut -d'.' -f2 | remove_chars)
 	if [[ "$osx_mainline" -ge 11 ]]; then
 		netstat4_print_position=4 # 11.x Big Sur onwards
+	elif [[ "$product_version" -ge 10 ]]; then
+		if [[ "$product_sub_version" -ge 15 ]]; then
+			netstat4_print_position=4 # 10.15.x Catalina change?
+		else
+			netstat4_print_position=6 # 10.x 
+		fi
 	else 
 		netstat4_print_position=6 # 10.x 
 	fi
@@ -142,7 +148,7 @@ network_measure () {
 	dg6_interface=$(echo -n "$netstat6" | grep -qi default || { echo -n 'none'; exit 0; }; echo -n "$netstat6" | grep -i default | awk '{print $2}'| remove_chars)
 	dg6_interface_device_only=$(echo -n "$dg6_interface" | cut -d'%' -f2)
 	if [ $dg6_interface == "none" ]; then
-  dg6_interface_device_only = "none"
+		dg6_interface_device_only = "none"
 	fi
 	# Grabbing network interfaces from global 
 	hardware_interfaces=$(echo -n "$network_interfaces" | awk -F ":" '/Hardware Port:|Device:/{print $2}' | paste -d',' - - )
@@ -288,11 +294,11 @@ wlan_measure () {
 		wait $pid
 		if [ $osx_mainline == 11 ]; then
 			if [ $wlan_op_mode != "none" ]; then
-			wlan_number_spatial_streams=$("$plistbuddy" "${airport_more_data}" -c "print NSS" | remove_chars)i
-			wlan_width=$("$plistbuddy" "${airport_more_data}" -c "print BANDWIDTH" | remove_chars)i
+				wlan_number_spatial_streams=$("$plistbuddy" "${airport_more_data}" -c "print NSS" | remove_chars)i
+				wlan_width=$("$plistbuddy" "${airport_more_data}" -c "print BANDWIDTH" | remove_chars)i
 			else
-			wlan_number_spatial_streams=0i
-			wlan_width=0i
+				wlan_number_spatial_streams=0i
+				wlan_width=0i
 			fi
 		else 
 			wlan_number_spatial_streams=0i
