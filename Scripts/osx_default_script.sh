@@ -130,7 +130,7 @@ network_measure () {
 	product_sub_version=$(echo -n "$product_version" | cut -d'.' -f2 | remove_chars)
 	if [[ "$osx_mainline" -ge 11 ]]; then
 		netstat4_print_position=4 # 11.x Big Sur onwards
-	elif [[ "$product_version" -ge 10 ]]; then
+	elif [[ "$osx_mainline" -ge 10 ]]; then
 		if [[ "$product_sub_version" -ge 15 ]]; then
 			netstat4_print_position=4 # 10.15.x Catalina change?
 		else
