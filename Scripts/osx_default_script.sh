@@ -142,8 +142,8 @@ network_measure () {
 	netstat4=$(netstat -rn -f inet)
 	netstat6=$(netstat -rn -f inet6)
 	dg4_ip=$(echo -n "$netstat4" | grep -qi default || { echo -n 'none'; exit 0;}; echo -n "$netstat4" | grep -i default | awk '{print $2}' | remove_chars)
-	dg6_fullgw=$(echo -n "$netstat6" | grep -qi default || { echo -n 'none'; exit 0;}; echo -n "$netstat6" | grep -i default | awk '{print $2}' | remove_chars)
-	dg6_ip=$(echo -n "$netstat6" | grep -qi default || { echo -n 'none'; exit 0;}; echo -n "$netstat6" | grep -i default | awk '{print $2}' | cut -d'%' -f1 | remove_chars)
+	dg6_fullgw=$(echo -n "$netstat6" | grep -qi default || { echo -n 'none'; exit 0;}; echo -n "$netstat6" | grep -i default | awk '{print $2}' | head -n1 | remove_chars)
+	dg6_ip=$(echo -n "$netstat6" | grep -qi default || { echo -n 'none'; exit 0;}; echo -n "$netstat6" | grep -i default | awk '{print $2}' | cut -d'%' -f1 | head -n1 | remove_chars)
 	dg4_interface=$(echo -n "$netstat4" | grep -qi default || { echo -n 'none'; exit 0;}; echo -n "$netstat4" | grep -i default | awk -v x=$netstat4_print_position '{print $x}' | remove_chars)
 	dg6_interface=$(echo -n "$netstat6" | grep -qi default || { echo -n 'none'; exit 0; }; echo -n "$netstat6" | grep -i default | awk '{print $2}'| remove_chars)
 	dg6_interface_device_only=$(echo -n "$dg6_interface" | cut -d'%' -f2)
@@ -154,6 +154,7 @@ network_measure () {
 	hardware_interfaces=$(echo -n "$network_interfaces" | awk -F ":" '/Hardware Port:|Device:/{print $2}' | paste -d',' - - )
 	dg4_hardware_type=$(echo -n "$hardware_interfaces" | grep -qi "$dg4_interface" || { echo -n 'unknown'; exit 0; }; echo -n "$hardware_interfaces" | grep -i "$dg4_interface" | cut -d',' -f1 | xargs)
 	dg6_hardware_type=$(echo -n "$hardware_interfaces" | grep -qi "$dg6_interface_device_only" || { echo -n 'unknown'; exit 0; }; echo -n "$hardware_interfaces" | grep -i "$dg6_interface_device_only" | cut -d',' -f1 | xargs)
+	
 	if [ ! "$dg4_ip" == "none" ]; then
 		dg4_router_ether=$(arp "$dg4_ip")
 	else
@@ -165,12 +166,13 @@ network_measure () {
 		dg4_interface_ether="none"
 	fi
 	if [ ! "$dg6_interface" == "none" ]; then
-		dg6_interface_ether=$(ifconfig "$dg6_interface_device_only" | grep "ether" | xargs | cut -d' ' -f2 | remove_chars)
+		dg6_interface_ether=$(ifconfig "$dg6_interface_device_only" | grep -qi "ether" || { echo -n 'none'; exit 0; }; ifconfig "$dg6_interface_device_only" | grep -i "ether" | xargs | cut -d' ' -f2 | remove_chars)
 		dg6_router_ether=$(ndp -anr | egrep "$dg6_interface" | xargs | cut -d' ' -f2 | remove_chars )
 	else
 		dg6_interface_ether="none"
 		dg6_router_ether="none"
 	fi
+
 	# We've possibly been hitting WLAN powersave in quiet times with dropping packets so increased count to 3
 	dg4_response=$(echo -n "$netstat4" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg4_ip" == "none" ]] && ping -c3 -i1 -o "$dg4_ip" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
 	dg6_response=$(echo -n "$netstat6" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg6_ip" == "none" ]] && ping6 -c3 -i1 -o "$dg6_fullgw" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
@@ -203,6 +205,7 @@ network_measure () {
 	fi
 }
 
+
 internet_measure () {
 	# We need basic ICMP response times from lighthouse too?
 	#
@@ -214,7 +217,9 @@ internet_measure () {
 	ipv6_only="false" # "
 	internet4_public_ip="none"
 	internet6_public_ip="none"
-	internet_asn="0i"
+	# internet_asn="0i"
+	internet4_asn="0i"
+	internet6_asn="0i"
 
 	if [ "$internet4_connected" == "true" ] || [ "$internet6_connected" == "true" ]; then
 		internet_connected="true"
@@ -222,7 +227,6 @@ internet_measure () {
 		internet_connected="false"
 		internet4_public_ip="none"
 		internet6_public_ip="none"
-		internet_asn="0i"
 	fi
 	if [ "$internet4_connected" == "true" ] && [ "$internet6_connected" == "true" ]; then
 		ipv4_only="false"
@@ -230,7 +234,9 @@ internet_measure () {
 		internet_dualstack="true"
 		lighthouse4=$($curl_binary -m3 -sN -4 -k -L -i "$PANSIFT_LIGHTHOUSE" 2>&1 || exit 0)
 		lighthouse6=$($curl_binary -m3 -sN -6 -k -L -i "$PANSIFT_LIGHTHOUSE" 2>&1 || exit 0)
-		internet_asn=$(echo -n "$lighthouse4" | grep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse4" | grep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
+		# internet_asn=$(echo -n "$lighthouse4" | grep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse4" | grep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
+		internet4_asn=$(echo -n "$lighthouse4" | grep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse4" | grep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
+		internet6_asn=$(echo -n "$lighthouse6" | grep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse6" | grep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
 		internet4_public_ip=$(echo -n "$lighthouse4" | grep -qi "x-pansift-client-ip" || { echo -n 'none'; exit 0;}; echo -n "$lighthouse4" | grep -i "x-pansift-client-ip" | cut -d' ' -f2 | remove_chars )
 		internet6_public_ip=$(echo -n "$lighthouse6" | grep -qi "x-pansift-client-ip" || { echo -n 'none'; exit 0;}; echo -n "$lighthouse6" | grep -i "x-pansift-client-ip" | cut -d' ' -f2 | remove_chars )
 	fi
@@ -239,7 +245,8 @@ internet_measure () {
 		ipv6_only="false"
 		internet_dualstack="false"
 		lighthouse4=$($curl_binary -m3 -sN -4 -k -L -i "$PANSIFT_LIGHTHOUSE" 2>&1 || exit 0)
-		internet_asn=$(echo -n "$lighthouse4" | egrep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse4" | egrep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
+		# internet_asn=$(echo -n "$lighthouse4" | egrep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse4" | egrep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
+		internet4_asn=$(echo -n "$lighthouse4" | grep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse4" | grep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
 		internet4_public_ip=$(echo -n "$lighthouse4" | egrep -qi "x-pansift-client-ip" || { echo -n 'none'; exit 0;}; echo -n "$lighthouse4" | egrep -i "x-pansift-client-ip" | cut -d' ' -f2 | remove_chars )
 		internet6_public_ip="none"
 	fi
@@ -248,9 +255,31 @@ internet_measure () {
 		ipv6_only="true"
 		internet_dualstack="false"
 		lighthouse6=$($curl_binary -m3 -sN -6 -k -L -i "$PANSIFT_LIGHTHOUSE" 2>&1 || exit 0)
-		internet_asn=$(echo -n "$lighthouse6" | egrep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse6" | egrep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
+		# internet_asn=$(echo -n "$lighthouse6" | egrep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse6" | egrep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
+		internet6_asn=$(echo -n "$lighthouse6" | grep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse6" | grep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
 		internet4_public_ip="none"
 		internet6_public_ip=$(echo -n "$lighthouse6" | egrep -qi "x-pansift-client-ip" || { echo -n 'none'; exit 0;}; echo -n "$lighthouse6" | egrep -i "x-pansift-client-ip" | cut -d' ' -f2 | remove_chars )
+	fi
+}
+
+local_ips () {
+  # We need internet_measure() and network_measure() to run first so we can know our public IPv6 address!
+	dg4_interface_details=$(ifconfig "$dg4_interface")
+	dg4_interface_details_inet=$(echo -n "$dg4_interface_details" | grep -i "inet ")
+	dg4_local_ip=$(echo -n "$dg4_interface_details_inet" | grep -qi "inet " || { echo -n 'none'; exit 0; }; echo -n "$dg4_interface_details_inet" | grep -i "inet " | awk '{print $2}'| remove_chars)
+	dg4_local_netmask=$(echo -n "$dg4_interface_details_inet" | grep -qi "inet " || { echo -n 'none'; exit 0; }; echo -n "$dg4_interface_details_inet" | grep -i "inet " | awk '{print $4}'| remove_chars)
+
+	dg6_interface_details=$(ifconfig "$dg6_interface_device_only")
+	# We know there may be multiple IPv6 addresses so first look for the one mapping to public if connectivity allows, then look for the next one in reverse order, so most likely to be the temporary
+  # If none, we should get the fe80 address...
+	dg6_interface_details_inet6=$(echo -n "$dg6_interface_details" | grep -i "inet6" | grep -i "$internet6_public_ip")
+	if [[ ! -z "$dg6_interface_details_inet6" ]]; then 
+	dg6_local_ip=$(echo -n "$dg6_interface_details_inet6" | grep -qi "inet6" || { echo -n 'none'; exit 0; }; echo -n "$dg6_interface_details_inet6" | grep -i "inet6" | awk '{print $2}'| remove_chars)
+	dg6_local_prefixlen=$(echo -n "$dg6_interface_details_inet6" | grep -qi "inet6" || { echo -n 'none'; exit 0; }; echo -n "$dg6_interface_details_inet6" | grep -i "inet6" | awk '{print $4}'| remove_chars)
+	else
+		dg6_interface_details_inet6=$(echo -n "$dg6_interface_details" | grep -i "inet6" | tail -r)
+		dg6_local_ip=$(echo -n "$dg6_interface_details_inet6" | grep -qi "inet6" || { echo -n 'none'; exit 0; }; echo -n "$dg6_interface_details_inet6" | grep -i "inet6" | head -n1 | awk '{print $2}' | cut -d '%' -f1 | remove_chars)
+		dg6_local_prefixlen=$(echo -n "$dg6_interface_details_inet6" | grep -qi "inet6" || { echo -n 'none'; exit 0; }; echo -n "$dg6_interface_details_inet6" | grep -i "inet6" | head -n1 | awk '{print $4}'| remove_chars)
 	fi
 }
 
@@ -440,12 +469,13 @@ while :; do
 			results
 			;;
 		-n|--network) 
-			internet_measure
+			internet_measure # No dependency
 			network_measure
+			local_ips # dependency on both prior internet_measure and network_measure
 			wlan_measure
 			measurement="pansift_osx_network"
 			tagset=$(echo -n "internet_connected=$internet_connected,internet_dualstack=$internet_dualstack,ipv4_only=$ipv4_only,ipv6_only=$ipv6_only,locally_connected=$locally_connected,wlan_connected=$wlan_connected,wlan_state=$wlan_state,wlan_op_mode=$wlan_op_mode,wlan_supported_phy_mode=$wlan_supported_phy_mode") 
-			fieldset=$( echo -n "internet4_public_ip=\"$internet4_public_ip\",internet6_public_ip=\"$internet6_public_ip\",internet_asn=$internet_asn,dg4_ip=\"$dg4_ip\",dg6_ip=\"$dg6_ip\",dg4_hardware_type=\"$dg4_hardware_type\",dg6_hardware_type=\"$dg6_hardware_type\",dg4_interface=\"$dg4_interface\",dg6_interface=\"$dg6_interface\",dg6_interface_device_only=\"$dg6_interface_device_only\",dg4_interface_ether=\"$dg4_interface_ether\",dg6_interface_ether=\"$dg6_interface_ether\",dg4_response=$dg4_response,dg6_response=$dg6_response,dns4_primary=\"$dns4_primary\",dns6_primary=\"$dns6_primary\",dns4_query_response=$dns4_query_response,dns6_query_response=$dns6_query_response,wlan_rssi=$wlan_rssi,wlan_noise=$wlan_noise,wlan_snr=$wlan_snr,wlan_last_tx_rate=$wlan_last_tx_rate,wlan_max_rate=$wlan_max_rate,wlan_ssid=\"$wlan_ssid\",wlan_bssid=\"$wlan_bssid\",wlan_mcs=$wlan_mcs,wlan_number_spatial_streams=$wlan_number_spatial_streams,wlan_last_assoc_status=$wlan_last_assoc_status,wlan_channel=$wlan_channel,wlan_width=$wlan_width,wlan_current_phy_mode=\"$wlan_current_phy_mode\",wlan_supported_channels=\"$wlan_supported_channels\",wlan_80211_auth=\"$wlan_80211_auth\",wlan_link_auth=\"$wlan_link_auth\"")
+			fieldset=$( echo -n "internet4_public_ip=\"$internet4_public_ip\",internet6_public_ip=\"$internet6_public_ip\",internet4_asn=$internet4_asn,internet6_asn=$internet6_asn,dg4_ip=\"$dg4_ip\",dg6_ip=\"$dg6_ip\",dg4_hardware_type=\"$dg4_hardware_type\",dg6_hardware_type=\"$dg6_hardware_type\",dg4_interface=\"$dg4_interface\",dg6_interface=\"$dg6_interface\",dg6_interface_device_only=\"$dg6_interface_device_only\",dg4_interface_ether=\"$dg4_interface_ether\",dg6_interface_ether=\"$dg6_interface_ether\",dg4_local_ip=\"$dg4_local_ip\",dg4_local_netmask=\"$dg4_local_netmask\",dg4_response=$dg4_response,dg6_local_ip=\"$dg6_local_ip\",dg6_local_prefixlen=\"$dg6_local_prefixlen\",dg6_response=$dg6_response,dns4_primary=\"$dns4_primary\",dns6_primary=\"$dns6_primary\",dns4_query_response=$dns4_query_response,dns6_query_response=$dns6_query_response,wlan_rssi=$wlan_rssi,wlan_noise=$wlan_noise,wlan_snr=$wlan_snr,wlan_last_tx_rate=$wlan_last_tx_rate,wlan_max_rate=$wlan_max_rate,wlan_ssid=\"$wlan_ssid\",wlan_bssid=\"$wlan_bssid\",wlan_mcs=$wlan_mcs,wlan_number_spatial_streams=$wlan_number_spatial_streams,wlan_last_assoc_status=$wlan_last_assoc_status,wlan_channel=$wlan_channel,wlan_width=$wlan_width,wlan_current_phy_mode=\"$wlan_current_phy_mode\",wlan_supported_channels=\"$wlan_supported_channels\",wlan_80211_auth=\"$wlan_80211_auth\",wlan_link_auth=\"$wlan_link_auth\"")
 			results
 			;;
 		-s|--scan)
