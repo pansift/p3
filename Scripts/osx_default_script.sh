@@ -1,4 +1,4 @@
-#/usr/bin/env bash
+#!/usr/bin/env bash
 
 # Pansift Telegraf input.exec script for writing influx measurements and tags
 
@@ -152,6 +152,7 @@ system_measure () {
 }
 
 network_measure () {
+	product_version=$(echo -n "$systemsoftware" | egrep -i "productversion" | cut -d':' -f2- | remove_chars_except_case)
 	product_sub_version=$(echo -n "$product_version" | cut -d'.' -f2 | remove_chars)
 	if [[ "$osx_mainline" -ge 11 ]]; then
 		netstat4_print_position=4 # 11.x Big Sur onwards
@@ -181,7 +182,7 @@ network_measure () {
 	dg6_hardware_type=$(echo -n "$hardware_interfaces" | grep -qi "$dg6_interface_device_only" || { echo -n 'unknown'; exit 0; }; echo -n "$hardware_interfaces" | grep -i "$dg6_interface_device_only" | cut -d',' -f1 | xargs)
 	
 	if [ ! "$dg4_ip" == "none" ]; then
-		dg4_router_ether=$(arp "$dg4_ip")
+		dg4_router_ether=$(arp -i "$dg4_interface" -n "$dg4_ip")
 	else
 		dg4_router_ether="none"
 	fi
