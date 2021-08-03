@@ -215,12 +215,15 @@ network_measure () {
 		dns4_primary=$(cat /etc/resolv.conf | grep -q '\..*\..*\.' || { echo -n 'none'; exit 0; }; cat /etc/resolv.conf | grep '\..*\..*\.' | head -n1 | cut -d' ' -f2 | remove_chars)
 		dns6_primary=$(cat /etc/resolv.conf | grep -q 'nameserver.*:' || { echo -n 'none'; exit 0; }; cat /etc/resolv.conf | grep 'nameserver.*:' | head -n1 | cut -d' ' -f2 | remove_chars)
 		if [ $dns4_primary != "none" ]; then
-			dns4_query_response=$(dig -4 +tries=2 @"$dns4_primary" "$dns_query" | grep -m1 -i "query time" | cut -d' ' -f4 | remove_chars)
+			dns4_query_output=$(dig -4 +time=3 +tries=2 @"$dns4_primary" "$dns_query")
+			dns4_query_response=$(echo -n "$dns4_query_output" | grep -m1 -qi "query time" | cut -d' ' -f4 | remove_chars)
+			[ -z "$dns4_query_response" ] && dns4_query_response="0"
 		else
 			dns4_query_response="0"
 		fi
 		if [ $dns6_primary != "none" ]; then
-			dns6_query_response=$(dig -6 +tries=2 @"$dns6_primary" "$dns_query" | grep -m1 -i "query time" | cut -d' ' -f4 | remove_chars)
+			dns6_query_ouput=$(dig -6 +time=3 +tries=2 @"$dns6_primary" "$dns_query")
+			dns6_query_response=$(echo -n "$dns6_query_output" | grep -m1 -qi "query time" | cut -d' ' -f4 | remove_chars)
 			[ -z "$dns6_query_response" ] && dns6_query_response="0"
 		else 
 			dns6_query_response="0"
