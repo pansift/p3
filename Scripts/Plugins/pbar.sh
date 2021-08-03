@@ -41,7 +41,7 @@ agent_check
 echo "  ↺ Refresh | refresh=true"
 echo "---"
 echo "Web Dashboard"
-echo "Investigate / Troubleshoot | bash='$PANSIFT_SCRIPTS/pansift_webapp.sh' terminal=false"
+echo "Investigate | bash='$PANSIFT_SCRIPTS/pansift_webapp.sh' terminal=false"
 echo "Claim Agent | bash='$PANSIFT_SCRIPTS/pansift_webapp.sh' terminal=false"
 echo "---"
 echo "Internals"
