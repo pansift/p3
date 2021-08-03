@@ -80,15 +80,15 @@ asn_trace () {
 	internet_measure
 	# This is not an explicit ASN path but rather the ASNs from a traceroute so it's not a BGP metric but a representation of AS zones 
 	measurement="pansift_osx_paths"
-	if [ "$internet_connected" == "true" ]; then
+	if [ "$internet4_connected" == "true" ]; then
 		i=0
 		IFS=","
 		for host in $PANSIFT_HOSTS_CSV
 		do
 			if [ ! -z "$host" ]; then
-				asn_trace=$(timeout 10 traceroute -I -w1 -S -an "$host" 2>/dev/null | grep -v "trace" | awk '{ORS=":"}{gsub("[][]",""); print $2}' | sed 's/.$//' | remove_chars)
+				asn_trace=$(timeout 15 traceroute -I -w2 -n "$host" 2>/dev/null | grep -v "trace" | awk '{ORS=";"}{print $2}' | sed 's/.$//' | remove_chars)
 				target_host=$(echo -n "$host" | remove_chars)
-				tagset=$(echo -n "from_asn=$internet_asn,destination=$target_host")
+				tagset=$(echo -n "internet4_connected=true,from_asn=$internet4_asn,destination=$target_host")
 				fieldset=$( echo -n "asn_trace=\"$asn_trace\"")
 				timesuffix=$(expr 1000000000 + $i + 1) # This is to get around duplicates in Influx with measurement, tag, and timestamp the same.
 				timesuffix=${timesuffix:1} # We drop the leading "1" and end up with incrementing nanoseconds 9 digits long
@@ -99,11 +99,36 @@ asn_trace () {
 		done
 		IFS=$OLDIFS
 	else
-		tagset="from_asn=AS0,destination=localhost"
+		tagset="internet4_connected=false,from_asn=AS0,destination=localhost"
 		fieldset="asn_trace=AS0"
 		timestamp=$(date +%s)000000000
 		echo -ne "$measurement,$tagset $fieldset $timestamp\n"
 	fi
+	# traceroute6 does not support ASN lookup -a
+  if [ "$internet6_connected" == "true" ]; then
+    i=0
+    IFS=","
+    for host in $PANSIFT_HOSTS_CSV
+    do
+      if [ ! -z "$host" ]; then
+        asn_trace=$(timeout 15 traceroute6 -I -w2 -n "$host" 2>/dev/null | grep -v "trace" | awk '{ORS=";"}{print $2}' | sed 's/.$//' | remove_chars)
+        target_host=$(echo -n "$host" | remove_chars)
+        tagset=$(echo -n "internet6_connected=true,from_asn=$internet6_asn,destination=$target_host")
+        fieldset=$( echo -n "asn_trace=\"$asn_trace\"")
+        timesuffix=$(expr 1000000000 + $i + 1) # This is to get around duplicates in Influx with measurement, tag, and timestamp the same.
+        timesuffix=${timesuffix:1} # We drop the leading "1" and end up with incrementing nanoseconds 9 digits long
+        timestamp=$(date +%s)$timesuffix
+        echo -ne "$measurement,$tagset $fieldset $timestamp\n"
+        ((i++))
+      fi
+    done
+    IFS=$OLDIFS
+  else
+    tagset="internet6_connected=false,from_asn=AS0,destination=localhost"
+    fieldset="asn_trace=AS0"
+    timestamp=$(date +%s)000000000
+    echo -ne "$measurement,$tagset $fieldset $timestamp\n"
+  fi
 
 }
 

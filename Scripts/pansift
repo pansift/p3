@@ -3,6 +3,7 @@
 #set -e
 #set -vx
 
+PANSIFT_AGENT_VERSION=""
 PANSIFT_UUID=""
 PANSIFT_INGEST=""
 PANSIFT_TOKEN=""
@@ -11,6 +12,7 @@ umask 077
 
 # Macro settings for paths etc.
 source "$HOME"/Library/Preferences/Pansift/pansift.conf
+echo "Pansift Agent Version: $PANSIFT_AGENT_VERSION"
 
 # Configuration and preferences files
 mkdir -p "$PANSIFT_PREFERENCES"
