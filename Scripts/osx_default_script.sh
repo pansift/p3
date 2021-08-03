@@ -100,7 +100,7 @@ asn_trace () {
 		IFS=$OLDIFS
 	else
 		tagset="internet4_connected=false,from_asn=AS0,destination=localhost"
-		fieldset="asn_trace=AS0"
+		fieldset="asn_trace=\"AS0\""
 		timestamp=$(date +%s)000000000
 		echo -ne "$measurement,$tagset $fieldset $timestamp\n"
 	fi
@@ -125,7 +125,7 @@ asn_trace () {
     IFS=$OLDIFS
   else
     tagset="internet6_connected=false,from_asn=AS0,destination=localhost"
-    fieldset="asn_trace=AS0"
+    fieldset="asn_trace=\"AS0\""
     timestamp=$(date +%s)000000000
     echo -ne "$measurement,$tagset $fieldset $timestamp\n"
   fi
