@@ -479,13 +479,14 @@ http_checks () {
 			http_time_starttransfer=$(echo -n "$curl_response" | cut -d':' -f5 | remove_chars)
 			http_time_total=$(echo -n "$curl_response" | cut -d':' -f6 | remove_chars)
 			http_size_download=$(echo -n "$curl_response" | cut -d':' -f7 | remove_chars)
+			http_size_megabytes=$(echo "scale=3;($http_size_download / 8) / 1000000" | bc -l | tr -d '\n' | sed 's/^\./0./' | remove_chars)
 			http_status=$(echo -n "$curl_response" | cut -d':' -f8 | sed 's/^000/0/' | remove_chars)i
 			http_speed_bytes=$(echo -n "$curl_response" | cut -d':' -f9 | remove_chars)
 			# bc doesn't print a leading zero and this confuses poor influx
 			http_speed_megabits=$(echo "scale=3;($http_speed_bytes * 8) / 1000000" | bc -l | tr -d '\n' | sed 's/^\./0./' | remove_chars)
 			http_ttfb=$(echo "$http_time_connect - $http_time_namelookup" | bc -l | tr -d '\n' | sed 's/^\./0./' | remove_chars)
 			tagset=$(echo -n "ip_version=4,http_url=$http_url")
-			fieldset=$( echo -n "http_time_namelookup=$http_time_namelookup,http_time_connect=$http_time_connect,http_time_appconnect=$http_time_appconnect,http_time_pretransfer=$http_time_pretransfer,http_time_starttransfer=$http_time_starttransfer,http_time_total=$http_time_total,http_size_download=$http_size_download,http_ttfb=$http_ttfb,http_status=$http_status,http_speed_megabits=$http_speed_megabits")
+			fieldset=$( echo -n "http_time_namelookup=$http_time_namelookup,http_time_connect=$http_time_connect,http_time_appconnect=$http_time_appconnect,http_time_pretransfer=$http_time_pretransfer,http_time_starttransfer=$http_time_starttransfer,http_time_total=$http_time_total,http_size_megabytes=$http_size_megabytes,http_ttfb=$http_ttfb,http_status=$http_status,http_speed_megabits=$http_speed_megabits")
 			timesuffix=$(expr 1000000000 + $i + 1) # This is to get around duplicates in Influx with measurement, tag, and timestamp the same.
 			timesuffix=${timesuffix:1} # We drop the leading "1" and end up with incrementing nanoseconds 9 digits long
 			timestamp=$(date +%s)$timesuffix
