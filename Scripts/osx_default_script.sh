@@ -22,10 +22,12 @@ fi
 airport="/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport"
 plistbuddy="/usr/libexec/PlistBuddy"
 curl_path="/opt/local/bin/curl"
-agent[0]="Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36"
-agent[1]="Mozilla/5.0 (Macintosh; Intel Mac OS X 11.2; rv:86.0) Gecko/20100101 Firefox/86.0"
-agent[2]="Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Safari/605.1.15"
-curl_user_agent=$[$RANDOM % ${#agent[@]}]
+agent=()
+agent+=("Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36")
+agent+=("Mozilla/5.0 (Macintosh; Intel Mac OS X 11.2; rv:86.0) Gecko/20100101 Firefox/86.0")
+agent+=("Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Safari/605.1.15")
+pick_user_agent=$[$RANDOM % ${#agent[@]}]
+curl_user_agent=${agent[$pick_user_agent]}
 #curl_user_agent="pansift.com/0.1"
 #curl_user_agent="pansift-${PANSIFT_UUID}"
 dns_query_host=$(uuidgen)
@@ -45,6 +47,8 @@ if test -f "$curl_path"; then
 else
 	curl_binary="/usr/bin/curl -A "$curl_user_agent" --no-keepalive"
 fi
+
+# Note: Some of the squeezing and squishing could have been done with xargs!
 
 remove_chars () {
 	read data
@@ -456,6 +460,7 @@ wlan_scan () {
 
 
 http_checks () {
+	# Only IPv4?
 	# Yes we know this curl speed_download is single stream and not multithreaded/pipelined, it's just indicative of over X
 	measurement="pansift_osx_http"
 	i=0
@@ -465,13 +470,22 @@ http_checks () {
 		if [ ! -z "$host" ]; then
 			http_url=$(echo -n "$host" | remove_chars)
 			target_host="https://"$host
-			curl_response=$(curl -A "$curl_user_agent" -k -s -o /dev/null -w "%{http_code}:%{speed_download}" -L "$target_host" --stderr - | remove_chars)
-			http_status=$(echo -n "$curl_response" | cut -d':' -f1 | sed 's/^000/0/' | remove_chars)i
-			http_speed_bytes=$(echo -n "$curl_response" | cut -d':' -f2)
+			# Max time for operation -m7
+			curl_response=$(curl -4 -m7 -A "$curl_user_agent" -k -s -o /dev/null -w "%{time_namelookup}:%{time_connect}:%{time_appconnect}:%{time_pretransfer}:%{time_starttransfer}:%{time_total}:%{size_download}:%{http_code}:%{speed_download}" -L "$target_host" --stderr - | remove_chars)
+			http_time_namelookup=$(echo -n "$curl_response" | cut -d':' -f1 | remove_chars)
+			http_time_connect=$(echo -n "$curl_response" | cut -d':' -f2 | remove_chars)
+			http_time_appconnect=$(echo -n "$curl_response" | cut -d':' -f3 | remove_chars)
+			http_time_pretransfer=$(echo -n "$curl_response" | cut -d':' -f4 | remove_chars)
+			http_time_starttransfer=$(echo -n "$curl_response" | cut -d':' -f5 | remove_chars)
+			http_time_total=$(echo -n "$curl_response" | cut -d':' -f6 | remove_chars)
+			http_size_download=$(echo -n "$curl_response" | cut -d':' -f7 | remove_chars)
+			http_status=$(echo -n "$curl_response" | cut -d':' -f8 | sed 's/^000/0/' | remove_chars)i
+			http_speed_bytes=$(echo -n "$curl_response" | cut -d':' -f9 | remove_chars)
 			# bc doesn't print a leading zero and this confuses poor influx
 			http_speed_megabits=$(echo "scale=3;($http_speed_bytes * 8) / 1000000" | bc -l | tr -d '\n' | sed 's/^\./0./' | remove_chars)
-			tagset=$(echo -n "http_url=$http_url")
-			fieldset=$( echo -n "http_status=$http_status,http_speed_megabits=$http_speed_megabits")
+			http_ttfb=$(echo "$http_time_connect - $http_time_namelookup" | bc -l | tr -d '\n' | sed 's/^\./0./' | remove_chars)
+			tagset=$(echo -n "ip_version=4,http_url=$http_url")
+			fieldset=$( echo -n "http_time_namelookup=$http_time_namelookup,http_time_connect=$http_time_connect,http_time_appconnect=$http_time_appconnect,http_time_pretransfer=$http_time_pretransfer,http_time_starttransfer=$http_time_starttransfer,http_time_total=$http_time_total,http_size_download=$http_size_download,http_ttfb=$http_ttfb,http_status=$http_status,http_speed_megabits=$http_speed_megabits")
 			timesuffix=$(expr 1000000000 + $i + 1) # This is to get around duplicates in Influx with measurement, tag, and timestamp the same.
 			timesuffix=${timesuffix:1} # We drop the leading "1" and end up with incrementing nanoseconds 9 digits long
 			timestamp=$(date +%s)$timesuffix
