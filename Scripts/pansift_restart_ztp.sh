@@ -12,10 +12,10 @@ if test -f "$preferences"; then
 fi
 
 if [[ -d "$PANSIFT_PREFERENCES" ]]; then
-	# pansift_uuid_file="$PANSIFT_PREFERENCES"/pansift_uuid.conf
-	# if test -f "$pansift_uuid_file"; then
-	# 	rm $pansift_uuid_file
-	# fi
+	pansift_uuid_file="$PANSIFT_PREFERENCES"/pansift_uuid.conf
+	if test -f "$pansift_uuid_file"; then
+		rm $pansift_uuid_file
+	fi
 	pansift_ingest_file="$PANSIFT_PREFERENCES"/pansift_ingest.conf
 	if test -f "$pansift_ingest_file"; then
 		rm $pansift_ingest_file
