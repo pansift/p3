@@ -21,11 +21,17 @@ if test -f "$pansift_token_file"; then
   line=$(head -n 1 $pansift_token_file)
   token=$(echo -n "$line" | xargs)
 fi
+pansift_ingest_file="$PANSIFT_PREFERENCES"/pansift_ingest.conf
+if test -f "$pansift_ingest_file"; then
+  line=$(head -n 1 $pansift_ingest_file)
+  ingest=$(echo -n "$line" | xargs)
+fi
 
 echo "=========================================================="
-echo " Strongly recommend making a note of your UUID and token."
-echo " Pansift UUID: ${uuid}" 
-echo " Pansift Token: ${token}" 
+echo " Strongly recommend making a note of your Pansift settings"
+echo " Bucket UUID: ${uuid}" 
+echo " Write Token: ${token}" 
+echo " Ingest URL: ${ingest}" 
 echo "=========================================================="
 read -n 1 -s -r -p "Press any key to continue or Ctrl+C to stop."
 echo
