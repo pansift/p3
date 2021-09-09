@@ -90,7 +90,7 @@ ip_trace () {
 		for host in $PANSIFT_HOSTS_CSV
 		do
 			if [ ! -z "$host" ]; then
-				ip_trace=$(timeout 15 traceroute -I -w2 -n "$host" 2>/dev/null | grep -E "^ \d+ .*|^\d+ .*" | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | awk '{ORS=";"}{print $1}' | sed 's/.$//' | remove_chars)
+				ip_trace=$(timeout 30 traceroute -I -w2 -n "$host" 2>/dev/null | grep -E "^ \d+ .*|^\d+ .*" | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | awk '{ORS=";"}{print $1}' | sed 's/.$//' | remove_chars)
 				target_host=$(echo -n "$host" | remove_chars)
 				tagset=$(echo -n "internet4_connected=true,from_asn=$internet4_asn,destination=$target_host")
 				fieldset=$( echo -n "ip_trace=\"$ip_trace\"")
@@ -115,7 +115,7 @@ ip_trace () {
     for host in $PANSIFT_HOSTS_CSV
     do
       if [ ! -z "$host" ]; then
-        ip_trace=$(timeout 15 traceroute6 -I -w2 -n "$host" 2>/dev/null | grep -E "^ \d+ .*|^\d+ .*" | grep -oE "(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))" | awk '{ORS=";"}{print $1}' | sed 's/.$//' | remove_chars)
+        ip_trace=$(timeout 30 traceroute6 -I -w2 -n "$host" 2>/dev/null | grep -E "^ \d+ .*|^\d+ .*" | grep -oE "(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))" | awk '{ORS=";"}{print $1}' | sed 's/.$//' | remove_chars)
         target_host=$(echo -n "$host" | remove_chars)
         tagset=$(echo -n "internet6_connected=true,from_asn=$internet6_asn,destination=$target_host")
         fieldset=$( echo -n "ip_trace=\"$ip_trace\"")
