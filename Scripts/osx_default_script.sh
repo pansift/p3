@@ -2,8 +2,8 @@
 
 # Pansift Telegraf input.exec script for writing influx measurements and tags
 
-#set -e
-#set -vx
+# set -e
+# set -vx
 
 # Note: We can't afford to have a comma or space out of place with InfluxDB ingestion in the line protocol
 LDIFS=$IFS
@@ -206,9 +206,16 @@ network_measure () {
 		dg6_interface_ether="none"
 	fi
 
+	# Could add to ping on Apple macOS -k for COS BK_SYS, BK, BE, RD, OAM, AV, RV, VI, VO and CTL
+	# https://github.com/darwin-on-arm/xnu/blob/master/bsd/sys/kpi_mbuf.h search for MBUF_TC
+	# MBUF_TC_BE (0) Best effort, normal class.
+	# MBUF_TC_BK (1) Background, low priority or bulk traffic.
+	# MBUF_TC_VI (2) Interactive video, constant bit rate, low latency.
+	# MBUF_TC_VO (3) Interactive voice, constant bit rate, lowest latency.
+
 	# We've possibly been hitting WLAN powersave in quiet times with dropping packets so increased count to 3
-	dg4_response=$(echo -n "$netstat4" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg4_ip" == "none" ]] && ping -c3 -i1 -o "$dg4_ip" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
-	dg6_response=$(echo -n "$netstat6" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg6_ip" == "none" ]] && ping6 -c3 -i1 -o "$dg6_fullgw" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
+	dg4_response=$(echo -n "$netstat4" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg4_ip" == "none" ]] && ping -c3 -i1 -k BE -o "$dg4_ip" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
+	dg6_response=$(echo -n "$netstat6" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg6_ip" == "none" ]] && ping6 -c3 -i1 -k BE -o "$dg6_fullgw" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
 
 	if [[ "$dg4_response" > 0 ]] || [[ "$dg6_respone" > 0 ]]; then
 		locally_connected="true"
