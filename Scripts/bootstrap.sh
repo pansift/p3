@@ -60,5 +60,5 @@ else
   echo "Not supported on this platform yet"
 fi
 
-cd "$PANSIFT_SCRIPTS" && ./pansift -n 
+cd "$PANSIFT_SCRIPTS" && ./pansift -b
 exit

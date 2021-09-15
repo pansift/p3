@@ -10,7 +10,8 @@ tpid="$PANSIFT_SUPPORT"/telegraf.pid
 if [[ -f "$tpid" ]] && [[ $(pgrep "telegraf") ]]; then
 	true 
 else
-	"$PANSIFT_SCRIPTS"/pansift -n >/dev/null 2>&1
+	"$PANSIFT_SCRIPTS"/pansift >/dev/null 2>&1 &
+	disown
 fi
 
 curl_user_agent() {
