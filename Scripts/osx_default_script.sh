@@ -214,8 +214,10 @@ network_measure () {
 	# MBUF_TC_VO (3) Interactive voice, constant bit rate, lowest latency.
 
 	# We've possibly been hitting WLAN powersave in quiet times with dropping packets so increased count to 3
-	dg4_response=$(echo -n "$netstat4" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg4_ip" == "none" ]] && ping -c3 -i1 -k BE -o "$dg4_ip" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
-	dg6_response=$(echo -n "$netstat6" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg6_ip" == "none" ]] && ping6 -c3 -i1 -k BE -o "$dg6_fullgw" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
+	# Removing the -o option as it skews towards the first packet which may take longer if device is asleep etc
+	# Wait a maximum of -t5 seconds
+	dg4_response=$(echo -n "$netstat4" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg4_ip" == "none" ]] && ping -t7 -c3 -i1 -k BE "$dg4_ip" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
+	dg6_response=$(echo -n "$netstat6" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg6_ip" == "none" ]] && ping6 -t7 -c3 -i1 -k BE "$dg6_fullgw" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
 
 	if [[ "$dg4_response" > 0 ]] || [[ "$dg6_respone" > 0 ]]; then
 		locally_connected="true"
