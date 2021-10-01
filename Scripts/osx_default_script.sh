@@ -309,16 +309,25 @@ internet_measure () {
 
 local_ips () {
   # We need internet_measure() and network_measure() to run first so we can know our public IPv6 address!
+	if [ ! "$dg4_interface" == "none" ]; then
 	dg4_interface_details=$(ifconfig "$dg4_interface")
 	dg4_interface_details_inet=$(echo -n "$dg4_interface_details" | grep -i "inet ")
 	dg4_local_ip=$(echo -n "$dg4_interface_details_inet" | grep -qi "inet " || { echo -n 'none'; exit 0; }; echo -n "$dg4_interface_details_inet" | grep -i "inet " | awk '{print $2}'| remove_chars)
 	dg4_local_netmask=$(echo -n "$dg4_interface_details_inet" | grep -qi "inet " || { echo -n 'none'; exit 0; }; echo -n "$dg4_interface_details_inet" | grep -i "inet " | awk '{print $4}'| remove_chars)
+	else
+	dg4_local_ip="none"
+	dg4_local_netmask="none"
+	fi
 
+	if [ ! "$dg6_interface_device_only" == "none" ]; then
 	dg6_interface_details=$(ifconfig "$dg6_interface_device_only")
 	# We know there may be multiple IPv6 addresses so first look for the one mapping to public if connectivity allows, then look for the next one in reverse order, so most likely to be the temporary
   # If none, we should get the fe80 address...
 	dg6_interface_details_inet6=$(echo -n "$dg6_interface_details" | grep -i "inet6" | grep -i "$internet6_public_ip")
-	if [[ ! -z "$dg6_interface_details_inet6" ]]; then 
+	else
+		dg6_interface_details_inet6="none"
+	fi
+	if [[ ! "$dg6_interface_details_inet6" == "none" ]]; then 
 	dg6_local_ip=$(echo -n "$dg6_interface_details_inet6" | grep -qi "inet6" || { echo -n 'none'; exit 0; }; echo -n "$dg6_interface_details_inet6" | grep -i "inet6" | awk '{print $2}'| remove_chars)
 	dg6_local_prefixlen=$(echo -n "$dg6_interface_details_inet6" | grep -qi "inet6" || { echo -n 'none'; exit 0; }; echo -n "$dg6_interface_details_inet6" | grep -i "inet6" | awk '{print $4}'| remove_chars)
 	else
