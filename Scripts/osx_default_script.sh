@@ -43,9 +43,9 @@ network_interfaces=$(networksetup -listallhardwareports)
 # Old versions of curl will fail with status 53 on SSL/TLS negotiation on newer hosts
 # User really needs a newer curl binary but can also put defaults here
 if test -f "$curl_path"; then
-	curl_binary="/opt/local/bin/curl -A "$curl_user_agent" --no-keepalive"
+	curl_binary="/opt/local/bin/curl -m20 -A "$curl_user_agent" --no-keepalive "
 else
-	curl_binary="/usr/bin/curl -A "$curl_user_agent" --no-keepalive"
+	curl_binary="/usr/bin/curl -m20 -A "$curl_user_agent" --no-keepalive "
 fi
 
 # Note: Some of the squeezing and squishing could have been done with xargs!
@@ -216,8 +216,8 @@ network_measure () {
 	# We've possibly been hitting WLAN powersave in quiet times with dropping packets so increased count to 3
 	# Removing the -o option as it skews towards the first packet which may take longer if device is asleep etc
 	# Wait a maximum of -t5 seconds
-	dg4_response=$(echo -n "$netstat4" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg4_ip" == "none" ]] && ping -t7 -c3 -i1 -k BE "$dg4_ip" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
-	dg6_response=$(echo -n "$netstat6" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg6_ip" == "none" ]] && ping6 -c3 -i1 -k BE "$dg6_fullgw" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
+	dg4_response=$(echo -n "$netstat4" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg4_ip" == "none" ]] && ping -t5 -c3 -i1 -k BE "$dg4_ip" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
+	dg6_response=$(echo -n "$netstat6" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg6_ip" == "none" ]] && timeout 5 ping6 -c3 -i1 -k BE "$dg6_fullgw" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
 
 	if [[ "$dg4_response" > 0 ]] || [[ "$dg6_respone" > 0 ]]; then
 		locally_connected="true"
@@ -231,14 +231,14 @@ network_measure () {
 		dns4_primary=$(cat /etc/resolv.conf | grep -q '\..*\..*\.' || { echo -n 'none'; exit 0; }; cat /etc/resolv.conf | grep '\..*\..*\.' | head -n1 | cut -d' ' -f2 | remove_chars)
 		dns6_primary=$(cat /etc/resolv.conf | grep -q 'nameserver.*:' || { echo -n 'none'; exit 0; }; cat /etc/resolv.conf | grep 'nameserver.*:' | head -n1 | cut -d' ' -f2 | remove_chars)
 		if [ $dns4_primary != "none" ]; then
-			dns4_query_output=$(dig -4 +time=5 +tries=2 @"$dns4_primary" "$dns_query")
+			dns4_query_output=$(dig -4 +time=3 +tries=1 @"$dns4_primary" "$dns_query")
 			dns4_query_response=$(echo -n "$dns4_query_output" | grep -m1 -i "query time" | cut -d' ' -f4 | remove_chars)
 			[ -z "$dns4_query_response" ] && dns4_query_response="0"
 		else
 			dns4_query_response="0"
 		fi
 		if [ $dns6_primary != "none" ]; then
-			dns6_query_output=$(dig -6 +time=5 +tries=2 @"$dns6_primary" "$dns_query")
+			dns6_query_output=$(dig -6 +time=3 +tries=1 @"$dns6_primary" "$dns_query")
 			dns6_query_response=$(echo -n "$dns6_query_output" | grep -m1 -i "query time" | cut -d' ' -f4 | remove_chars)
 			[ -z "$dns6_query_response" ] && dns6_query_response="0"
 		else 
@@ -255,7 +255,7 @@ internet_measure () {
 	# We need basic ICMP response times from lighthouse too?
 	#
 	internet4_connected=$(ping -o -c3 -i1 -t5 $PANSIFT_ICMP4_TARGET > /dev/null 2>&1 || { echo -n "false"; exit 0;}; echo -n "true")
-	internet6_connected=$(ping6 -o -c3 -i1 $PANSIFT_ICMP6_TARGET > /dev/null 2>&1 || { echo -n "false"; exit 0;}; echo -n "true")
+	internet6_connected=$(timeout 5 ping6 -o -c3 -i1 $PANSIFT_ICMP6_TARGET > /dev/null 2>&1 || { echo -n "false"; exit 0;}; echo -n "true")
 	internet_connected="false" # Default to be overwritten below
 	internet_dualstack="false" # "
 	ipv4_only="false" # "
@@ -277,8 +277,8 @@ internet_measure () {
 		ipv4_only="false"
 		ipv6_only="false"
 		internet_dualstack="true"
-		lighthouse4=$($curl_binary -m3 -sN -4 -k -L -i "$PANSIFT_LIGHTHOUSE" 2>&1 || exit 0)
-		lighthouse6=$($curl_binary -m3 -sN -6 -k -L -i "$PANSIFT_LIGHTHOUSE" 2>&1 || exit 0)
+		lighthouse4=$(timeout 7 $curl_binary -sN -4 -k -L -i "$PANSIFT_LIGHTHOUSE" 2>&1 || exit 0)
+		lighthouse6=$(timeout 7 $curl_binary -sN -6 -k -L -i "$PANSIFT_LIGHTHOUSE" 2>&1 || exit 0)
 		# internet_asn=$(echo -n "$lighthouse4" | grep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse4" | grep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
 		internet4_asn=$(echo -n "$lighthouse4" | grep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse4" | grep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
 		internet6_asn=$(echo -n "$lighthouse6" | grep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse6" | grep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
@@ -289,7 +289,7 @@ internet_measure () {
 		ipv4_only="true"
 		ipv6_only="false"
 		internet_dualstack="false"
-		lighthouse4=$($curl_binary -m3 -sN -4 -k -L -i "$PANSIFT_LIGHTHOUSE" 2>&1 || exit 0)
+		lighthouse4=$(timeout 7 $curl_binary -sN -4 -k -L -i "$PANSIFT_LIGHTHOUSE" 2>&1 || exit 0)
 		# internet_asn=$(echo -n "$lighthouse4" | egrep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse4" | egrep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
 		internet4_asn=$(echo -n "$lighthouse4" | grep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse4" | grep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
 		internet4_public_ip=$(echo -n "$lighthouse4" | egrep -qi "x-pansift-client-ip" || { echo -n 'none'; exit 0;}; echo -n "$lighthouse4" | egrep -i "x-pansift-client-ip" | cut -d' ' -f2 | remove_chars )
@@ -299,7 +299,7 @@ internet_measure () {
 		ipv4_only="false"
 		ipv6_only="true"
 		internet_dualstack="false"
-		lighthouse6=$($curl_binary -m3 -sN -6 -k -L -i "$PANSIFT_LIGHTHOUSE" 2>&1 || exit 0)
+		lighthouse6=$(timeout 7 $curl_binary -sN -6 -k -L -i "$PANSIFT_LIGHTHOUSE" 2>&1 || exit 0)
 		# internet_asn=$(echo -n "$lighthouse6" | egrep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse6" | egrep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
 		internet6_asn=$(echo -n "$lighthouse6" | grep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse6" | grep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
 		internet4_public_ip="none"
@@ -493,7 +493,7 @@ http_checks () {
 			http_url=$(echo -n "$host" | remove_chars)
 			target_host="https://"$host
 			# Max time for operation -m7
-			curl_response=$(curl -4 -m7 -A "$curl_user_agent" -k -s -o /dev/null -w "%{time_namelookup}:%{time_connect}:%{time_appconnect}:%{time_pretransfer}:%{time_starttransfer}:%{time_total}:%{size_download}:%{http_code}:%{speed_download}" -L "$target_host" --stderr - | remove_chars)
+			curl_response=$(curl -m30 -A "$curl_user_agent" --no-keepalive -4 -k -s -o /dev/null -w "%{time_namelookup}:%{time_connect}:%{time_appconnect}:%{time_pretransfer}:%{time_starttransfer}:%{time_total}:%{size_download}:%{http_code}:%{speed_download}" -L "$target_host" --stderr - | remove_chars)
 			http_time_namelookup=$(echo -n "$curl_response" | cut -d':' -f1 | remove_chars)
 			http_time_connect=$(echo -n "$curl_response" | cut -d':' -f2 | remove_chars)
 			http_time_appconnect=$(echo -n "$curl_response" | cut -d':' -f3 | remove_chars)
@@ -509,7 +509,7 @@ http_checks () {
 			http_speed_megabits=$(echo "scale=3;($http_speed_bytes * 8) / 1000000" | bc -l | tr -d '\n' | sed 's/^\./0./' | remove_chars)
 			http_ttfb=$(echo "scale=0;(($http_time_connect - $http_time_namelookup) * 10000) / 10;" | bc -l | tr -d '\n' | sed 's/^\./0./' | remove_chars)
 			tagset=$(echo -n "ip_version=4,http_url=$http_url")
-			fieldset=$( echo -n "http_time_namelookup=$http_time_namelookup,http_time_connect=$http_time_connect,http_time_appconnect=$http_time_appconnect,http_time_pretransfer=$http_time_pretransfer,http_time_starttransfer=$http_time_starttransfer,http_time_total=$http_time_total,http_size_megabytes=$http_size_megabytes,http_size_kilobytes=$http_size_kilobytes,http_ttfb=$http_ttfb,http_status=$http_status,http_speed_megabits=$http_speed_megabits")
+			fieldset=$( echo -n "http_time_namelookup=${http_time_namelookup:=0},http_time_connect=${http_time_connect:=0},http_time_appconnect=${http_time_appconnect:=0},http_time_pretransfer=${http_time_pretransfer:=0},http_time_starttransfer=${http_time_starttransfer:=0},http_time_total=${http_time_total:=0},http_size_megabytes=${http_size_megabytes:=0},http_size_kilobytes=${http_size_kilobytes:=0},http_ttfb=${http_ttfb:=0},http_status=${http_status:=0},http_speed_megabits=${http_speed_megabits:=0}")
 			timesuffix=$(expr 1000000000 + $i + 1) # This is to get around duplicates in Influx with measurement, tag, and timestamp the same.
 			timesuffix=${timesuffix:1} # We drop the leading "1" and end up with incrementing nanoseconds 9 digits long
 			timestamp=$(date +%s)$timesuffix
