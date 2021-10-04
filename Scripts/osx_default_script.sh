@@ -401,7 +401,8 @@ wlan_measure () {
 		wlan_current_phy_mode=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "PHY Mode:" | head -n1 | cut -d':' -f2- | remove_chars)
 		wlan_supported_channels=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "Supported Channels:" | head -n1 | cut -d':' -f2- | remove_chars_delimit_colon)
 	else
-		#set all values null as can not have an empty tag
+		# set all values null as can not have an empty tag
+		# Note: We can do this with variable expansion such as ${wlan_state:='none'} in the tagset/fieldset
 		wlan_state="none"
 		wlan_op_mode="none"
 		wlan_80211_auth="none"
