@@ -56,6 +56,14 @@ remove_chars () {
 	echo -n $newdata
 }
 
+remove_chars_except_commas () {
+	# Beware this one, do not allow direct inclusion in tagsets or fieldsets
+	read data
+	newdata=$(echo -n "$data" | awk '{$1=$1;print}' | tr -s ' ' | tr '[:upper:]' '[:lower:]' | tr -d '\r' | sed 's! !\\ !g')
+	echo -n $newdata
+}
+
+
 remove_chars_except_case () {
 	read data
 	newdata=$(echo -n "$data" | awk '{$1=$1;print}' | tr ',' '.' | tr -s ' ' | tr -d '\r' | sed 's! !\\ !g')
@@ -77,6 +85,19 @@ remove_chars_delimit_colon () {
 
 timeout () { 
 	perl -e 'alarm shift; exec @ARGV' "$@" 
+}
+
+get_test_hosts () {
+	# Assumees dig in the system
+	test_hosts=$(dig +short TXT hosts.${PANSIFT_UUID}.ingest.pansift.com)
+	if [[ $test_hosts =~ "h="[[:alnum:]] ]]; then
+		hosts=$(echo -n "$test_hosts" | tr -d '"' | awk -F 'h=' '{print $2}' | awk -F '[[:alpha:]]=' '{print $1}' | remove_chars_except_commas)
+		export PANSIFT_HOSTS_CSV=${hosts:=$PANSIFT_HOSTS_CSV}
+	else 
+		test_hosts=$(dig +short TXT hosts.default.ingest.pansift.com)
+		hosts=$(echo -n "$test_hosts" | tr -d '"' | awk -F 'h=' '{print $2}' | awk -F '[[:alpha:]]=' '{print $1}' | remove_chars_except_commas)
+		export PANSIFT_HOSTS_CSV=${hosts:=$PANSIFT_HOSTS_CSV}
+	fi
 }
 
 ip_trace () {
@@ -109,30 +130,30 @@ ip_trace () {
 		echo -ne "$measurement,$tagset $fieldset $timestamp\n"
 	fi
 	# traceroute6 does not support ASN lookup -a
-  if [ "$internet6_connected" == "true" ]; then
-    i=0
-    IFS=","
-    for host in $PANSIFT_HOSTS_CSV
-    do
-      if [ ! -z "$host" ]; then
-        ip_trace=$(timeout 30 traceroute6 -I -w2 -n "$host" 2>/dev/null | grep -E "^ \d+ .*|^\d+ .*" | grep -oE "(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))" | awk '{ORS=";"}{print $1}' | sed 's/.$//' | remove_chars)
-        target_host=$(echo -n "$host" | remove_chars)
-        tagset=$(echo -n "internet6_connected=true,from_asn=$internet6_asn,destination=$target_host")
-        fieldset=$( echo -n "ip_trace=\"$ip_trace\"")
-        timesuffix=$(expr 1000000000 + $i + 1) # This is to get around duplicates in Influx with measurement, tag, and timestamp the same.
-        timesuffix=${timesuffix:1} # We drop the leading "1" and end up with incrementing nanoseconds 9 digits long
-        timestamp=$(date +%s)$timesuffix
-        echo -ne "$measurement,$tagset $fieldset $timestamp\n"
-        ((i++))
-      fi
-    done
-    IFS=$OLDIFS
-  else
-    tagset="internet6_connected=false,from_asn=AS0,destination=localhost"
-    fieldset="ip_trace=\"none\""
-    timestamp=$(date +%s)000000000
-    echo -ne "$measurement,$tagset $fieldset $timestamp\n"
-  fi
+	if [ "$internet6_connected" == "true" ]; then
+		i=0
+		IFS=","
+		for host in $PANSIFT_HOSTS_CSV
+		do
+			if [ ! -z "$host" ]; then
+				ip_trace=$(timeout 30 traceroute6 -I -w2 -n "$host" 2>/dev/null | grep -E "^ \d+ .*|^\d+ .*" | grep -oE "(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))" | awk '{ORS=";"}{print $1}' | sed 's/.$//' | remove_chars)
+				target_host=$(echo -n "$host" | remove_chars)
+				tagset=$(echo -n "internet6_connected=true,from_asn=$internet6_asn,destination=$target_host")
+				fieldset=$( echo -n "ip_trace=\"$ip_trace\"")
+				timesuffix=$(expr 1000000000 + $i + 1) # This is to get around duplicates in Influx with measurement, tag, and timestamp the same.
+				timesuffix=${timesuffix:1} # We drop the leading "1" and end up with incrementing nanoseconds 9 digits long
+				timestamp=$(date +%s)$timesuffix
+				echo -ne "$measurement,$tagset $fieldset $timestamp\n"
+				((i++))
+			fi
+		done
+		IFS=$OLDIFS
+	else
+		tagset="internet6_connected=false,from_asn=AS0,destination=localhost"
+		fieldset="ip_trace=\"none\""
+		timestamp=$(date +%s)000000000
+		echo -ne "$measurement,$tagset $fieldset $timestamp\n"
+	fi
 
 }
 
@@ -184,7 +205,7 @@ network_measure () {
 	hardware_interfaces=$(echo -n "$network_interfaces" | awk -F ":" '/Hardware Port:|Device:/{print $2}' | paste -d',' - - )
 	dg4_hardware_type=$(echo -n "$hardware_interfaces" | grep -qi "$dg4_interface" || { echo -n 'unknown'; exit 0; }; echo -n "$hardware_interfaces" | grep -i "$dg4_interface" | cut -d',' -f1 | xargs)
 	dg6_hardware_type=$(echo -n "$hardware_interfaces" | grep -qi "$dg6_interface_device_only" || { echo -n 'unknown'; exit 0; }; echo -n "$hardware_interfaces" | grep -i "$dg6_interface_device_only" | cut -d',' -f1 | xargs)
-	
+
 	if [ ! "$dg4_ip" == "none" ]; then
 		dg4_router_ether=$(arp -i "$dg4_interface" -n "$dg4_ip" | xargs | cut -d' ' -f4 | remove_chars)
 	else
@@ -308,28 +329,28 @@ internet_measure () {
 }
 
 local_ips () {
-  # We need internet_measure() and network_measure() to run first so we can know our public IPv6 address!
+	# We need internet_measure() and network_measure() to run first so we can know our public IPv6 address!
 	if [ ! "$dg4_interface" == "none" ]; then
-	dg4_interface_details=$(ifconfig "$dg4_interface")
-	dg4_interface_details_inet=$(echo -n "$dg4_interface_details" | grep -i "inet ")
-	dg4_local_ip=$(echo -n "$dg4_interface_details_inet" | grep -qi "inet " || { echo -n 'none'; exit 0; }; echo -n "$dg4_interface_details_inet" | grep -i "inet " | awk '{print $2}'| remove_chars)
-	dg4_local_netmask=$(echo -n "$dg4_interface_details_inet" | grep -qi "inet " || { echo -n 'none'; exit 0; }; echo -n "$dg4_interface_details_inet" | grep -i "inet " | awk '{print $4}'| remove_chars)
+		dg4_interface_details=$(ifconfig "$dg4_interface")
+		dg4_interface_details_inet=$(echo -n "$dg4_interface_details" | grep -i "inet ")
+		dg4_local_ip=$(echo -n "$dg4_interface_details_inet" | grep -qi "inet " || { echo -n 'none'; exit 0; }; echo -n "$dg4_interface_details_inet" | grep -i "inet " | awk '{print $2}'| remove_chars)
+		dg4_local_netmask=$(echo -n "$dg4_interface_details_inet" | grep -qi "inet " || { echo -n 'none'; exit 0; }; echo -n "$dg4_interface_details_inet" | grep -i "inet " | awk '{print $4}'| remove_chars)
 	else
-	dg4_local_ip="none"
-	dg4_local_netmask="none"
+		dg4_local_ip="none"
+		dg4_local_netmask="none"
 	fi
 
 	if [ ! "$dg6_interface_device_only" == "none" ]; then
-	dg6_interface_details=$(ifconfig "$dg6_interface_device_only")
-	# We know there may be multiple IPv6 addresses so first look for the one mapping to public if connectivity allows, then look for the next one in reverse order, so most likely to be the temporary
-  # If none, we should get the fe80 address...
-	dg6_interface_details_inet6=$(echo -n "$dg6_interface_details" | grep -i "inet6" | grep -i "$internet6_public_ip")
+		dg6_interface_details=$(ifconfig "$dg6_interface_device_only")
+		# We know there may be multiple IPv6 addresses so first look for the one mapping to public if connectivity allows, then look for the next one in reverse order, so most likely to be the temporary
+		# If none, we should get the fe80 address...
+		dg6_interface_details_inet6=$(echo -n "$dg6_interface_details" | grep -i "inet6" | grep -i "$internet6_public_ip")
 	else
 		dg6_interface_details_inet6="none"
 	fi
 	if [[ ! "$dg6_interface_details_inet6" == "none" ]]; then 
-	dg6_local_ip=$(echo -n "$dg6_interface_details_inet6" | grep -qi "inet6" || { echo -n 'none'; exit 0; }; echo -n "$dg6_interface_details_inet6" | grep -i "inet6" | awk '{print $2}'| remove_chars)
-	dg6_local_prefixlen=$(echo -n "$dg6_interface_details_inet6" | grep -qi "inet6" || { echo -n 'none'; exit 0; }; echo -n "$dg6_interface_details_inet6" | grep -i "inet6" | awk '{print $4}'| remove_chars)
+		dg6_local_ip=$(echo -n "$dg6_interface_details_inet6" | grep -qi "inet6" || { echo -n 'none'; exit 0; }; echo -n "$dg6_interface_details_inet6" | grep -i "inet6" | awk '{print $2}'| remove_chars)
+		dg6_local_prefixlen=$(echo -n "$dg6_interface_details_inet6" | grep -qi "inet6" || { echo -n 'none'; exit 0; }; echo -n "$dg6_interface_details_inet6" | grep -i "inet6" | awk '{print $4}'| remove_chars)
 	else
 		dg6_interface_details_inet6=$(echo -n "$dg6_interface_details" | grep -i "inet6" | tail -r)
 		dg6_local_ip=$(echo -n "$dg6_interface_details_inet6" | grep -qi "inet6" || { echo -n 'none'; exit 0; }; echo -n "$dg6_interface_details_inet6" | grep -i "inet6" | head -n1 | awk '{print $2}' | cut -d '%' -f1 | remove_chars)
@@ -552,10 +573,12 @@ while :; do
 			;;
 		-w|--web)
 			# The reason we don't set the single measurement here is we are looping in the checks
+			get_test_hosts
 			http_checks
 			;;
 		-t|--trace)
 			# The reason we don't set the single measurement here is we are looping in the checks
+			get_test_hosts
 			ip_trace
 			;;
 		*) break
