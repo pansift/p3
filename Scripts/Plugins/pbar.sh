@@ -7,7 +7,7 @@ url_regex='(https?|ftp|file)://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=
 
 # Don't kill anything, just check if Telegraf is already running as main script will restart anyway
 tpid="$PANSIFT_SUPPORT"/telegraf.pid
-if [[ -f "$tpid" ]] && [[ $(pgrep "telegraf") ]]; then
+if [[ -f "$tpid" ]] && [[ $(pgrep -f "telegraf") ]]; then
 	true 
 else
 	"$PANSIFT_SCRIPTS"/pansift >/dev/null 2>&1 &
@@ -60,6 +60,6 @@ echo "-- Restart ZTP | bash='$PANSIFT_SCRIPTS/pansift_restart_ztp.sh' terminal=f
 echo "-- Remove"
 echo "---- Uninstall | bash='$PANSIFT_SCRIPTS/uninstall.sh' terminal=true"
 echo "---"
-echo "Restart Metrics | bash='$PANSIFT_SCRIPTS/pansift' terminal=false"
+echo "Restart Metrics | bash='$PANSIFT_SCRIPTS/pansift -b' terminal=false"
 echo "---"
 echo "Open Log | bash='$PANSIFT_SCRIPTS/telegraf_log_show.sh' terminal=false"

@@ -171,8 +171,8 @@ system_measure () {
 	model_name=$(echo -n "$systemprofile_sphardwaredatatype" | egrep -i "model name" | cut -d':' -f2- | remove_chars_except_case)
 	model_identifier=$(echo -n "$systemprofile_sphardwaredatatype" | egrep -i "model identifier" | cut -d':' -f2- | remove_chars_except_case)
 	memory=$(echo -n "$systemprofile_sphardwaredatatype" | egrep -i "memory" | cut -d':' -f2- | remove_chars_except_spaces)
-	boot_romversion=$(echo -n "$systemprofile_sphardwaredatatype" | egrep -i "boot rom version" | cut -d':' -f2- | remove_chars)
-	smc_version=$(echo -n "$systemprofile_sphardwaredatatype" | egrep -i "smc version" | cut -d':' -f2- | remove_chars)
+	boot_romversion=$(echo -n "$systemprofile_sphardwaredatatype" | egrep -i "boot rom version|system firmware version" | cut -d':' -f2- | remove_chars)
+	smc_version=$(echo -n "$systemprofile_sphardwaredatatype" | egrep -i "smc version|os loader version" | cut -d':' -f2- | remove_chars)
 	serial_number=$(echo -n "$systemprofile_sphardwaredatatype" | egrep -i "serial number" | cut -d':' -f2- | remove_chars)
 }
 
@@ -514,8 +514,12 @@ http_checks () {
 		if [ ! -z "$host" ]; then
 			http_url=$(echo -n "$host" | remove_chars)
 			target_host="https://"$host
-			# Max time for operation -m7
-			curl_response=$(curl -m30 -A "$curl_user_agent" --no-keepalive -4 -k -s -o /dev/null -w "%{time_namelookup}:%{time_connect}:%{time_appconnect}:%{time_pretransfer}:%{time_starttransfer}:%{time_total}:%{size_download}:%{http_code}:%{speed_download}" -L "$target_host" --stderr - | remove_chars)
+			# Max time for operation -m doesn't work
+			# Was having variable expansion issues with $curl_binary here so just calling curl directly with random agent.
+			# It's borking on an illegal character returned from a time out + also the remove-chars... curl_response contains 
+ 			# bad data when using $curl_binary
+			curl_response=$(timeout 30 curl -A "$curl_user_agent" --no-keepalive -4 -k -s -o /dev/null -w "%{time_namelookup}:%{time_connect}:%{time_appconnect}:%{time_pretransfer}:%{time_starttransfer}:%{time_total}:%{size_download}:%{http_code}:%{speed_download}" -L "$target_host" 2>&1)
+			curl_response=${curl_response:="0.0"}
 			http_time_namelookup=$(echo -n "$curl_response" | cut -d':' -f1 | remove_chars)
 			http_time_connect=$(echo -n "$curl_response" | cut -d':' -f2 | remove_chars)
 			http_time_appconnect=$(echo -n "$curl_response" | cut -d':' -f3 | remove_chars)
