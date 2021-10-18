@@ -252,7 +252,7 @@ dns_cache_rr_measure () {
 	# tags versus field values. For now, the $target host can be tags as max 5 and will change
 	# infrequently on a per-bucket basis
 
-	measurement="pansift_dns_cache"
+	measurement="pansift_osx_dns_cache"
 	dns4_cache_query_response=0i
 	dns6_cache_query_response=0i
 	RESOLV=/etc/resolv.conf
@@ -269,8 +269,8 @@ dns_cache_rr_measure () {
 					target_host=$(echo -n "$host" | remove_chars)
 					dns4_cache_query_output=$(timeout 5 dig -4 +time=3 +tries=1 @"$dns4_primary" "$target_host")
 					dns4_cache_query_response=$(echo -n "$dns4_cache_query_output" | grep -m1 -i "query time" | cut -d' ' -f4 | remove_chars)
-					tagset=$(echo -n "dns4_primary_found=true,destination=$target_host")
-					fieldset=$( echo -n "dns4_cache_query_response=${dns4_cache_query_response:=0i}")
+					tagset=$(echo -n "ip_version=4,dns4_primary_found=true,destination=$target_host")
+					fieldset=$( echo -n "dns4_primary=\"$dns4_primary\",dns4_cache_query_response=${dns4_cache_query_response:=0.0}")
 					timesuffix=$(expr 1000000000 + $i + 1) # This is to get around duplicates in Influx with measurement, tag, and timestamp the same.
 					timesuffix=${timesuffix:1} # We drop the leading "1" and end up with incrementing nanoseconds 9 digits long
 					timestamp=$(date +%s)$timesuffix
@@ -282,8 +282,8 @@ dns_cache_rr_measure () {
 		else
 			dns4_primary="none"
 			target_host="none"
-			tagset="dns4_primary_found=false,destination=$target_host"
-			fieldset="dns4_primary=$dns4_primary,dns4_cache_query_response=0i"
+			tagset="ip_version=4,dns4_primary_found=false,destination=$target_host"
+			fieldset="dns4_primary=\"$dns4_primary\",dns4_cache_query_response=0.0"
 			timestamp=$(date +%s)000000000
 			echo -ne "$measurement,$tagset $fieldset $timestamp\n"
 		fi
@@ -297,8 +297,8 @@ dns_cache_rr_measure () {
 					target_host=$(echo -n "$host" | remove_chars)
 					dns6_cache_query_output=$(timeout 5 dig -6 AAAA +time=3 +tries=1 @"$dns6_primary" "$target_host")
 					dns6_cache_query_response=$(echo -n "$dns6_cache_query_output" | grep -m1 -i "query time" | cut -d' ' -f4 | remove_chars)
-					tagset=$(echo -n "dns6_primary_found=true,destination=$target_host")
-					fieldset=$( echo -n "dns6_cache_query_response=${dns6_cache_query_response:=0i}")
+					tagset=$(echo -n "ip_version=6,dns6_primary_found=true,destination=$target_host")
+					fieldset=$( echo -n "dns6_primary=\"$dns6_primary\",dns6_cache_query_response=${dns6_cache_query_response:=0.0}")
 					timesuffix=$(expr 1000000000 + $i + 1) # This is to get around duplicates in Influx with measurement, tag, and timestamp the same.
 					timesuffix=${timesuffix:1} # We drop the leading "1" and end up with incrementing nanoseconds 9 digits long
 					timestamp=$(date +%s)$timesuffix
@@ -310,8 +310,8 @@ dns_cache_rr_measure () {
 		else
 			dns6_primary="none"
 			target_host="none"
-			tagset="dns4_primary_found=false,destination=$target_host"
-			fieldset="dns6_primary=$dns6_primary,dns6_cache_query_response=0i"
+			tagset="ip_version=6,dns4_primary_found=false,destination=$target_host"
+			fieldset="dns6_primary=\"$dns6_primary\",dns6_cache_query_response=0.0"
 			timestamp=$(date +%s)000000000
 			echo -ne "$measurement,$tagset $fieldset $timestamp\n"
 		fi
@@ -320,10 +320,10 @@ dns_cache_rr_measure () {
 		dns6_primary="none"
 		dns4_primary="none"
 		target_host="none"
-		tagset4="dns4_primary_found=false,destination=$target_host"
-		fieldset4="dns4_primary=$dns4_primary,dns4_cache_query_response=0i"
-		tagset6="dns6_primary_found=false,destination=$target_host"
-		fieldset6="dns6_primary=$dns6_primary,dns6_cache_query_response=0i"
+		tagset4="ip_version=4,dns4_primary_found=false,destination=$target_host"
+		fieldset4="dns4_primary=\"$dns4_primary,dns4_cache_query_response=0.0"
+		tagset6="ip_version=6,dns6_primary_found=false,destination=$target_host"
+		fieldset6="dns6_primary=\"$dns6_primary,dns6_cache_query_response=0.0"
 		timestamp4=$(date +%s)000000004
 		timestamp6=$(date +%s)000000006
 		echo -ne "$measurement,$tagset4 $fieldset4 $timestamp4\n"
@@ -338,8 +338,8 @@ dns_random_rr_measure () {
 	dns_query_domain="doesnotexist.pansift.com"
 	dns_query="$dns_query_host.$dns_query_domain"
 
-	dns4_query_response="0"
-	dns6_query_response="0"
+	dns4_query_response=0.0
+	dns6_query_response=0.0
 	RESOLV=/etc/resolv.conf
 	if test -f "$RESOLV"; then
 		dns4_primary=$(cat /etc/resolv.conf | grep -q '\..*\..*\.' || { echo -n 'none'; exit 0; }; cat /etc/resolv.conf | grep '\..*\..*\.' | head -n1 | cut -d' ' -f2 | remove_chars)
@@ -347,16 +347,16 @@ dns_random_rr_measure () {
 		if [ $dns4_primary != "none" ]; then
 			dns4_query_output=$(dig -4 +time=3 +tries=1 @"$dns4_primary" "$dns_query")
 			dns4_query_response=$(echo -n "$dns4_query_output" | grep -m1 -i "query time" | cut -d' ' -f4 | remove_chars)
-			[ -z "$dns4_query_response" ] && dns4_query_response="0"
+			[ -z "$dns4_query_response" ] && dns4_query_response=0.0
 		else
-			dns4_query_response="0"
+			dns4_query_response=0.0
 		fi
 		if [ $dns6_primary != "none" ]; then
 			dns6_query_output=$(dig -6 +time=3 +tries=1 @"$dns6_primary" "$dns_query")
 			dns6_query_response=$(echo -n "$dns6_query_output" | grep -m1 -i "query time" | cut -d' ' -f4 | remove_chars)
-			[ -z "$dns6_query_response" ] && dns6_query_response="0"
+			[ -z "$dns6_query_response" ] && dns6_query_response=0.0
 		else 
-			dns6_query_response="0"
+			dns6_query_response=0.0
 		fi
 	else
 		dns4_primary="none"
