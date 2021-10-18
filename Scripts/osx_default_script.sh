@@ -14,8 +14,8 @@ PANSIFT_PREFERENCES="$HOME"/Library/Preferences/Pansift
 source "$PANSIFT_PREFERENCES"/pansift.conf
 
 if [[ ${#1} = 0 ]]; then
-	echo "Usage: Pass one parameter -n|--network -m|--machine -t|--trace -s|--scan -w|--web"
-	echo "Usage: ./$script_name -i"
+	echo "Usage: Pass one parameter -n|--network -m|--machine -t|--trace -s|--scan -w|--web -d|--dns"
+	echo "Usage: ./$script_name -<parameter>"
 	exit 0;
 fi
 
@@ -30,9 +30,6 @@ pick_user_agent=$[$RANDOM % ${#agent[@]}]
 curl_user_agent=${agent[$pick_user_agent]}
 #curl_user_agent="pansift.com/0.1"
 #curl_user_agent="pansift-${PANSIFT_UUID}"
-dns_query_host=$(uuidgen)
-dns_query_domain="doesnotexist.pansift.com"
-dns_query="$dns_query_host.$dns_query_domain"
 
 # These commands we want to and are happy to run each time as they may change frequently enough that we want to globally
 # make decisions about them or reference them in more than one function or type of switch.
@@ -88,13 +85,13 @@ timeout () {
 }
 
 get_test_hosts () {
-	# Assumees dig in the system
-	test_hosts=$(dig +short TXT hosts.${PANSIFT_UUID}.ingest.pansift.com)
+	# Assumes dig in the system
+	test_hosts=$(timeout 5 dig +short TXT hosts.${PANSIFT_UUID}.ingest.pansift.com)
 	if [[ $test_hosts =~ "h="[[:alnum:]] ]]; then
 		hosts=$(echo -n "$test_hosts" | tr -d '"' | awk -F 'h=' '{print $2}' | awk -F '[[:alpha:]]=' '{print $1}' | remove_chars_except_commas)
 		export PANSIFT_HOSTS_CSV=${hosts:=$PANSIFT_HOSTS_CSV}
 	else 
-		test_hosts=$(dig +short TXT hosts.default.ingest.pansift.com)
+		test_hosts=$(timeout 5 dig +short TXT hosts.default.ingest.pansift.com)
 		hosts=$(echo -n "$test_hosts" | tr -d '"' | awk -F 'h=' '{print $2}' | awk -F '[[:alpha:]]=' '{print $1}' | remove_chars_except_commas)
 		export PANSIFT_HOSTS_CSV=${hosts:=$PANSIFT_HOSTS_CSV}
 	fi
@@ -244,7 +241,103 @@ network_measure () {
 		locally_connected="true"
 	else
 		locally_connected="false"
-	fi  
+	fi 
+}
+
+dns_cache_rr_measure () {
+
+	# Note: On a per bucket basis we could debate about how often the target hosts would change?
+	# This is in regards to the cardinality of using $target_host from PANSIFT_HOSTS_CSV as tags
+	# rather than in the fieldset depending upon uniqueness. Also, the simplicity of querying by
+	# tags versus field values. For now, the $target host can be tags as max 5 and will change
+	# infrequently on a per-bucket basis
+
+	measurement="pansift_dns_cache"
+	dns4_cache_query_response=0i
+	dns6_cache_query_response=0i
+	RESOLV=/etc/resolv.conf
+	if test -f "$RESOLV"; then
+		dns4_primary=$(cat /etc/resolv.conf | grep -q '\..*\..*\.' || { echo -n 'none'; exit 0; }; cat /etc/resolv.conf | grep '\..*\..*\.' | head -n1 | cut -d' ' -f2 | remove_chars)
+		dns6_primary=$(cat /etc/resolv.conf | grep -q 'nameserver.*:' || { echo -n 'none'; exit 0; }; cat /etc/resolv.conf | grep 'nameserver.*:' | head -n1 | cut -d' ' -f2 | remove_chars)
+		if [ $dns4_primary != "none" ]; then
+			# Loop through the hosts
+			i=0
+			IFS=","
+			for host in $PANSIFT_HOSTS_CSV
+			do
+				if [ ! -z "$host" ]; then
+					target_host=$(echo -n "$host" | remove_chars)
+					dns4_cache_query_output=$(timeout 5 dig -4 +time=3 +tries=1 @"$dns4_primary" "$target_host")
+					dns4_cache_query_response=$(echo -n "$dns4_cache_query_output" | grep -m1 -i "query time" | cut -d' ' -f4 | remove_chars)
+					tagset=$(echo -n "dns4_primary_found=true,destination=$target_host")
+					fieldset=$( echo -n "dns4_cache_query_response=${dns4_cache_query_response:=0i}")
+					timesuffix=$(expr 1000000000 + $i + 1) # This is to get around duplicates in Influx with measurement, tag, and timestamp the same.
+					timesuffix=${timesuffix:1} # We drop the leading "1" and end up with incrementing nanoseconds 9 digits long
+					timestamp=$(date +%s)$timesuffix
+					echo -ne "$measurement,$tagset $fieldset $timestamp\n"
+					((i++))
+				fi
+			done
+			IFS=$OLDIFS
+		else
+			dns4_primary="none"
+			target_host="none"
+			tagset="dns4_primary_found=false,destination=$target_host"
+			fieldset="dns4_primary=$dns4_primary,dns4_cache_query_response=0i"
+			timestamp=$(date +%s)000000000
+			echo -ne "$measurement,$tagset $fieldset $timestamp\n"
+		fi
+		if [ $dns6_primary != "none" ]; then
+			# Loop through the hosts
+			i=0
+			IFS=","
+			for host in $PANSIFT_HOSTS_CSV
+			do
+				if [ ! -z "$host" ]; then
+					target_host=$(echo -n "$host" | remove_chars)
+					dns6_cache_query_output=$(timeout 5 dig -6 AAAA +time=3 +tries=1 @"$dns6_primary" "$target_host")
+					dns6_cache_query_response=$(echo -n "$dns6_cache_query_output" | grep -m1 -i "query time" | cut -d' ' -f4 | remove_chars)
+					tagset=$(echo -n "dns6_primary_found=true,destination=$target_host")
+					fieldset=$( echo -n "dns6_cache_query_response=${dns6_cache_query_response:=0i}")
+					timesuffix=$(expr 1000000000 + $i + 1) # This is to get around duplicates in Influx with measurement, tag, and timestamp the same.
+					timesuffix=${timesuffix:1} # We drop the leading "1" and end up with incrementing nanoseconds 9 digits long
+					timestamp=$(date +%s)$timesuffix
+					echo -ne "$measurement,$tagset $fieldset $timestamp\n"
+					((i++))
+				fi
+			done
+			IFS=$OLDIFS
+		else
+			dns6_primary="none"
+			target_host="none"
+			tagset="dns4_primary_found=false,destination=$target_host"
+			fieldset="dns6_primary=$dns6_primary,dns6_cache_query_response=0i"
+			timestamp=$(date +%s)000000000
+			echo -ne "$measurement,$tagset $fieldset $timestamp\n"
+		fi
+	else
+		# If no RESOLV settings found
+		dns6_primary="none"
+		dns4_primary="none"
+		target_host="none"
+		tagset4="dns4_primary_found=false,destination=$target_host"
+		fieldset4="dns4_primary=$dns4_primary,dns4_cache_query_response=0i"
+		tagset6="dns6_primary_found=false,destination=$target_host"
+		fieldset6="dns6_primary=$dns6_primary,dns6_cache_query_response=0i"
+		timestamp4=$(date +%s)000000004
+		timestamp6=$(date +%s)000000006
+		echo -ne "$measurement,$tagset4 $fieldset4 $timestamp4\n"
+		echo -ne "$measurement,$tagset6 $fieldset6 $timestamp4\n"
+	fi
+}
+
+
+dns_random_rr_measure () {
+
+	dns_query_host=$(uuidgen)
+	dns_query_domain="doesnotexist.pansift.com"
+	dns_query="$dns_query_host.$dns_query_domain"
+
 	dns4_query_response="0"
 	dns6_query_response="0"
 	RESOLV=/etc/resolv.conf
@@ -517,7 +610,7 @@ http_checks () {
 			# Max time for operation -m doesn't work
 			# Was having variable expansion issues with $curl_binary here so just calling curl directly with random agent.
 			# It's borking on an illegal character returned from a time out + also the remove-chars... curl_response contains 
- 			# bad data when using $curl_binary
+			# bad data when using $curl_binary
 			curl_response=$(timeout 30 curl -A "$curl_user_agent" --no-keepalive -4 -k -s -o /dev/null -w "%{time_namelookup}:%{time_connect}:%{time_appconnect}:%{time_pretransfer}:%{time_starttransfer}:%{time_total}:%{size_download}:%{http_code}:%{speed_download}" -L "$target_host" 2>&1)
 			curl_response=${curl_response:="0.0"}
 			http_time_namelookup=$(echo -n "$curl_response" | cut -d':' -f1 | remove_chars)
@@ -564,6 +657,7 @@ while :; do
 		-n|--network) 
 			internet_measure # No dependency
 			network_measure
+			dns_random_rr_measure
 			local_ips # dependency on both prior internet_measure and network_measure
 			wlan_measure
 			measurement="pansift_osx_network"
@@ -584,6 +678,11 @@ while :; do
 			# The reason we don't set the single measurement here is we are looping in the checks
 			get_test_hosts
 			ip_trace
+			;;
+		-d|--dns)
+			# The reason we don't set the single measurement here is we are looping in the checks
+			get_test_hosts
+			dns_cache_rr_measure
 			;;
 		*) break
 	esac
