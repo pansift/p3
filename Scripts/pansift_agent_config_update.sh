@@ -32,6 +32,8 @@ if [[ ${#bad_answers[@]} == 0 ]];
 then
   applescriptCode="display dialog \"Pansift updated agent configs successfully.\" buttons {\"OK\"} default button \"OK\""
   show=$(osascript -e "$applescriptCode");
+  "$PANSIFT_SCRIPTS"/pansift &
+  disown
 else
   applescriptCode="display dialog \"Pansift failed some agent config updates:\n\n$bad_answers \" buttons {\"OK\"} default button \"OK\""
   show=$(osascript -e "$applescriptCode");
