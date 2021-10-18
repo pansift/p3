@@ -6,10 +6,12 @@ pansift_uuid_file="$PANSIFT_PREFERENCES"/pansift_uuid.conf
 url_regex='(https?|ftp|file)://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]'
 
 # Don't kill anything, just check if Telegraf is already running as main script will restart anyway
-tpid="$PANSIFT_SUPPORT"/telegraf.pid
-if [[ -f "$tpid" ]] && [[ $(pgrep -f "telegraf") ]]; then
+# tpid="$PANSIFT_SUPPORT"/telegraf.pid
+# if [[ -f "$tpid" ]] && [[ $(pgrep "telegraf") ]]; then
+if [[ $(pgrep "telegraf") ]]; then
 	true 
 else
+	true
 	"$PANSIFT_SCRIPTS"/pansift >/dev/null 2>&1 &
 	disown
 fi

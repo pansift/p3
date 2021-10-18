@@ -47,12 +47,17 @@ touch "$annotations_file" # This is just to create for tailing if not already th
 url_regex='(https?|ftp|file)://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]'
 
 # If we're restarting then clean up...
-telegraf_pid_file="$PANSIFT_SUPPORT"/telegraf.pid
-if test -f "$telegraf_pid_file"; then
-	rm "$PANSIFT_SUPPORT"/telegraf.pid || true
-fi 
+# telegraf_pid_file="$PANSIFT_SUPPORT"/telegraf.pid
+# if test -f "$telegraf_pid_file"; then
+#	rm "$PANSIFT_SUPPORT"/telegraf.pid || true
+# fi 
 if [[ $(pgrep "telegraf") ]]; then
-	pkill -9 -f "$PANSIFT_SUPPORT"/telegraf; sleep 5 || true
+	# TERM waits too long for a long running telegraf test via scripts
+	# We could wait in a loop or check with wait and $! but once the SIG
+	# is sent it's technically successful and telegraf takes a while to 
+	# clean up so we're just banging it on the head with KILL
+	# pkill -TERM -f "$PANSIFT_SUPPORT"/telegraf; sleep 15 || true
+	pkill -KILL -f "$PANSIFT_SUPPORT"/telegraf; sleep 3 || true
 fi
 
 if test -f "$pansift_uuid_file"; then
