@@ -11,7 +11,6 @@ url_regex='(https?|ftp|file)://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=
 if [[ $(pgrep "telegraf") ]]; then
 	true 
 else
-	true
 	"$PANSIFT_SCRIPTS"/pansift >/dev/null 2>&1 &
 	disown
 fi
