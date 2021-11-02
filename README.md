@@ -7,7 +7,7 @@ Pansift is about helping others to stay sane and productive with optimally funct
 ## Install Instructions (Alpha)
 
 
-**Download [Pansift DMG](https://github.com/pansift/p3/raw/main/Pansift.dmg), open it, and drag `Pansift.app` to the Applications folder and run.**
+**Download [Pansift DMG](https://github.com/pansift/p3/raw/main/Pansift.dmg), open it, and drag `Pansift.app` to the `Applications` folder and double click to run or use Command+O to open.**
 
 You can then claim your data bucket from the agent or just register an account at [https://pansift.com](https://pansift.com) to claim your data bucket and get troubleshooting!
 
