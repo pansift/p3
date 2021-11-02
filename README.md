@@ -4,7 +4,7 @@ Pansift is a Mac OSX laptop network and system monitoring tool. It is for those 
 
 Pansift is about helping others to stay sane and productive with optimally functioning tools. It's about saving you time, maintaining situational awareness, and getting to root causes quickly and **remotely** even with historical issues. Whether it's WiFi problems, DNS latency, IPv4 vs IPv6, or simple disk utilization issues - PanSift allows you to keep an eye on many remote machines (just like server monitoring) only more lightweight, heavily wireless focused, and more user-friendly. More info: [https://pansift.com](https://pansift.com) 
  
-## Install Instructions (Alpha)
+## Install Instructions (Beta)
 
 
 **Download [Pansift DMG](https://github.com/pansift/p3/raw/main/Pansift.dmg), open it, and drag `Pansift.app` to the `Applications` folder and double click to run or use Command+O to open.**
