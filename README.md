@@ -9,8 +9,6 @@ Pansift is about helping others to stay sane and productive with optimally funct
 
 **Download [Pansift DMG](https://github.com/pansift/p3/raw/main/Pansift.dmg), open it, and drag `Pansift.app` to the Applications folder and run.**
 
-Currently the official web app (front-end) is not ready yet but you can get an account on the intermediate dashboard by contacting `support@pansift.com` with your `UUID` from the app. This is only intended for more technical people (who can also use, or would be wiliing to use the terminal for any debugging). This repository is also where the updates for scripts will come from so you can see all the most important internals. Feel free to suggest improvements or raise issues and PR (Pull Requests) to any and all jankiness!
+You can then claim your data bucket from the agent or just register an account at [https://pansift.com](https://pansift.com) to claim your data bucket and get troubleshooting!
 
-**Important Note** Please understand this is still heavily a _Work In Progress_ and is not yet production ready. It runs with the logged in user permissions and you can inspect the scripts, however your server side data / bucket might not be there tomorrow! Only embark on using if you're a willing alpha tester and are confident enough to check the uninstall scripts to spot any errors :)
-
-![Intermediate Dashboard](https://github.com/pansift/p3/blob/main/Images/publicity_cap_v1.png?raw=true)
+![image](https://user-images.githubusercontent.com/4045949/139875837-87b652ae-6935-402e-bd9e-9e5bb18eb8f2.png)
