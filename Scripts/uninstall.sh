@@ -38,6 +38,7 @@ echo
 
 pkill -9 -f Pansift.app
 defaults delete com.pansift.p3bar
+osascript -e 'tell application "System Events" to delete login item "Pansift"'
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
   echo "Not supported on Linux yet" 
