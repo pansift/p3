@@ -1,16 +1,14 @@
 # Intro 
 
-Pansift is a Mac OSX laptop network and system monitoring tool. It is for those who support others **remotely** and enables them to rapidly find and fix issues (especially WiFi related). Whether you are a family member doing Zoom calls, a developer, or gamer who can't afford to be disconnected, interrupted, or slowed down, Pansift makes the invisible visible for a quick fix.
+Pansift is a macOS troubleshooting and monitoring tool with a focus on the network. It is for those who support others **remotely** and enables them to rapidly find and fix issues (especially WiFi related). Whether you are a family member doing Zoom calls, a developer, a salesperson, or a gamer who can't afford to be disconnected, interrupted, or slowed down, Pansift makes the invisible visible for a quick fix.
 
-Pansift is about helping others to stay sane and productive with optimally functioning tools. It's about saving you time, maintaining situational awareness, and getting to root causes quickly and **remotely** even with historical issues. Whether it's WiFi problems, DNS latency, IPv4 vs IPv6, or simple disk utilization issues - PanSift allows you to keep an eye on many remote machines (just like server monitoring) only more lightweight, heavily wireless focused, and more user-friendly. More info: [https://pansift.com](https://pansift.com) 
+Pansift is about helping others to avoid stress and stay productive with optimally functioning tools and networks. It's about saving you time, maintaining situational awareness, and getting to root causes quickly, easily, and **remotely** (even for historical issues). Whether it's for WiFi, DNS, IPv4, IPv6, or simple disk utilization issues - PanSift allows you to keep an eye on multiple remote machines (just like server monitoring) only with a more lightweight, heavily wireless focused, and user-friendly footprint. More info: [https://pansift.com](https://pansift.com) 
  
-## Install Instructions (Alpha)
+## Install Instructions (Beta)
 
 
-**Download [Pansift DMG](https://github.com/pansift/p3/raw/main/Pansift.dmg), open it, and drag `Pansift.app` to the Applications folder and run.**
+**Download [Pansift DMG](https://github.com/pansift/p3/raw/main/Pansift.dmg), open it, and drag `Pansift.app` to the `Applications` folder and double click to run or use Command+O to open.**
 
-Currently the official web app (front-end) is not ready yet but you can get an account on the intermediate dashboard by contacting `support@pansift.com` with your `UUID` from the app. This is only intended for more technical people (who can also use, or would be wiliing to use the terminal for any debugging). This repository is also where the updates for scripts will come from so you can see all the most important internals. Feel free to suggest improvements or raise issues and PR (Pull Requests) to any and all jankiness!
+You can then claim your data bucket from the agent or just register an account at [https://pansift.com](https://pansift.com) to claim your data bucket and get troubleshooting!
 
-**Important Note** Please understand this is still heavily a _Work In Progress_ and is not yet production ready. It runs with the logged in user permissions and you can inspect the scripts, however your server side data / bucket might not be there tomorrow! Only embark on using if you're a willing alpha tester and are confident enough to check the uninstall scripts to spot any errors :)
-
-![Intermediate Dashboard](https://github.com/pansift/p3/blob/main/Images/publicity_cap_v1.png?raw=true)
+![image](https://user-images.githubusercontent.com/4045949/139875837-87b652ae-6935-402e-bd9e-9e5bb18eb8f2.png)
