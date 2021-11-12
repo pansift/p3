@@ -196,7 +196,7 @@ network_measure () {
 	dg6_interface=$(echo -n "$netstat6" | grep -qi default || { echo -n 'none'; exit 0; }; echo -n "$netstat6" | grep -i default | awk '{print $2}'| remove_chars)
 	dg6_interface_device_only=$(echo -n "$dg6_interface" | cut -d'%' -f2)
 	if [ $dg6_interface == "none" ]; then
-		dg6_interface_device_only="none"
+		dg6_interface_device_only = "none"
 	fi
 	# Grabbing network interfaces from global 
 	hardware_interfaces=$(echo -n "$network_interfaces" | awk -F ":" '/Hardware Port:|Device:/{print $2}' | paste -d',' - - )
@@ -237,15 +237,15 @@ network_measure () {
 	dg4_response=$(echo -n "$netstat4" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg4_ip" == "none" ]] && ping -t5 -c3 -i1 -k BE "$dg4_ip" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
 	dg6_response=$(echo -n "$netstat6" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg6_ip" == "none" ]] && timeout 5 ping6 -c3 -i1 -k BE "$dg6_fullgw" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
 
-	if [[ "$dg4_response" > "0" ]] || [[ "$dg6_respone" > "0" ]]; then
+	if [[ "$dg4_response" > 0 ]] || [[ "$dg6_respone" > 0 ]]; then
 		locally_connected="true"
 	else
 		locally_connected="false"
 	fi 
-	if [[ "$dg4_response" > "0" ]]; then
+	if [[ "$dg4_response" > 0 ]]; then
 	locally4_connected="true"
 	fi
-	if [[ "$dg6_response" > "0" ]]; then
+	if [[ "$dg6_response" > 0 ]]; then
 	locally6_connected="true"
 	fi
 	
@@ -476,7 +476,7 @@ wlan_measure () {
 		wlan_rssi=$(echo -n "$airport_output" | egrep -i '[[:space:]]agrCtlRSSI' | cut -d':' -f2- | remove_chars)
 		wlan_noise=$(echo -n "$airport_output" | egrep -i '[[:space:]]agrCtlNoise' | cut -d':' -f2- | remove_chars)
 		wlan_snr=$(var=$(( $(( $wlan_noise * -1)) - $(( $wlan_rssi * -1)) )); echo -n $var)i
-		# wlan_spatial_streams=$(echo -n "$airport_output" | egrep -i '[[:space:]]agrCtlNoise' | cut -d':' -f2- | remove_chars)
+		wlan_spatial_streams=$(echo -n "$airport_output" | egrep -i '[[:space:]]agrCtlNoise' | cut -d':' -f2- | remove_chars)
 		# because of mathematical operation, add back in i
 		wlan_rssi="$wlan_rssi"i
 		wlan_noise="$wlan_noise"i
@@ -507,7 +507,6 @@ wlan_measure () {
 			fi
 		else 
 			wlan_number_spatial_streams=0i
-			# We can't get spatial streams via these methods on lower version OS :(
 			width_increment=$(echo -n "$airport_output"| egrep -i '[[:space:]]channel' |  cut -d':' -f2 | awk '{$1=$1;print}' | cut -d',' -f2 | remove_chars)
 			if [[ "$width_increment" == 1 ]]; then
 				wlan_width=40i
@@ -551,7 +550,7 @@ wlan_measure () {
 wlan_scan () {
 	airport_output=$("$airport" -s -x)
 	if [ -z "$airport_output" ]; then
-		#echo -n "No airport output in scan"
+		# echo -n "No airport output in scan"
 		wlan_scan_on="false"
 		wlan_scan_data="none"
 		measurement="pansift_osx_wlanscan"
@@ -587,14 +586,28 @@ wlan_scan () {
 			wlan_scan_channel=$("${plistbuddy}" "${scandata}" -c "print :$i:CHANNEL")i
 			wlan_scan_rssi=$("${plistbuddy}" "${scandata}" -c "print :$i:RSSI")i
 			wlan_scan_noise=$("${plistbuddy}" "${scandata}" -c "print :$i:NOISE")i
+			wlan_scan_vht_op_channel_center_frequency_seg0=$("${plistbuddy}" "${scandata}" -c "print :$i:VHT_OP:CHANNEL_CENTER_FREQUENCY_SEG0" 2>/dev/null)i
+			wlan_scan_vht_op_channel_center_frequency_seg1=$("${plistbuddy}" "${scandata}" -c "print :$i:VHT_OP:CHANNEL_CENTER_FREQUENCY_SEG1" 2>/dev/null)i
+			wlan_scan_vht_op_channel_width=$("${plistbuddy}" "${scandata}" -c "print :$i:VHT_OP:CHANNEL_WIDTH" 2>/dev/null)i
+			wlan_scan_cc=$("${plistbuddy}" "${scandata}" -c "print :$i:80211D_IE:IE_KEY_80211D_COUNTRY_CODE" 2>/dev/null)
 			wlan_scan_ht_secondary_chan_offset=$("${plistbuddy}" "${scandata}" -c "print :$i:HT_IE:HT_SECONDARY_CHAN_OFFSET" 2>/dev/null)i
+			# Explicit defaults rather than {:=} expansion
 			if [ $wlan_scan_ht_secondary_chan_offset == "i" ]; then
 				wlan_scan_ht_secondary_chan_offset="0i"
+			fi
+			if [ $wlan_scan_vht_op_channel_center_frequency_seg0 == "i" ]; then
+				wlan_scan_vht_op_channel_center_frequency_seg0="0i"
+			fi
+			if [ $wlan_scan_vht_op_channel_center_frequency_seg1 == "i" ]; then
+				wlan_scan_vht_op_channel_center_frequency_seg1="0i"
+			fi
+			if [ $wlan_scan_vht_op_channel_width == "i" ]; then
+				wlan_scan_vht_op_channel_width="0i"
 			fi
 			measurement="pansift_osx_wlanscan"
 			#tagset=$(echo -n "wlan_scan_on=$wlan_scan_on,wlan_scan_bssid_tag=$wlan_scan_bssid_tag")
 			tagset=$(echo -n "wlan_scan_on=$wlan_scan_on")
-			fieldset=$( echo -n "wlan_scan_ssid=\"$wlan_scan_ssid\",wlan_scan_bssid=\"$wlan_scan_bssid\",wlan_scan_channel=$wlan_scan_channel,wlan_scan_rssi=$wlan_scan_rssi,wlan_scan_noise=$wlan_scan_noise,wlan_scan_ht_secondary_chan_offset=$wlan_scan_ht_secondary_chan_offset")
+			fieldset=$( echo -n "wlan_scan_ssid=\"$wlan_scan_ssid\",wlan_scan_bssid=\"$wlan_scan_bssid\",wlan_scan_channel=$wlan_scan_channel,wlan_scan_rssi=$wlan_scan_rssi,wlan_scan_noise=$wlan_scan_noise,wlan_scan_vht_op_channel_center_frequency_seg0=$wlan_scan_vht_op_channel_center_frequency_seg0,wlan_scan_vht_op_channel_center_frequency_seg1=$wlan_scan_vht_op_channel_center_frequency_seg1,wlan_scan_vht_op_channel_width=$wlan_scan_vht_op_channel_width,wlan_scan_cc=\"${wlan_scan_cc:=none}\",wlan_scan_ht_secondary_chan_offset=$wlan_scan_ht_secondary_chan_offset")
 			timesuffix=$(expr 1000000000 + $i + 1) # This is to get around duplicates in Influx with measurement, tag, and timestamp the same. 
 			timesuffix=${timesuffix:1} # We drop the leading "1" and end up with incrementing nanoseconds 9 digits long
 			timestamp=$(date +%s)$timesuffix
