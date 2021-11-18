@@ -168,8 +168,8 @@ system_measure () {
 	model_name=$(echo -n "$systemprofile_sphardwaredatatype" | egrep -i "model name" | cut -d':' -f2- | remove_chars_except_case)
 	model_identifier=$(echo -n "$systemprofile_sphardwaredatatype" | egrep -i "model identifier" | cut -d':' -f2- | remove_chars_except_case)
 	memory=$(echo -n "$systemprofile_sphardwaredatatype" | egrep -i "memory" | cut -d':' -f2- | remove_chars_except_spaces)
-	boot_romversion=$(echo -n "$systemprofile_sphardwaredatatype" | egrep -i "boot rom version|system firmware version" | cut -d':' -f2- | remove_chars)
-	smc_version=$(echo -n "$systemprofile_sphardwaredatatype" | egrep -i "smc version|os loader version" | cut -d':' -f2- | remove_chars)
+	boot_romversion=$(echo -n "$systemprofile_sphardwaredatatype" | egrep -i "boot rom version|system firmware version" | cut -d':' -f2- | remove_chars_except_spaces)
+	smc_version=$(echo -n "$systemprofile_sphardwaredatatype" | egrep -i "smc version|os loader version" | cut -d':' -f2- | remove_chars_except_spaces)
 	serial_number=$(echo -n "$systemprofile_sphardwaredatatype" | egrep -i "serial number" | cut -d':' -f2- | remove_chars)
 }
 
