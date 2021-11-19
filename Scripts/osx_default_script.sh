@@ -95,7 +95,7 @@ get_test_hosts () {
 			hosts=$(echo -n "$test_hosts" | tr -d '"' | awk -F 'h=' '{print $2}' | awk -F '[[:alpha:]]=' '{print $1}' | remove_chars_except_commas)
 		fi
 	fi
-		export PANSIFT_HOSTS_CSV=${hosts:=$PANSIFT_HOSTS_CSV}
+	export PANSIFT_HOSTS_CSV=${hosts:=$PANSIFT_HOSTS_CSV}
 }
 
 ip_trace () {
