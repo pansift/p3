@@ -89,12 +89,13 @@ get_test_hosts () {
 	test_hosts=$(timeout 5 dig +short TXT hosts.${PANSIFT_UUID}.ingest.pansift.com)
 	if [[ $test_hosts =~ "h="[[:alnum:]] ]]; then
 		hosts=$(echo -n "$test_hosts" | tr -d '"' | awk -F 'h=' '{print $2}' | awk -F '[[:alpha:]]=' '{print $1}' | remove_chars_except_commas)
-		export PANSIFT_HOSTS_CSV=${hosts:=$PANSIFT_HOSTS_CSV}
-	else 
+	else
 		test_hosts=$(timeout 5 dig +short TXT hosts.default.ingest.pansift.com)
-		hosts=$(echo -n "$test_hosts" | tr -d '"' | awk -F 'h=' '{print $2}' | awk -F '[[:alpha:]]=' '{print $1}' | remove_chars_except_commas)
-		export PANSIFT_HOSTS_CSV=${hosts:=$PANSIFT_HOSTS_CSV}
+		if [[ $test_hosts =~ "h="[[:alnum:]] ]]; then
+			hosts=$(echo -n "$test_hosts" | tr -d '"' | awk -F 'h=' '{print $2}' | awk -F '[[:alpha:]]=' '{print $1}' | remove_chars_except_commas)
+		fi
 	fi
+		export PANSIFT_HOSTS_CSV=${hosts:=$PANSIFT_HOSTS_CSV}
 }
 
 ip_trace () {
@@ -265,7 +266,7 @@ dns_cache_rr_measure () {
 	dns6_cache_query_response=0i
 	RESOLV=/etc/resolv.conf
 	if test -f "$RESOLV"; then
-		dns4_primary=$(cat /etc/resolv.conf | grep -q '\..*\..*\.' || { echo -n 'none'; exit 0; }; cat /etc/resolv.conf | grep '\..*\..*\.' | head -n1 | cut -d' ' -f2 | remove_chars)
+		dns4_primary=$(cat /etc/resolv.conf | grep -q 'nameserver.*\..*\..*\.' || { echo -n 'none'; exit 0; }; cat /etc/resolv.conf | grep 'nameserver.*\..*\..*\.' | head -n1 | cut -d' ' -f2 | remove_chars)
 		dns6_primary=$(cat /etc/resolv.conf | grep -q 'nameserver.*:' || { echo -n 'none'; exit 0; }; cat /etc/resolv.conf | grep 'nameserver.*:' | head -n1 | cut -d' ' -f2 | remove_chars)
 		if [ $dns4_primary != "none" ]; then
 			# Loop through the hosts
