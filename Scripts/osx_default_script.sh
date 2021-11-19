@@ -351,7 +351,7 @@ dns_random_rr_measure () {
 	dns6_query_response=0.0
 	RESOLV=/etc/resolv.conf
 	if test -f "$RESOLV"; then
-		dns4_primary=$(cat /etc/resolv.conf | grep -q '\..*\..*\.' || { echo -n 'none'; exit 0; }; cat /etc/resolv.conf | grep '\..*\..*\.' | head -n1 | cut -d' ' -f2 | remove_chars)
+		dns4_primary=$(cat /etc/resolv.conf | grep -q 'nameserver.*\..*\..*\.' || { echo -n 'none'; exit 0; }; cat /etc/resolv.conf | grep 'nameserver.*\..*\..*\.' | head -n1 | cut -d' ' -f2 | remove_chars)
 		dns6_primary=$(cat /etc/resolv.conf | grep -q 'nameserver.*:' || { echo -n 'none'; exit 0; }; cat /etc/resolv.conf | grep 'nameserver.*:' | head -n1 | cut -d' ' -f2 | remove_chars)
 		if [ $dns4_primary != "none" ]; then
 			dns4_query_output=$(dig -4 +time=3 +tries=1 @"$dns4_primary" "$dns_query")
