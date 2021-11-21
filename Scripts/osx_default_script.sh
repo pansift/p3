@@ -197,7 +197,7 @@ network_measure () {
 	dg6_interface=$(echo -n "$netstat6" | grep -qi default || { echo -n 'none'; exit 0; }; echo -n "$netstat6" | grep -i default | awk '{print $2}'| remove_chars)
 	dg6_interface_device_only=$(echo -n "$dg6_interface" | cut -d'%' -f2)
 	if [ $dg6_interface == "none" ]; then
-		dg6_interface_device_only = "none"
+		dg6_interface_device_only="none"
 	fi
 	# Grabbing network interfaces from global 
 	hardware_interfaces=$(echo -n "$network_interfaces" | awk -F ":" '/Hardware Port:|Device:/{print $2}' | paste -d',' - - )
@@ -279,7 +279,7 @@ dns_cache_rr_measure () {
 					dns4_cache_query_output=$(timeout 5 dig -4 +time=3 +tries=1 @"$dns4_primary" "$target_host")
 					dns4_cache_query_response=$(echo -n "$dns4_cache_query_output" | grep -m1 -i "query time" | cut -d' ' -f4 | remove_chars)
 					tagset=$(echo -n "ip_version=4,locally4_connected=${locally4_connected:=false},locally_connected=$locally_connected,dns4_primary_found=true,destination=$target_host")
-					fieldset=$( echo -n "dns4_primary=\"$dns4_primary\",dns4_cache_query_response=${dns4_cache_query_response:=0.0}")
+					fieldset=$(echo -n "dns4_primary=\"$dns4_primary\",dns4_cache_query_response=${dns4_cache_query_response:=0.0}")
 					timesuffix=$(expr 1000000000 + $i + 1) # This is to get around duplicates in Influx with measurement, tag, and timestamp the same.
 					timesuffix=${timesuffix:1} # We drop the leading "1" and end up with incrementing nanoseconds 9 digits long
 					timestamp=$(date +%s)$timesuffix
@@ -292,7 +292,7 @@ dns_cache_rr_measure () {
 			dns4_primary="none"
 			target_host="none"
 			tagset="ip_version=4,locally4_connected=${locally4_connected:=false},locally_connected=$locally_connected,dns4_primary_found=false,destination=$target_host"
-			fieldset="dns4_primary=\"$dns4_primary\",dns4_cache_query_response=0.0"
+			fieldset=$(echo -n "dns4_primary=\"$dns4_primary\",dns4_cache_query_response=0.0")
 			timestamp=$(date +%s)000000004
 			echo -ne "$measurement,$tagset $fieldset $timestamp\n"
 		fi
@@ -307,7 +307,7 @@ dns_cache_rr_measure () {
 					dns6_cache_query_output=$(timeout 5 dig -6 AAAA +time=3 +tries=1 @"$dns6_primary" "$target_host")
 					dns6_cache_query_response=$(echo -n "$dns6_cache_query_output" | grep -m1 -i "query time" | cut -d' ' -f4 | remove_chars)
 					tagset=$(echo -n "ip_version=6,locally6_connected=${locally6_connected:=false},locally_connected=$locally_connected,dns6_primary_found=true,destination=$target_host")
-					fieldset=$( echo -n "dns6_primary=\"$dns6_primary\",dns6_cache_query_response=${dns6_cache_query_response:=0.0}")
+					fieldset=$(echo -n "dns6_primary=\"$dns6_primary\",dns6_cache_query_response=${dns6_cache_query_response:=0.0}")
 					timesuffix=$(expr 1000000000 + $i + 1) # This is to get around duplicates in Influx with measurement, tag, and timestamp the same.
 					timesuffix=${timesuffix:1} # We drop the leading "1" and end up with incrementing nanoseconds 9 digits long
 					timestamp=$(date +%s)$timesuffix
@@ -320,7 +320,7 @@ dns_cache_rr_measure () {
 			dns6_primary="none"
 			target_host="none"
 			tagset="ip_version=6,locally6_connected=${locally6_connected:=false},locally_connected=$locally_connected,dns6_primary_found=false,destination=$target_host"
-			fieldset=$( echo -n "dns6_primary=\"$dns6_primary\",dns6_cache_query_response=0.0")
+			fieldset=$(echo -n "dns6_primary=\"$dns6_primary\",dns6_cache_query_response=0.0")
 			timestamp=$(date +%s)000000006
 			echo -ne "$measurement,$tagset $fieldset $timestamp\n"
 		fi
@@ -332,7 +332,7 @@ dns_cache_rr_measure () {
 		tagset4="ip_version=4,locally4_connected=${locally4_connected:=false},locally_connected=$locally_connected,dns4_primary_found=false,destination=$target_host"
 		fieldset4=$( echo -n "dns4_primary=\"$dns4_primary\",dns4_cache_query_response=0.0")
 		tagset6="ip_version=6,locally6_connected=${locally6_connected:=false},locally_connected=$locally_connected,dns6_primary_found=false,destination=$target_host"
-		fieldset6="dns6_primary=\"$dns6_primary,dns6_cache_query_response=0.0"
+		fieldset6=$(echo -n "dns6_primary=\"$dns6_primary\",dns6_cache_query_response=0.0")
 		timestamp4=$(date +%s)000000004
 		timestamp6=$(date +%s)000000006
 		echo -ne "$measurement,$tagset4 $fieldset4 $timestamp4\n"
