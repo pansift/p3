@@ -320,7 +320,7 @@ dns_cache_rr_measure () {
 			dns6_primary="none"
 			target_host="none"
 			tagset="ip_version=6,locally6_connected=${locally6_connected:=false},locally_connected=$locally_connected,dns6_primary_found=false,destination=$target_host"
-			fieldset="dns6_primary=\"$dns6_primary\",dns6_cache_query_response=0.0"
+			fieldset=$( echo -n "dns6_primary=\"$dns6_primary\",dns6_cache_query_response=0.0")
 			timestamp=$(date +%s)000000006
 			echo -ne "$measurement,$tagset $fieldset $timestamp\n"
 		fi
@@ -330,7 +330,7 @@ dns_cache_rr_measure () {
 		dns4_primary="none"
 		target_host="none"
 		tagset4="ip_version=4,locally4_connected=${locally4_connected:=false},locally_connected=$locally_connected,dns4_primary_found=false,destination=$target_host"
-		fieldset4="dns4_primary=\"$dns4_primary,dns4_cache_query_response=0.0"
+		fieldset4=$( echo -n "dns4_primary=\"$dns4_primary\",dns4_cache_query_response=0.0")
 		tagset6="ip_version=6,locally6_connected=${locally6_connected:=false},locally_connected=$locally_connected,dns6_primary_found=false,destination=$target_host"
 		fieldset6="dns6_primary=\"$dns6_primary,dns6_cache_query_response=0.0"
 		timestamp4=$(date +%s)000000004
