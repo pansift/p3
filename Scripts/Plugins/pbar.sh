@@ -61,6 +61,6 @@ echo "-- Restart ZTP | bash='$PANSIFT_SCRIPTS/pansift_restart_ztp.sh' terminal=f
 echo "-- Remove"
 echo "---- Uninstall | bash='$PANSIFT_SCRIPTS/uninstall.sh' terminal=true"
 echo "---"
-echo "Restart Metrics | bash='$PANSIFT_SCRIPTS/pansift -b' terminal=false"
+echo "Restart Metrics | bash='$PANSIFT_SCRIPTS/pansift' param1=-b terminal=false"
 echo "---"
 echo "Open Log | bash='$PANSIFT_SCRIPTS/telegraf_log_show.sh' terminal=false"
