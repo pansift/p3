@@ -541,7 +541,7 @@ wlan_measure () {
 		wlan_max_rate=0i
 		wlan_ssid=""
 		wlan_bssid=""
-		wlan_mcs=0i
+		wlan_mcs=-1i # MCS can be 0 as per https://mcsindex.com/
 		wlan_last_assoc_status=-1i
 		wlan_number_spatial_streams=1i
 		wlan_supported_channels=""
