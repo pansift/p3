@@ -485,11 +485,17 @@ wlan_measure () {
 		wlan_max_rate=$(echo -n "$airport_output" | egrep -i '[[:space:]]maxRate' | cut -d':' -f2- | remove_chars)i
 		wlan_ssid=$(echo -n "$airport_output" | egrep -i '[[:space:]]ssid' | cut -d':' -f2- | awk '{$1=$1;print}')
 		wlan_bssid=$(echo -n "$airport_output" | egrep -i '[[:space:]]bssid' | awk '{$1=$1;print}' | cut -d' ' -f2)
-		wlan_mcs=$(echo -n "$airport_output"| egrep -i '[[:space:]]mcs' | cut -d':' -f2 | remove_chars)i
+		wlan_channel=$(echo -n "$airport_output"| egrep -i '[[:space:]]channel' |  cut -d':' -f2 | awk '{$1=$1;print}' | cut -d',' -f1 | remove_chars)
+		wlan_channel_i="$wlan_channel"i
+		wlan_mcs=$(echo -n "$airport_output"| egrep -i '[[:space:]]mcs' | cut -d':' -f2 | remove_chars)
+		if [ "$wlan_channel" -lt 15 ]; then
+		# Here we have an OSX bug where the CLI reports MCS 0 even when MCS can be 15 when on the 2.4GHz range i.e. channels 1-14
+		wlan_mcs=-1
+		fi
+		wlan_mcs_i="$wlan_mcs"i
 		wlan_80211_auth=$(echo -n "$airport_output"| egrep -i '[[:space:]]802\.11 auth' |  cut -d':' -f2 | remove_chars)
 		wlan_link_auth=$(echo -n "$airport_output" | egrep -i '[[:space:]]link auth' |  cut -d':' -f2 | remove_chars)
 		wlan_last_assoc_status=$(echo -n "$airport_output" | egrep -i 'lastassocstatus' |  cut -d':' -f2 | remove_chars)i
-		wlan_channel=$(echo -n "$airport_output"| egrep -i '[[:space:]]channel' |  cut -d':' -f2 | awk '{$1=$1;print}' | cut -d',' -f1 | remove_chars)i
 
 		# Here we need to add airport -I -x for PLIST and then extract the NSS if available. Also can direct extract channel width value as BANDWIDTH
 		# Turns out that (other than using native API) the airport -I vs -Ix give additional information
@@ -532,7 +538,7 @@ wlan_measure () {
 		wlan_link_auth="none"
 		wlan_current_phy_mode="none"
 		wlan_supported_phy_mode="none"
-		wlan_channel=0i
+		wlan_channel_i=0i
 		wlan_width=20i # Can we default to 20 (20MHz) i.e. does 0 mean 20, what about .ax?
 		wlan_rssi=0i
 		wlan_noise=0i
@@ -541,7 +547,7 @@ wlan_measure () {
 		wlan_max_rate=0i
 		wlan_ssid=""
 		wlan_bssid=""
-		wlan_mcs=-1i # MCS can be 0 as per https://mcsindex.com/
+		wlan_mcs_i=-1i # MCS can be 0 as per https://mcsindex.com/
 		wlan_last_assoc_status=-1i
 		wlan_number_spatial_streams=1i
 		wlan_supported_channels=""
@@ -685,7 +691,7 @@ while :; do
 			wlan_measure
 			measurement="pansift_osx_network"
 			tagset=$(echo -n "internet_connected=$internet_connected,internet_dualstack=$internet_dualstack,ipv4_only=$ipv4_only,ipv6_only=$ipv6_only,locally_connected=$locally_connected,wlan_connected=$wlan_connected,wlan_state=$wlan_state,wlan_op_mode=$wlan_op_mode,wlan_supported_phy_mode=$wlan_supported_phy_mode") 
-			fieldset=$( echo -n "internet4_public_ip=\"$internet4_public_ip\",internet6_public_ip=\"$internet6_public_ip\",internet4_asn=$internet4_asn,internet6_asn=$internet6_asn,dg4_ip=\"$dg4_ip\",dg4_router_ether=\"$dg4_router_ether\",dg6_router_ether=\"$dg4_router_ether\",dg6_ip=\"$dg6_ip\",dg4_hardware_type=\"$dg4_hardware_type\",dg6_hardware_type=\"$dg6_hardware_type\",dg4_interface=\"$dg4_interface\",dg6_interface=\"$dg6_interface\",dg6_interface_device_only=\"$dg6_interface_device_only\",dg4_interface_ether=\"$dg4_interface_ether\",dg6_interface_ether=\"$dg6_interface_ether\",dg4_local_ip=\"$dg4_local_ip\",dg4_local_netmask=\"$dg4_local_netmask\",dg4_response=${dg4_response:=0},dg6_local_ip=\"$dg6_local_ip\",dg6_local_prefixlen=\"$dg6_local_prefixlen\",dg6_response=${dg6_response:=0},dns4_primary=\"$dns4_primary\",dns6_primary=\"$dns6_primary\",dns4_query_response=$dns4_query_response,dns6_query_response=$dns6_query_response,wlan_rssi=$wlan_rssi,wlan_noise=$wlan_noise,wlan_snr=$wlan_snr,wlan_last_tx_rate=$wlan_last_tx_rate,wlan_max_rate=$wlan_max_rate,wlan_ssid=\"$wlan_ssid\",wlan_bssid=\"$wlan_bssid\",wlan_mcs=$wlan_mcs,wlan_number_spatial_streams=$wlan_number_spatial_streams,wlan_last_assoc_status=$wlan_last_assoc_status,wlan_channel=$wlan_channel,wlan_width=$wlan_width,wlan_current_phy_mode=\"$wlan_current_phy_mode\",wlan_supported_channels=\"$wlan_supported_channels\",wlan_80211_auth=\"$wlan_80211_auth\",wlan_link_auth=\"$wlan_link_auth\"")
+			fieldset=$( echo -n "internet4_public_ip=\"$internet4_public_ip\",internet6_public_ip=\"$internet6_public_ip\",internet4_asn=$internet4_asn,internet6_asn=$internet6_asn,dg4_ip=\"$dg4_ip\",dg4_router_ether=\"$dg4_router_ether\",dg6_router_ether=\"$dg4_router_ether\",dg6_ip=\"$dg6_ip\",dg4_hardware_type=\"$dg4_hardware_type\",dg6_hardware_type=\"$dg6_hardware_type\",dg4_interface=\"$dg4_interface\",dg6_interface=\"$dg6_interface\",dg6_interface_device_only=\"$dg6_interface_device_only\",dg4_interface_ether=\"$dg4_interface_ether\",dg6_interface_ether=\"$dg6_interface_ether\",dg4_local_ip=\"$dg4_local_ip\",dg4_local_netmask=\"$dg4_local_netmask\",dg4_response=${dg4_response:=0},dg6_local_ip=\"$dg6_local_ip\",dg6_local_prefixlen=\"$dg6_local_prefixlen\",dg6_response=${dg6_response:=0},dns4_primary=\"$dns4_primary\",dns6_primary=\"$dns6_primary\",dns4_query_response=$dns4_query_response,dns6_query_response=$dns6_query_response,wlan_rssi=$wlan_rssi,wlan_noise=$wlan_noise,wlan_snr=$wlan_snr,wlan_last_tx_rate=$wlan_last_tx_rate,wlan_max_rate=$wlan_max_rate,wlan_ssid=\"$wlan_ssid\",wlan_bssid=\"$wlan_bssid\",wlan_mcs=$wlan_mcs_i,wlan_number_spatial_streams=$wlan_number_spatial_streams,wlan_last_assoc_status=$wlan_last_assoc_status,wlan_channel=$wlan_channel_i,wlan_width=$wlan_width,wlan_current_phy_mode=\"$wlan_current_phy_mode\",wlan_supported_channels=\"$wlan_supported_channels\",wlan_80211_auth=\"$wlan_80211_auth\",wlan_link_auth=\"$wlan_link_auth\"")
 			results
 			;;
 		-s|--scan)
