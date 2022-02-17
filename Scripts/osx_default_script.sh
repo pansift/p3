@@ -488,8 +488,9 @@ wlan_measure () {
 		wlan_channel=$(echo -n "$airport_output"| egrep -i '[[:space:]]channel' |  cut -d':' -f2 | awk '{$1=$1;print}' | cut -d',' -f1 | remove_chars)
 		wlan_channel_i="$wlan_channel"i
 		wlan_mcs=$(echo -n "$airport_output"| egrep -i '[[:space:]]mcs' | cut -d':' -f2 | remove_chars)
-		if [ "$wlan_channel" -lt 15 ]; then
+		if [ "$wlan_channel" -lt 15 ] && [ $osx_mainline == 11 ] ; then
 		# Here we have an OSX bug where the CLI reports MCS 0 even when MCS can be 15 when on the 2.4GHz range i.e. channels 1-14
+		# Also note bash/POSIX portability for conditionals with [ ] or [[ ]] where [[ is less portable.
 		wlan_mcs=-1
 		fi
 		wlan_mcs_i="$wlan_mcs"i
