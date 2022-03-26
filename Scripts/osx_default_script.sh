@@ -190,12 +190,30 @@ network_measure () {
 	fi
 	netstat4=$(netstat -rn -f inet)
 	netstat6=$(netstat -rn -f inet6)
-	dg4_ip=$(echo -n "$netstat4" | grep -qi default || { echo -n 'none'; exit 0;}; echo -n "$netstat4" | grep -i default | awk '{print $2}' | remove_chars)
-	dg6_fullgw=$(echo -n "$netstat6" | grep -qi default || { echo -n 'none'; exit 0;}; echo -n "$netstat6" | grep -i default | awk '{print $2}' | head -n1 | remove_chars)
-	dg6_ip=$(echo -n "$netstat6" | grep -qi default || { echo -n 'none'; exit 0;}; echo -n "$netstat6" | grep -i default | awk '{print $2}' | cut -d'%' -f1 | head -n1 | remove_chars)
-	dg4_interface=$(echo -n "$netstat4" | grep -qi default || { echo -n 'none'; exit 0;}; echo -n "$netstat4" | grep -i default | awk -v x=$netstat4_print_position '{print $x}' | remove_chars)
-	dg6_interface=$(echo -n "$netstat6" | grep -qi default || { echo -n 'none'; exit 0; }; echo -n "$netstat6" | grep -i default | awk '{print $2}'| remove_chars)
-	dg6_interface_device_only=$(echo -n "$dg6_interface" | cut -d'%' -f2)
+	v6_defaultroute="default"
+	v4_defaultroute="default"
+	# Sequence here is important
+  if echo -n "$netstat6" | grep -Eqi "^2000::\/3"; then
+		v6_defaultroute="^2000::\/3"
+	else
+		dg6_ip=$(echo -n "$netstat6" | grep -Eqi "$v6_defaultroute" || { echo -n 'none'; exit 0;}; echo -n "$netstat6" | grep -Ei "$v6_defaultroute" | head -n1 | awk '{print $2}' | cut -d'%' -f1 | head -n1 | remove_chars)
+		dg6_fullgw=$(echo -n "$netstat6" | grep -Eqi "$v6_defaultroute" || { echo -n 'none'; exit 0;}; echo -n "$netstat6" | grep -Ei "$v6_defaultroute" | head -n1 | awk '{print $2}' | head -n1 | remove_chars)
+	fi
+  if echo -n "$netstat4" | grep -Eqi "^0\/1"; then
+		v4_defaultroute="^0\/1"
+	fi
+	dg4_ip=$(echo -n "$netstat4" | grep -Eqi "$v4_defaultroute" || { echo -n 'none'; exit 0;}; echo -n "$netstat4" | grep -Ei "$v4_defaultroute" | head -n1 | awk '{print $2}' | remove_chars)
+	dg4_interface=$(echo -n "$netstat4" | grep -Eqi "$v4_defaultroute" || { echo -n 'none'; exit 0;}; echo -n "$netstat4" | grep -Ei "$v4_defaultroute" | head -n1 | awk -v x=$netstat4_print_position '{print $x}' | remove_chars)
+	dg6_interface=$(echo -n "$netstat6" | grep -Eqi "$v6_defaultroute" || { echo -n 'none'; exit 0; }; echo -n "$netstat6" | grep -Ei "$v6_defaultroute" | head -n1 | awk '{print $2}'| remove_chars)
+
+	# If the following are not set, set them now i.e. dg6_ip and dg6_fullgw
+	temp_dg6_ip=$(echo -n "$netstat6" | grep -Eqi "^fe80.*$dg6_interface" || { echo -n 'none'; exit 0;}; echo -n "$netstat6" | grep -Ei "^fe80.*$dg6_interface" | head -n1 | awk '{print $2}' | cut -d'%' -f1 | head -n1 | remove_chars)
+	dg6_ip=${dg6_ip:="$temp_dg6_ip"}
+	temp_dg6_fullgw=$(echo -n "$netstat6" | grep -Eqi "^fe80.*$dg6_interface" || { echo -n 'none'; exit 0;}; echo -n "$netstat6" | grep -Ei "^fe80.*$dg6_interface" | head -n1 | awk '{print $2}' | head -n1 | remove_chars)
+	dg6_fullgw=${dg6_fullgw:=$temp_dg6_fullgw}
+	# 
+
+	dg6_interface_device_only=$(echo -n "$dg6_interface" | grep -Eqi "%" || { echo -n "$dg6_interface"; exit 0;}; echo -n "$dg6_interface" | cut -d'%' -f2)
 	if [ $dg6_interface == "none" ]; then
 		dg6_interface_device_only="none"
 	fi
@@ -206,16 +224,22 @@ network_measure () {
 
 	if [ ! "$dg4_ip" == "none" ]; then
 		dg4_router_ether=$(arp -i "$dg4_interface" -n "$dg4_ip" | xargs | cut -d' ' -f4 | remove_chars)
+		if [ "$dg4_router_ether" == "no" ]; then
+			dg4_router_ether="none"
+		fi
 	else
 		dg4_router_ether="none"
 	fi
 	if [ ! "$dg4_interface" == "none" ]; then
-		dg4_interface_ether=$(ifconfig "$dg4_interface" | egrep ether | xargs | cut -d' ' -f2 | remove_chars)
+		dg4_interface_ether=$(ifconfig "$dg4_interface" | grep -Eqi "ether" || { echo -n 'none'; exit 0; }; ifconfig "$dg4_interface" | egrep ether | xargs | cut -d' ' -f2 | remove_chars)
 	else
 		dg4_interface_ether="none"
 	fi
 	if [ ! "$dg6_ip" == "none" ]; then
 		dg6_router_ether=$(ndp -anr | egrep "$dg6_interface" | xargs | tr -s ' ' | cut -d' ' -f2 | remove_chars )
+		if [ "$dg6_router_ether" == "no" ]; then
+			dg6_router_ether="none"
+		fi
 	else
 		dg6_router_ether="none"
 	fi
@@ -241,6 +265,7 @@ network_measure () {
 	if [[ "$dg4_response" > 0 ]] || [[ "$dg6_respone" > 0 ]]; then
 		locally_connected="true"
 	else
+		# There's a scenario here where the local gateway or VPN will not answer ICMP queries :(
 		locally_connected="false"
 	fi 
 	if [[ "$dg4_response" > 0 ]]; then
@@ -446,12 +471,14 @@ local_ips () {
 		dg6_interface_details=$(ifconfig "$dg6_interface_device_only")
 		# We know there may be multiple IPv6 addresses so first look for the one mapping to public if connectivity allows, then look for the next one in reverse order, so most likely to be the temporary
 		# If none, we should get the fe80 address...
-		dg6_interface_details_inet6=$(echo -n "$dg6_interface_details" | grep -i "inet6" | grep -i "$internet6_public_ip")
+		dg6_interface_details_temp=$(echo -n "$dg6_interface_details" | grep -i "inet6" | head -n1 )
+		dg6_interface_details_inet6=$(echo -n "$dg6_interface_details" | grep -i "$internet6_public_ip")
+		dg6_interface_details_inet6=${dg6_interface_details_inet6:=$dg6_interface_details_temp}
 	else
 		dg6_interface_details_inet6="none"
 	fi
 	if [[ ! "$dg6_interface_details_inet6" == "none" ]]; then 
-		dg6_local_ip=$(echo -n "$dg6_interface_details_inet6" | grep -qi "inet6" || { echo -n 'none'; exit 0; }; echo -n "$dg6_interface_details_inet6" | grep -i "inet6" | awk '{print $2}'| remove_chars)
+		dg6_local_ip=$(echo -n "$dg6_interface_details_inet6" | grep -qi "inet6" || { echo -n 'none'; exit 0; }; echo -n "$dg6_interface_details_inet6" | grep -i "inet6" | awk '{print $2}'| cut -d '%' -f1 | remove_chars)
 		dg6_local_prefixlen=$(echo -n "$dg6_interface_details_inet6" | grep -qi "inet6" || { echo -n 'none'; exit 0; }; echo -n "$dg6_interface_details_inet6" | grep -i "inet6" | awk '{print $4}'| remove_chars)
 	else
 		dg6_interface_details_inet6=$(echo -n "$dg6_interface_details" | grep -i "inet6" | tail -r)
