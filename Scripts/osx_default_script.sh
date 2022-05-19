@@ -425,8 +425,8 @@ internet_measure () {
 		ipv4_only="false"
 		ipv6_only="false"
 		internet_dualstack="true"
-		lighthouse4=$(timeout 7 $curl_binary -sN -4 -k -L -i "$PANSIFT_LIGHTHOUSE" 2>&1 || exit 0)
-		lighthouse6=$(timeout 7 $curl_binary -sN -6 -k -L -i "$PANSIFT_LIGHTHOUSE" 2>&1 || exit 0)
+		lighthouse4=$(timeout 7 $curl_binary -sN -4 -L -i "$PANSIFT_LIGHTHOUSE" 2>&1 || exit 0)
+		lighthouse6=$(timeout 7 $curl_binary -sN -6 -L -i "$PANSIFT_LIGHTHOUSE" 2>&1 || exit 0)
 		# internet_asn=$(echo -n "$lighthouse4" | grep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse4" | grep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
 		internet4_asn=$(echo -n "$lighthouse4" | grep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse4" | grep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
 		internet6_asn=$(echo -n "$lighthouse6" | grep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse6" | grep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
@@ -437,7 +437,7 @@ internet_measure () {
 		ipv4_only="true"
 		ipv6_only="false"
 		internet_dualstack="false"
-		lighthouse4=$(timeout 7 $curl_binary -sN -4 -k -L -i "$PANSIFT_LIGHTHOUSE" 2>&1 || exit 0)
+		lighthouse4=$(timeout 7 $curl_binary -sN -4 -L -i "$PANSIFT_LIGHTHOUSE" 2>&1 || exit 0)
 		# internet_asn=$(echo -n "$lighthouse4" | egrep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse4" | egrep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
 		internet4_asn=$(echo -n "$lighthouse4" | grep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse4" | grep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
 		internet4_public_ip=$(echo -n "$lighthouse4" | egrep -qi "x-pansift-client-ip" || { echo -n 'none'; exit 0;}; echo -n "$lighthouse4" | egrep -i "x-pansift-client-ip" | cut -d' ' -f2 | remove_chars )
@@ -447,7 +447,7 @@ internet_measure () {
 		ipv4_only="false"
 		ipv6_only="true"
 		internet_dualstack="false"
-		lighthouse6=$(timeout 7 $curl_binary -sN -6 -k -L -i "$PANSIFT_LIGHTHOUSE" 2>&1 || exit 0)
+		lighthouse6=$(timeout 7 $curl_binary -sN -6 -L -i "$PANSIFT_LIGHTHOUSE" 2>&1 || exit 0)
 		# internet_asn=$(echo -n "$lighthouse6" | egrep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse6" | egrep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
 		internet6_asn=$(echo -n "$lighthouse6" | grep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse6" | grep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
 		internet4_public_ip="none"
