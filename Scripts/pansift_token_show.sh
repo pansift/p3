@@ -12,15 +12,15 @@ if test -f "$pansift_token_file"; then
     #echo $line
     token=$(echo -n "$line" | awk '{$1=$1;print}' | tr ',' '.' | tr -s ' ' | tr -d '\r')
 
-  if [[ $1 =~ ^[-_A-Z0-9a-z]{86}==$ ]]; then
+  if [[ $token =~ ^[-_A-Z0-9a-z]{86}==$ ]]; then
   #echo "$token match"
-    applescriptCode="display dialog \"$token\" buttons {\"OK\"} default button \"OK\"" 
+    applescriptCode="display dialog \"$token\" buttons {\"OK\"} default button \"OK\"  with title \"ZTP / Write Token (Valid)\"" 
   else
     #echo "$token no match"
-    applescriptCode="display dialog \"$token\" buttons {\"OK\"} default button \"OK\"" 
+    applescriptCode="display dialog \"$token\" buttons {\"OK\"} default button \"OK\"with title \"ZTP / Write Token (Invalid)\"" 
   fi 
 else
-  token="Please retrieve token from PanSift web account or IT admin"
+  token="Please retrieve token from PanSift web account, restart ZTP, or ask an IT admin"
   applescriptCode="display dialog \"$token\" buttons {\"OK\"} default button \"OK\"" 
 fi
 

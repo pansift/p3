@@ -3,7 +3,7 @@
 source "$HOME"/Library/Preferences/Pansift/pansift.conf
 
 read -r -d '' applescriptCode <<'EOF'
-set uuid to text returned of (display dialog "Enter an issue note (current time will be logged)" default answer linefeed)
+set uuid to text returned of (display dialog "Enter a brief note on an issue. The time and host details will be submitted automatically." default answer linefeed linefeed with title "PanSift User Comments / Notes")
 return uuid
 EOF
 

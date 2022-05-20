@@ -14,15 +14,15 @@ if test -f "$pansift_uuid_file"; then
 
   if [[ $uuid =~ ^\{?[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{12}\}?$ ]]; then
     #echo "$uuid match"
-    applescriptCode="display dialog \"$uuid\" buttons {\"OK\"} default button \"OK\"" 
+    applescriptCode="display dialog \"$uuid\" buttons {\"OK\"} default button \"OK\" with title \"Bucket UUID (Valid)\"" 
   else
     #echo "$uuid no match"
-    applescriptCode="display dialog \"$uuid\" buttons {\"OK\"} default button \"OK\"" 
+    applescriptCode="display dialog \"$uuid\" buttons {\"OK\"} default button \"OK\" with title \"Bucket UUID (Invalid)\"" 
   fi 
 else
-  uuid="Please retrieve from PanSift UUID via web account or IT admin"
+  uuid="Please retrieve your PanSift UUID via web account, restart ZTP, or ask an IT admin"
   #echo "$uuid no file"
-  applescriptCode="display dialog \"$uuid\" buttons {\"OK\"} default button \"OK\"" 
+  applescriptCode="display dialog \"$uuid\" buttons {\"OK\"} default button \"OK\" with title \"No UUID File Found\"" 
 fi
 
 
