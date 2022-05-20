@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 source "$HOME"/Library/Preferences/Pansift/pansift.conf
-pansift_ingest_file="$PANSIFT_PREFERENCES"/pansift_ingest.conf
 pansift_uuid_file="$PANSIFT_PREFERENCES"/pansift_uuid.conf
 url_regex='(https?|ftp|file)://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]'
 
@@ -29,7 +28,7 @@ curl_user_agent # Set the curl agent
 agent_check() {
 	logs=$(tail -n 3 "$PANSIFT_LOGS"/telegraf.log)
 	log_msg="$(echo -n "$logs" | egrep -qi "\[agent\] error" || { echo -n 'Agent (OK) | color=green'; exit 0; }; echo -n "$logs" | egrep -i "\[agent\] error" | cut -d":" -f3 | awk '{print $0"| color=red"}')"
-		echo "$log_msg"
+	echo "$log_msg"
 }
 
 echo "PS"
@@ -50,7 +49,7 @@ echo "Internals"
 echo "Bucket UUID"
 echo "-- Show | bash='$PANSIFT_SCRIPTS/pansift_uuid_show.sh' terminal=false"
 echo "-- Update | bash='$PANSIFT_SCRIPTS/pansift_uuid_update.sh' terminal=false"
-echo "ZTP/Write Token"
+echo "Write Token"
 echo "-- Show | bash='$PANSIFT_SCRIPTS/pansift_token_show.sh' terminal=false"
 echo "-- Update | bash='$PANSIFT_SCRIPTS/pansift_token_update.sh' terminal=false"
 echo "Ingest URL"

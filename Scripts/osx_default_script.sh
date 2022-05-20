@@ -193,13 +193,13 @@ network_measure () {
 	v6_defaultroute="default"
 	v4_defaultroute="default"
 	# Sequence here is important
-  if echo -n "$netstat6" | grep -Eqi "^2000::\/3"; then
+	if echo -n "$netstat6" | grep -Eqi "^2000::\/3"; then
 		v6_defaultroute="^2000::\/3"
 	else
 		dg6_ip=$(echo -n "$netstat6" | grep -Eqi "$v6_defaultroute" || { echo -n 'none'; exit 0;}; echo -n "$netstat6" | grep -Ei "$v6_defaultroute" | head -n1 | awk '{print $2}' | cut -d'%' -f1 | head -n1 | remove_chars)
 		dg6_fullgw=$(echo -n "$netstat6" | grep -Eqi "$v6_defaultroute" || { echo -n 'none'; exit 0;}; echo -n "$netstat6" | grep -Ei "$v6_defaultroute" | head -n1 | awk '{print $2}' | head -n1 | remove_chars)
 	fi
-  if echo -n "$netstat4" | grep -Eqi "^0\/1"; then
+	if echo -n "$netstat4" | grep -Eqi "^0\/1"; then
 		v4_defaultroute="^0\/1"
 	fi
 	dg4_ip=$(echo -n "$netstat4" | grep -Eqi "$v4_defaultroute" || { echo -n 'none'; exit 0;}; echo -n "$netstat4" | grep -Ei "$v4_defaultroute" | head -n1 | awk '{print $2}' | remove_chars)
@@ -269,13 +269,13 @@ network_measure () {
 		locally_connected="false"
 	fi 
 	if [[ "$dg4_response" > 0 ]]; then
-	locally4_connected="true"
+		locally4_connected="true"
 	fi
 	if [[ "$dg6_response" > 0 ]]; then
-	locally6_connected="true"
+		locally6_connected="true"
 	fi
-	
-	
+
+
 }
 
 dns_cache_rr_measure () {
@@ -516,9 +516,9 @@ wlan_measure () {
 		wlan_channel_i="$wlan_channel"i
 		wlan_mcs=$(echo -n "$airport_output"| egrep -i '[[:space:]]mcs' | cut -d':' -f2 | remove_chars)
 		if [ "$wlan_channel" -lt 15 ] && [ $osx_mainline == 11 ] ; then
-		# Here we have an OSX bug where the CLI reports MCS 0 even when MCS can be 15 when on the 2.4GHz range i.e. channels 1-14
-		# Also note bash/POSIX portability for conditionals with [ ] or [[ ]] where [[ is less portable.
-		wlan_mcs=-1
+			# Here we have an OSX bug where the CLI reports MCS 0 even when MCS can be 15 when on the 2.4GHz range i.e. channels 1-14
+			# Also note bash/POSIX portability for conditionals with [ ] or [[ ]] where [[ is less portable.
+			wlan_mcs=-1
 		fi
 		wlan_mcs_i="$wlan_mcs"i
 		wlan_80211_auth=$(echo -n "$airport_output"| egrep -i '[[:space:]]802\.11 auth' |  cut -d':' -f2 | remove_chars)

@@ -3,7 +3,7 @@
 #set -e
 #set -vx
 
-export PANSIFT_AGENT_VERSION="0.4.1"
+export PANSIFT_AGENT_VERSION="0.4.3"
 PANSIFT_UUID=""
 PANSIFT_INGEST=""
 PANSIFT_TOKEN=""
@@ -12,23 +12,19 @@ umask 077
 
 # Macro settings for paths etc.
 source "$HOME"/Library/Preferences/Pansift/pansift.conf
-echo "Pansift Agent Version: $PANSIFT_AGENT_VERSION"
 
 # Configuration and preferences files
 mkdir -p "$PANSIFT_PREFERENCES"
-echo "Pansift Preferences Path: \"$PANSIFT_PREFERENCES\""
 
 # Scripts and additional executables
 mkdir -p "$PANSIFT_SCRIPTS"
-echo "Pansift Application Scripts Path: \"$PANSIFT_SCRIPTS\""
 
 # Logs, logs, logs
 mkdir -p "$PANSIFT_LOGS"
-echo "Pansift Logs Path: \"$PANSIFT_LOGS\""
 
 #PANSIFT_SUPPORT="$HOME"/Library/Application\ Support/Pansift
 mkdir -p "$PANSIFT_SUPPORT"
-echo "Pansift Application Support Path: \"$PANSIFT_SUPPORT\""
+
 
 # Next line will need changing once a full Pansift flip
 #defaults write /Library/Preferences/com.matryer.BitBar pluginsDirectory "$PANSIFT_SCRIPTS"/Plugins
@@ -169,15 +165,9 @@ else
 fi
 export MACHINE_UUID=$machine_uuid
 
-
-echo "Pansift UUID: $PANSIFT_UUID"
-echo "Machine UUID: $MACHINE_UUID"
-echo "Ingest URL: $PANSIFT_INGEST"
-echo "ZTP Token: $PANSIFT_TOKEN"
-
-
 touch "$PANSIFT_SUPPORT"/telegraf.pid "$PANSIFT_LOGS"/telegraf.log
 if [[ "$1" == "-b" ]]; then 
+	echo "Running special once off config to push system details before resorting to normal configuration..."
 	touch "$PANSIFT_SUPPORT"/telegraf-once.pid
 	"$PANSIFT_SUPPORT"/telegraf --once --config "$PANSIFT_PREFERENCES"/telegraf-osx-once.conf --pidfile "$PANSIFT_SUPPORT"/telegraf-once.pid >/dev/null 2>&1 &
 	wait $!
@@ -185,6 +175,21 @@ if [[ "$1" == "-b" ]]; then
 else
 	sleep 3 # Give Telegraf a little more time to flush buffers and shut down
 fi
+# Simple switch for Environment only. Future state, use getopts and functions.
+echo "Agent Version: $PANSIFT_AGENT_VERSION"
+echo "Preferences Path: \"$PANSIFT_PREFERENCES\""
+echo "Application Scripts Path: \"$PANSIFT_SCRIPTS\""
+echo "Logs Path: \"$PANSIFT_LOGS\""
+echo "Application Support Path: \"$PANSIFT_SUPPORT\""
+echo "Lighthouse: \"$PANSIFT_LIGHTHOUSE\""
+echo "Bucket UUID: $PANSIFT_UUID"
+echo "Machine UUID: $MACHINE_UUID"
+echo "Ingest URL: $PANSIFT_INGEST"
+echo "ZTP Token: $PANSIFT_TOKEN"
+echo "User: $USER"
+echo "Home: $HOME"
+echo "Path: $PATH"
+echo "Host: $HOSTNAME"
 
 # We need to get the pansift_osx_machine data up fast and not have to wait for the longet interval...
 "$PANSIFT_SUPPORT"/telegraf --config "$PANSIFT_PREFERENCES"/telegraf-osx.conf --pidfile "$PANSIFT_SUPPORT"/telegraf.pid >/dev/null 2>&1 &
