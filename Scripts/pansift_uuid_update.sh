@@ -3,7 +3,7 @@
 source "$HOME"/Library/Preferences/Pansift/pansift.conf
 
 read -r -d '' applescriptCode <<'EOF'
-	 set uuid to text returned of (display dialog "Enter your new Pansift Bucket UUID" default answer "" with title "Update Bucket UUID")
+	 set uuid to text returned of (display dialog "Enter your new PanSift Bucket UUID." default answer "" with title "Update Bucket UUID")
 	 return uuid
 EOF
 

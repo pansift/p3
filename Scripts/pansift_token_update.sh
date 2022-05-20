@@ -3,7 +3,7 @@
 source "$HOME"/Library/Preferences/Pansift/pansift.conf
 
 read -r -d '' applescriptCode <<'EOF'
-	 set token to text returned of (display dialog "Enter your new Pansift token?" default answer linefeed with title "Update ZTP / Write Token")
+	 set token to text returned of (display dialog "Enter your new PanSift token." default answer linefeed with title "Update ZTP / Write Token")
 	 return token
 EOF
 

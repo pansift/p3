@@ -26,5 +26,5 @@ if [[ -d "$PANSIFT_PREFERENCES" ]]; then
 	fi
 fi
 
-cd "$PANSIFT_SCRIPTS" && ./pansift
+cd "$PANSIFT_SCRIPTS" && ./pansift -b
 exit

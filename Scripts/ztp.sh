@@ -49,7 +49,7 @@ if [[ $uuid =~ ^\{?[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[
 	ingest=$(echo -n "$curl_response" | cut -d',' -f3 | tr -d '\r')
 	if [[ $token =~ ^[-_A-Z0-9a-z]{86}==$ ]]; then 
 		echo -n "$token" > $pansift_token_file 
-		ingest_regex='(https?|ftp|file)://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]'
+		ingest_regex='https://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]'
 		if [[ $ingest =~ $ingest_regex ]]; then
 			echo -n "$ingest" > $pansift_ingest_file
 			echo -n "${token},${ingest}"
