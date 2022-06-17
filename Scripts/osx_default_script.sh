@@ -259,8 +259,20 @@ network_measure () {
 	# We've possibly been hitting WLAN powersave in quiet times with dropping packets so increased count to 3
 	# Removing the -o option as it skews towards the first packet which may take longer if device is asleep etc
 	# Wait a maximum of -t5 seconds
-	dg4_response=$(echo -n "$netstat4" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg4_ip" == "none" ]] && ping -t5 -c3 -i1 -k BE "$dg4_ip" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
-	dg6_response=$(echo -n "$netstat6" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg6_ip" == "none" ]] && timeout 5 ping6 -c3 -i1 -k BE "$dg6_fullgw" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
+
+	who_first="$(($RANDOM % 2))"
+	# We got some interesting results in the IPv6 v IPv4 which is faster/latency tests so we want to randomize which one goes first so results are
+  # not potentially skewed by sleeping radios, ARP, NDP etc...
+	if [ "$who_first" -eq 0 ]; then
+		# echo "$who_first means IPv4 first"
+	 	dg4_response=$(echo -n "$netstat4" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg4_ip" == "none" ]] && ping -t5 -c3 -i1 -k BE "$dg4_ip" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
+	 	dg6_response=$(echo -n "$netstat6" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg6_ip" == "none" ]] && timeout 5 ping6 -c3 -i1 -k BE "$dg6_fullgw" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
+	else
+		# echo "$who_first means IPv6 first"
+	 	dg6_response=$(echo -n "$netstat6" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg6_ip" == "none" ]] && timeout 5 ping6 -c3 -i1 -k BE "$dg6_fullgw" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
+	 	dg4_response=$(echo -n "$netstat4" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg4_ip" == "none" ]] && ping -t5 -c3 -i1 -k BE "$dg4_ip" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
+	fi
+
 
 	if [[ "$dg4_response" > 0 ]] || [[ "$dg6_respone" > 0 ]]; then
 		locally_connected="true"
