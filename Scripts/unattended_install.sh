@@ -43,7 +43,11 @@ source "$DIR"/"$APP"/Contents/Resources/Preferences/pansift.conf
 echo "Creating preferences directory if non-existent: $PANSIFT_PREFERENCES"
 mkdir -p "$PANSIFT_PREFERENCES":/
 echo "Copying additional prestaged configuration files if found from: $DIR"
-rsync -aru "$DIR"/*.conf "$PANSIFT_PREFERENCES"
+if compgen -G "${DIR}/*.conf" > /dev/null; then
+	rsync -aru "$DIR"/*.conf "$PANSIFT_PREFERENCES"
+else
+	echo "No additional pre-staged configuration files found in: $DIR"
+fi
 
 # Scripts and additional executables
 echo "Creating scripts and plugins directory if non-existent: $PANSIFT_SCRIPTS" 

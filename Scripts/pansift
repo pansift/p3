@@ -169,12 +169,13 @@ touch "$PANSIFT_SUPPORT"/telegraf.pid "$PANSIFT_LOGS"/telegraf.log
 if [[ "$1" == "-b" ]]; then 
 	echo "Running special once off config to push system details before resorting to normal configuration..."
 	touch "$PANSIFT_SUPPORT"/telegraf-once.pid
+	# $PANSIFT_SUPPORT"/telegraf --once --config "$PANSIFT_PREFERENCES"/telegraf-osx-once.conf --pidfile "$PANSIFT_SUPPORT"/telegraf-once.pid
 	"$PANSIFT_SUPPORT"/telegraf --once --config "$PANSIFT_PREFERENCES"/telegraf-osx-once.conf --pidfile "$PANSIFT_SUPPORT"/telegraf-once.pid >/dev/null 2>&1 &
-	wait $!
-	disown
-else
-	sleep 3 # Give Telegraf a little more time to flush buffers and shut down
+	# wait $!
+	disown -a
 fi
+sleep 4 # Give Telegraf a little more time to flush buffers and shut down
+
 # Simple switch for Environment only. Future state, use getopts and functions.
 echo "Agent Version: $PANSIFT_AGENT_VERSION"
 echo "Preferences Path: \"$PANSIFT_PREFERENCES\""
@@ -193,5 +194,5 @@ echo "Host: $HOSTNAME"
 
 # We need to get the pansift_osx_machine data up fast and not have to wait for the longet interval...
 "$PANSIFT_SUPPORT"/telegraf --config "$PANSIFT_PREFERENCES"/telegraf-osx.conf --pidfile "$PANSIFT_SUPPORT"/telegraf.pid >/dev/null 2>&1 &
-disown
+disown -a
 exit 0
