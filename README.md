@@ -22,15 +22,16 @@ You can use the [unattended_install.sh](Scripts/unattended_install.sh) script to
 
 Pre-position the `Pansift.app` bundle from the [Pansift.dmg](Pansift.dmg) file in a remote machine directory (**not** the `/Application` directory, but your preferred staging directory, as the script will then copy the files to `/Applications` and `~Library` etc). 
 
-The script will then start the application in the current context, so it expects a full session (GUI and the correct user). PanSift, once running, will not claim a bucket or register an account, but it will initiate the ZTP (Zero Touch Provisioning) process, and start writing metrics. 
+The script will then start the application in the current context, so it expects a full session (GUI and the correct user). PanSift, once running, will **not** automatically claim a bucket or register an account, but it will initiate the ZTP (Zero Touch Provisioning) process, and start writing metrics to a remote bucket. You can then claim the bucket from the agent or via the web based claim using the PanSift/bucket UUID. 
 
-The ZTP process remotely provisions a bucket in a special holding account. It gets a write token and is also told which remote URL will be ingesting its data. If you want to specify the bucket, token, and URL in advance, see the next section.
+Example Usage: `./unattended_install.sh /tmp/Pansift.app 2>&1 | tee install.log` 
 
-Example: `Example: ./unattended_install.sh /tmp/Pansift.app 2>&1 | tee install.log` 
+**Note:** The ZTP process remotely provisions buckets to a special holding account until claimed. It gets a write token and is told which remote URL to send data to for ingestion. If you want to specify the bucket, token, and URL **in advance**, please see the next section.
+
 
 ### Automatic Claim / Multiagent
 
-This section details how to use the [unattended_install.sh](Scripts/unattended_install.sh) script to do a 'hands-off' install on a remote machine *with specific configuration for an existing bucket*. This method prevents the ZTP process from running and allows you to specify settings in advance so agents report to an already created bucket. 
+This section details how to use the [unattended_install.sh](Scripts/unattended_install.sh) script to do a 'hands-off' install on a remote machine *with specific configuration for an existing bucket*. This method prevents the ZTP process from running and allows you to specify settings in advance so agents report to an already created bucket.
 
 > :information_source: Buckets form one boundary for account based reads and agent writes. Buckets also define the test host records used by DNS, HTTP, and traces by all agents in that specific bucket. Please consider what agents you want to report in to what buckets. Multiagent buckets allow you to administer a group of agents rather than the default 1-1 agent to bucket mapping.
 
@@ -46,4 +47,6 @@ You can pre-stage the completed `pansift_uuid.conf`, `pansift_token.conf`, and `
 
 `pansift_token.conf` contains a single string comprised of an 86 character hexadecimal string ending in a double equals "==" (so it's 88 characters long). This is a write token for the bucket and can be by multiple agents if you wish. [Contact support](https://pansift.com/contact) if you are using a "multiagent" bucket and want discrete tokens per agent rather than creating more buckets.
 
-`pansift_ingest.conf` contains a single string comprised of a fully qualified URL for the bucket's datastore and ingest host. It normally takes the form of the `pansift`/`bucket` UUID in a URL as such; `https://84b878ec-da07-490e-8375-c36dfbb098fa.ingest.pansift.com` and needs to resolve in DNS before writes will succeed. This URL tells the agent which datastore host to speak to and the DNS entry is created during the normal ZTP process. Please check the PanSift log or [contact support](https://pansift.com/contact) if this is not resloving for you. It is a CNAME to the actual datastore A record.
+`pansift_ingest.conf` contains a single string comprised of a fully qualified URL for the bucket's datastore and ingest host. It normally takes the form of the `pansift`/`bucket` UUID in a URL as such; `https://84b878ec-da07-490e-8375-c36dfbb098fa.ingest.pansift.com` and needs to resolve in DNS before writes will succeed. This URL tells the agent which datastore host to speak to and the DNS entry is created during the normal ZTP process or by support. Please check the PanSift log or [contact support](https://pansift.com/contact) if this is not resloving for you. It is a CNAME to the actual datastore A record.
+
+> :warning: **Do not configure the raw datastore URL with the A record. Use "https" + the CNAME which follows the pattern of `<uuid>.ingest.pansift.com`**
