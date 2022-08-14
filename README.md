@@ -28,7 +28,9 @@ The script will then start the application in the current context, so it expects
 
 PanSift, once running, will not claim a bucket or register an account, but it will initiate the ZTP (Zero Touch Provisioning) process, and start writing metrics. 
 
-The ZTP process remotely provisions a bucket in a special holding account. It gets a write token and is also told which remote URL will be ingesting its data. If you want to specify the bucket, token, and URL in advance, see the next section. 
+The ZTP process remotely provisions a bucket in a special holding account. It gets a write token and is also told which remote URL will be ingesting its data. If you want to specify the bucket, token, and URL in advance, see the next section.
+
+Example: `Example: ./unattended_install.sh /tmp/Pansift.app 2>&1 | tee install.log` 
 
 ### Automatic Claim / Multiagent
 
@@ -40,7 +42,9 @@ You can pre-stage the completed `pansift_uuid.conf`, `pansift_token.conf`, and `
 
 1. Please remember that you must run the script as the user account you intend to implement RUM (Real User Monitoring) on and you must also have a full window session.
 2. If you do not have an existing bucket but you wish to use one for multiple agents (or want extra buckets for greater separation of agents) please [contact support](https://pansift.com/contact) for the *simple steps* to create a new 'holding' bucket including the requisite UUID, token, and URL.
-3. For **commercial customers** please [contact support](https://pansift.com/contact) if you want to ensure your data resides in our commercial Influx cloud rather than an OSS instance.
+3. For **commercial customers** please [contact support](https://pansift.com/contact) if you want to ensure your bucket and data resides in the Influx cloud rather than our OSS instances.
+
+#### Configuration Files For Pre-staging
 
 `pansift_uuid.conf` contains a single string comprised of a UUIDv4 value e.g. `84b878ec-da07-490e-8375-c36dfbb098fa`. This is actually the bucket UUID that the agent writes to remotely. This bucket UUID is available from your account. If you have not claimed any buckets yet or wish to use a totally new bucket then please [contact support](https://pansift.com/contact)
 
