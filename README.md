@@ -11,3 +11,31 @@ Pansift is about helping others to avoid stress and stay productive with optimal
 **Download [Pansift DMG](https://github.com/pansift/p3/raw/main/Pansift.dmg), open it, and drag `Pansift.app` to the `Applications` folder and double click to run or use Command+O to open.**
 
 You can then claim your data bucket from the agent or just register an account at [https://pansift.com](https://pansift.com) to claim your data bucket and get troubleshooting!
+
+### Unattended Install
+
+You can use the [unattended_install.sh](Scripts/unattended_install.sh) script to do a 'hands-off' install on a remote machine. 
+
+> :warning: **You must run the script as a logged in user, not a headless system or service account.**
+
+Pre-position the `Pansift.app` bundle from the [Pansift.dmg](Pansift.dmg) file in a remote machine directory (**not** the `/Application` directory, but your preferred staging directory, as the script will then copy the files to `/Applications` and `~Library` etc). It will then start the application in the current context, so it expects a full session (GUI and the correct user). Do not use a headless system or service account. PanSift, once running, will not claim a bucket or register an accountt, but it will initiate the ZTP (Zero Touch Provisioning) process, and start writing metrics. 
+
+The ZTP process remotely provisions a bucket in a special holding account, gets a write token, and is then told which remote URL will be ingesting its data. If you want to specify the bucket, token, and URL in advance, see the next section. 
+
+### Unattanded Install with a Staged Multiagent Bucket
+
+This section details how to use the [unattended_install.sh](Scripts/unattended_install.sh) script to do a 'hands-off' install on a remote machine with specific configuration for an existing bucket. This method prevents the ZTP process from running and allows you to ensure that multiple agents report to a single bucket. 
+
+> :information_source: Buckets form a boundary for account based read and agent writes. Buckets also define the test hosts used for all agents in that bucket. Please consider what agents you want to report to what buckets if using multiagent buckets rather than a 1-1 agent to bucket mapping.
+
+You can pre-stage the completed `pansift_uuid.conf`, `pansift_token.conf`, and `pansift_ingest.conf` files (you do so in the same directory as the downloaded or pre-positioned `Pansift.app` mentioned in the previous "Unattended Install" process). This is how you get PanSift to use an existing *claimed* bucket without any additional provisioning process. This is useful for mass-deployments to machines you have access to remotely via MDM (Mobile Device Management) or other orchestration software. 
+
+1. Please remember that you must run the script as the user account you intend to implement RUM (Real User Monitoring) on and you must also have a full window session.
+2. If you do not have an existing bucket but you wish to use one for multiple agents (or want extra buckets for greater separation of agents) please [contact support](https://pansift.com/contact) for the *simple steps* to create a new 'holding' bucket including the requisite UUID, token, and URL.
+3. For **commercial customers** please [contact support](https://pansift.com/contact) if you want to ensure your data resides in our commercial Influx cloud rather than an OSS instance.
+
+`pansift_uuid.conf` contains a single string comprised of a UUIDv4 value e.g. `84b878ec-da07-490e-8375-c36dfbb098fa`. This is actually the bucket UUID that the agent writes to remotely. This bucket UUID is available from your account. If you have not claimed any buckets yet or wish to use a totally new bucket then please [contact support](https://pansift.com/contact)
+
+`pansift_token.conf` contains a single string comprised of an 86 character hexadecimal string ending in a double equals "==" (so it's 88 characters long). This is a write token for the bucket and can be by multiple agents if you wish. [Contact support](https://pansift.com/contact) if you are using a "multiagent" bucket and want discrete tokens per agent rather than creating more buckets.
+
+`pansift_ingest.conf` contains a single string comprised of a fully qualified URL for the bucket's datastore and ingest host. It normally takes the form of the `pansift`/`bucket` UUID in a URL as such; `https://84b878ec-da07-490e-8375-c36dfbb098fa.ingest.pansift.com` and needs to resolve in DNS before writes will succeed. This URL tells the agent which datastore host to speak to and the DNS entry is created during the normal ZTP process. Please check the PanSift log or [contact support](https://pansift.com/contact) if this is not resloving for you. It is a CNAME to the actual datastore A record.
