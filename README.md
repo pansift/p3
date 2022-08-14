@@ -22,11 +22,7 @@ You can use the [unattended_install.sh](Scripts/unattended_install.sh) script to
 
 Pre-position the `Pansift.app` bundle from the [Pansift.dmg](Pansift.dmg) file in a remote machine directory (**not** the `/Application` directory, but your preferred staging directory, as the script will then copy the files to `/Applications` and `~Library` etc). 
 
-The script will then start the application in the current context, so it expects a full session (GUI and the correct user). 
-
-> :warning: **Do not use a headless system or service account.**
-
-PanSift, once running, will not claim a bucket or register an account, but it will initiate the ZTP (Zero Touch Provisioning) process, and start writing metrics. 
+The script will then start the application in the current context, so it expects a full session (GUI and the correct user). PanSift, once running, will not claim a bucket or register an account, but it will initiate the ZTP (Zero Touch Provisioning) process, and start writing metrics. 
 
 The ZTP process remotely provisions a bucket in a special holding account. It gets a write token and is also told which remote URL will be ingesting its data. If you want to specify the bucket, token, and URL in advance, see the next section.
 
