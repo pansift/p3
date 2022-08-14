@@ -12,16 +12,21 @@ script_name=$(basename "$0")
 if [[ ${#1} = 0 ]]; then
 	echo "Usage: Pass the absolute and full path of the app bundle (inc. <name>.app) as the first argument."
 	echo ""
-	echo "Example: ./$script_name /tmp/Pansift.app"
+	echo "Example: ./$script_name /tmp/Pansift.app 2>&1 | tee install.log"
 	echo ""
-	echo "Note: You will also need the pansift_uuid.conf, ingest_url.conf, and pansift_token.conf 
-	echo "      files to be present in the same directory if pre-staging.
+	echo "Note: You will also need the pansift_uuid.conf, pansift_token.conf, and pansift_ingest.conf 
+	echo "      files to be present in the same directory if pre-staging for a known claimed bucket.
 	exit 0;
 fi
 
 DIR="$(dirname "$1")"
 APP="$(basename "$1")"
-echo "Running unattended with..." 
+
+function timenow {
+  date "+%Y%m%dT%H%M%S%z"
+}
+
+echo "Running unattended at $(timenow) with..." 
 echo "Directory: $DIR"
 echo "App Bundle: $APP"
 
@@ -31,13 +36,13 @@ echo "App Bundle: $APP"
 # Bootstrap will still be run on first app run.
 
 # Get the base config to help with set up
-echo "Getting basic configuration for directory creation..." 
+echo "Getting basic configuration for directory creation..."
 source "$DIR"/"$APP"/Contents/Resources/Preferences/pansift.conf
 
 # Basic Configuration and then additional preferences files if present.
-echo "Creating preferences directory if non-existent: $PANSIFT_PREFERENCES" 
+echo "Creating preferences directory if non-existent: $PANSIFT_PREFERENCES"
 mkdir -p "$PANSIFT_PREFERENCES":/
-echo "Copying additional prestaged configuration files if found from: $DIR" 
+echo "Copying additional prestaged configuration files if found from: $DIR"
 rsync -aru "$DIR"/*.conf "$PANSIFT_PREFERENCES"
 
 # Scripts and additional executables
@@ -71,6 +76,7 @@ xattr -r -d com.apple.quarantine "$DIR"/"$APP"
 echo "Running PanSift first run of watcher script..." 
 cd "$PANSIFT_SCRIPTS" && ./pansift -b &
 disown 
+sleep 5
 
 # Open the app on the remote machine
 echo "Open PanSift (PS) in menu bar" 
