@@ -6,15 +6,17 @@ Pansift is a macOS troubleshooting and monitoring tool with a focus on the netwo
 
 Pansift is about helping others to avoid stress and stay productive with optimally functioning tools and networks. It's about saving you time, maintaining situational awareness, and getting to root causes quickly, easily, and **remotely** (even for historical issues). Whether it's for WiFi, DNS, IPv4, IPv6, or simple disk utilization issues - PanSift allows you to keep an eye on multiple remote machines (just like server monitoring) only with a more lightweight, heavily wireless focused, and user-friendly footprint. More info: [https://pansift.com](https://pansift.com) 
  
-## Install Instructions
+## Attended Installs
 
 **Download [Pansift DMG](https://github.com/pansift/p3/raw/main/Pansift.dmg), open it, and drag `Pansift.app` to the `Applications` folder and double click to run or use Command+O to open.**
 
-You can then claim your data bucket from the agent or just register an account at [https://pansift.com](https://pansift.com) to claim your data bucket and get troubleshooting!
+You can then claim your agent from the menubar or manually in the web application. Claiming will require you to register an account at [https://pansift.com](https://app.pansift.com/demo/logout_demo) to view your data and insights. Happy troubleshooting!
 
-### Unattended Install
+### Unattended Installs
 
-You can use the [unattended_install.sh](Scripts/unattended_install.sh) script to do a 'hands-off' install on a remote machine. 
+#### Manual Claim
+
+You can use the [unattended_install.sh](Scripts/unattended_install.sh) script to do a 'hands-off' install on a remote machine. This will provision a new bucket automatically which will need to be manually claimed unless you use
 
 > :warning: **You must run the script as a logged in user, not a headless system or service account.**
 
@@ -22,7 +24,7 @@ Pre-position the `Pansift.app` bundle from the [Pansift.dmg](Pansift.dmg) file i
 
 The ZTP process remotely provisions a bucket in a special holding account, gets a write token, and is then told which remote URL will be ingesting its data. If you want to specify the bucket, token, and URL in advance, see the next section. 
 
-### Unattanded Install with a Staged Multiagent Bucket
+#### Automatic Claim / Multiagent
 
 This section details how to use the [unattended_install.sh](Scripts/unattended_install.sh) script to do a 'hands-off' install on a remote machine with specific configuration for an existing bucket. This method prevents the ZTP process from running and allows you to ensure that multiple agents report to a single bucket. 
 
