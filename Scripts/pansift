@@ -3,7 +3,7 @@
 #set -e
 #set -vx
 
-export PANSIFT_AGENT_VERSION="0.4.3"
+export PANSIFT_AGENT_VERSION="0.4.5"
 PANSIFT_UUID=""
 PANSIFT_INGEST=""
 PANSIFT_TOKEN=""
@@ -182,7 +182,7 @@ echo "Application Scripts Path: \"$PANSIFT_SCRIPTS\""
 echo "Logs Path: \"$PANSIFT_LOGS\""
 echo "Application Support Path: \"$PANSIFT_SUPPORT\""
 echo "Lighthouse: \"$PANSIFT_LIGHTHOUSE\""
-echo "Bucket UUID: $PANSIFT_UUID"
+echo "Bucket/PanSift UUID: $PANSIFT_UUID"
 echo "Machine UUID: $MACHINE_UUID"
 echo "Ingest URL: $PANSIFT_INGEST"
 echo "ZTP Token: $PANSIFT_TOKEN"
