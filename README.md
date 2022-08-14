@@ -24,7 +24,7 @@ Pre-position the `Pansift.app` bundle from the [Pansift.dmg](Pansift.dmg) file i
 
 The script will then start the application in the current context, so it expects a full session (GUI and the correct user). PanSift, once running, will **not** automatically claim a bucket or register an account, but it will initiate the ZTP (Zero Touch Provisioning) process, and start writing metrics to a remote bucket. You can then claim the bucket from the agent or via the web based claim using the PanSift/bucket UUID. 
 
-Example Usage: `./unattended_install.sh /tmp/Pansift.app 2>&1 | tee install.log` 
+Example Usage: `./unattended_install.sh /tmp/Pansift.app 2>&1 | tee pansift_install.log` 
 
 **Note:** The ZTP process remotely provisions buckets to a special holding account until claimed. It gets a write token and is told which remote URL to send data to for ingestion. If you want to specify the bucket, token, and URL **in advance**, please see the next section.
 
