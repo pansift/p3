@@ -49,4 +49,4 @@ You can pre-stage the completed `pansift_uuid.conf`, `pansift_token.conf`, and `
 
 `pansift_ingest.conf` contains a single string comprised of a fully qualified URL for the bucket's datastore and ingest host. It normally takes the form of the `pansift`/`bucket` UUID in a URL as such; `https://84b878ec-da07-490e-8375-c36dfbb098fa.ingest.pansift.com` and needs to resolve in DNS before writes will succeed. This URL tells the agent which datastore host to speak to and the DNS entry is created during the normal ZTP process or by support. Please check the PanSift log or [contact support](https://pansift.com/contact) if this is not resloving for you. It is a CNAME to the actual datastore A record.
 
-> :warning: **Do not configure the raw datastore URL with the A record. Use "https" + the CNAME which follows the pattern of `https://<uuid>.ingest.pansift.com`**
+> :warning: **Do not configure the `pansift_ingest.conf` datastore URL with the A record. Use "https" + the CNAME which follows the pattern of `https://<uuid>.ingest.pansift.com`**
