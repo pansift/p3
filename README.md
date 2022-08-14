@@ -12,9 +12,9 @@ Pansift is about helping others to avoid stress and stay productive with optimal
 
 You can then claim your agent from the menubar or manually in the web application. Claiming will require you to register an account at [https://pansift.com](https://app.pansift.com/demo/logout_demo) to view your data and insights. Happy troubleshooting!
 
-### Unattended Installs
+## Unattended Installs
 
-#### Manual Claim
+### Manual Claim
 
 You can use the [unattended_install.sh](Scripts/unattended_install.sh) script to do a 'hands-off' install on a remote machine. This will provision a new bucket automatically which will need to be manually claimed unless you use
 
@@ -24,7 +24,7 @@ Pre-position the `Pansift.app` bundle from the [Pansift.dmg](Pansift.dmg) file i
 
 The ZTP process remotely provisions a bucket in a special holding account, gets a write token, and is then told which remote URL will be ingesting its data. If you want to specify the bucket, token, and URL in advance, see the next section. 
 
-#### Automatic Claim / Multiagent
+### Automatic Claim / Multiagent
 
 This section details how to use the [unattended_install.sh](Scripts/unattended_install.sh) script to do a 'hands-off' install on a remote machine with specific configuration for an existing bucket. This method prevents the ZTP process from running and allows you to ensure that multiple agents report to a single bucket. 
 
