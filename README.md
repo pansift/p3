@@ -20,15 +20,21 @@ You can use the [unattended_install.sh](Scripts/unattended_install.sh) script to
 
 > :warning: **You must run the script as a logged in user, not a headless system or service account.**
 
-Pre-position the `Pansift.app` bundle from the [Pansift.dmg](Pansift.dmg) file in a remote machine directory (**not** the `/Application` directory, but your preferred staging directory, as the script will then copy the files to `/Applications` and `~Library` etc). It will then start the application in the current context, so it expects a full session (GUI and the correct user). Do not use a headless system or service account. PanSift, once running, will not claim a bucket or register an accountt, but it will initiate the ZTP (Zero Touch Provisioning) process, and start writing metrics. 
+Pre-position the `Pansift.app` bundle from the [Pansift.dmg](Pansift.dmg) file in a remote machine directory (**not** the `/Application` directory, but your preferred staging directory, as the script will then copy the files to `/Applications` and `~Library` etc). 
 
-The ZTP process remotely provisions a bucket in a special holding account, gets a write token, and is then told which remote URL will be ingesting its data. If you want to specify the bucket, token, and URL in advance, see the next section. 
+The script will then start the application in the current context, so it expects a full session (GUI and the correct user). 
+
+> :warning: **Do not use a headless system or service account.**
+
+PanSift, once running, will not claim a bucket or register an account, but it will initiate the ZTP (Zero Touch Provisioning) process, and start writing metrics. 
+
+The ZTP process remotely provisions a bucket in a special holding account. It gets a write token and is also told which remote URL will be ingesting its data. If you want to specify the bucket, token, and URL in advance, see the next section. 
 
 ### Automatic Claim / Multiagent
 
-This section details how to use the [unattended_install.sh](Scripts/unattended_install.sh) script to do a 'hands-off' install on a remote machine with specific configuration for an existing bucket. This method prevents the ZTP process from running and allows you to ensure that multiple agents report to a single bucket. 
+This section details how to use the [unattended_install.sh](Scripts/unattended_install.sh) script to do a 'hands-off' install on a remote machine *with specific configuration for an existing bucket*. This method prevents the ZTP process from running and allows you to specify settings in advance so agents report to an already created bucket. 
 
-> :information_source: Buckets form a boundary for account based read and agent writes. Buckets also define the test hosts used for all agents in that bucket. Please consider what agents you want to report to what buckets if using multiagent buckets rather than a 1-1 agent to bucket mapping.
+> :information_source: Buckets form one boundary for account based reads and agent writes. Buckets also define the test host records used by DNS, HTTP, and traces by all agents in that specific bucket. Please consider what agents you want to report in to what buckets. Multiagent buckets allow you to administer a group of agents rather than the default 1-1 agent to bucket mapping.
 
 You can pre-stage the completed `pansift_uuid.conf`, `pansift_token.conf`, and `pansift_ingest.conf` files (you do so in the same directory as the downloaded or pre-positioned `Pansift.app` mentioned in the previous "Unattended Install" process). This is how you get PanSift to use an existing *claimed* bucket without any additional provisioning process. This is useful for mass-deployments to machines you have access to remotely via MDM (Mobile Device Management) or other orchestration software. 
 
