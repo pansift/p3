@@ -40,7 +40,7 @@ This section details how to use the [unattended_install.sh](Scripts/unattended_i
 You can pre-stage populated `pansift_uuid.conf`, `pansift_token.conf`, and `pansift_ingest.conf` files (in the same staging directory as the downloaded or pre-positioned `Pansift.app` mentioned in the previous "Manual Claim" process). This is how you get PanSift to use an existing *claimed* bucket without any additional provisioning process. This is useful for mass-deployments to machines you have access to remotely via MDM (Mobile Device Management) or other orchestration software. 
 
 1. Please remember that you must run the script as the user account you intend to implement RUM (Real User Monitoring) on and you must also have a full window session.
-2. If you do not have an existing bucket but you wish to use one for multiple agents (or want extra buckets for greater separation of agents) please [contact support](https://pansift.com/contact) for the *simple steps* to create a new 'holding' bucket including the requisite UUID, token, and URL.
+2. If you do not have an existing bucket but you wish to use one for multiple agents (or want extra buckets for greater separation of agents) please [contact support](https://pansift.com/contact) for the *simple steps* to create a new 'holding' bucket including the requisite UUID, token, and URL. You can use an existing bucket if you have claimed one already.
 3. For **commercial customers** please [contact support](https://pansift.com/contact) if you want to ensure your bucket and data resides in the Influx cloud rather than our OSS instances.
 
 #### Configuration Files For Pre-staging
