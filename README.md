@@ -24,7 +24,7 @@ Pre-position the `Pansift.app` bundle from the [Pansift.dmg](Pansift.dmg) file i
 
 The script will then start the application in the current context, so it expects a full session (GUI and the correct user). PanSift, once running, will **not** automatically claim a bucket or register an account, but it will initiate the ZTP (Zero Touch Provisioning) process, and start writing metrics to a remote bucket. You can then claim the bucket from the agent or via the web based claim using the PanSift/bucket UUID. 
 
-Example Usage: `./unattended_install.sh /tmp/Pansift.app 2>&1 | tee pansift_install.log` 
+*Example* Usage: `./unattended_install.sh /tmp/Pansift.app 2>&1 | tee pansift_install.log` 
 
 **Note:** The ZTP process remotely provisions buckets to a special holding account until claimed. It gets a write token and is told which remote URL to send data to for ingestion. If you want to specify the bucket, token, and URL **in advance**, please see the next section.
 
@@ -54,3 +54,5 @@ You can pre-stage populated `pansift_uuid.conf`, `pansift_token.conf`, and `pans
  * `pansift_ingest.conf` contains a single string comprised of a fully qualified URL for the bucket's datastore and ingest host. It takes the form of the `pansift`/`bucket` UUID as the host portion in the `ingest` subdomain. A URL example would be as such; `https://84b878ec-da07-490e-8375-c36dfbb098fa.ingest.pansift.com` (but replace with your UUID) and it needs to resolve in DNS before writes will succeed. This URL tells the agent which datastore host to speak to. The DNS entry is created during the normal ZTP process or by support so please liaise with support for mass deployments. Please check the PanSift log for an agent or [contact support](https://pansift.com/contact) if this is not resloving for you. It is a CNAME to the datastore A record.
 
 > :warning: **Do not configure the `pansift_ingest.conf` datastore URL with the A record. Use "https://" + the CNAME which follows the pattern of `https://<uuid>.ingest.pansift.com`** otherwise backend operational changes may cause interruptions to your agents ability to write.
+
+*Example* Usage: `./unattended_install.sh /tmp/Pansift.app 2>&1 | tee pansift_install.log`
