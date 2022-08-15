@@ -20,7 +20,7 @@ You can use the [unattended_install.sh](Scripts/unattended_install.sh) script to
 
 > :warning: **You must run the script as the logged in user you with to monitor and not with a headless system or service account.**
 
-Pre-position the `Pansift.app` bundle from the [Pansift.dmg](Pansift.dmg) file in a remote machine directory (**not** the `/Application` directory, but your preferred staging directory, as the script will then copy the files to `/Applications` and `~Library` etc). 
+Pre-position the `Pansift.app` bundle from the [Pansift.dmg](Pansift.dmg) file in a directory on the remote machine (**not** the `/Application` directory, but your preferred staging directory, as the script will then copy the files to `/Applications` and `~Library` etc). 
 
 The script will then start the application in the current context, so it expects a full session (GUI and the correct user). PanSift, once running, will **not** automatically claim a bucket or register an account, but it will initiate the ZTP (Zero Touch Provisioning) process, and start writing metrics to a remote bucket. You can then claim the bucket from the agent or via the web based claim using the PanSift/bucket UUID. 
 
@@ -31,7 +31,7 @@ Example Usage: `./unattended_install.sh /tmp/Pansift.app 2>&1 | tee pansift_inst
 
 ### Automatic Claim / Multiagent
 
-This section details how to use the [unattended_install.sh](Scripts/unattended_install.sh) script to do a 'hands-off' install on a remote machine *with specific configuration for an existing bucket*. This method prevents the ZTP process from running and allows you to specify settings in advance so agents report to an already created bucket.
+This section details how to use the [unattended_install.sh](Scripts/unattended_install.sh) script to do a 'hands-off' install on a remote machine *with specific configuration for an existing bucket*. This method prevents the ZTP process from running and allows you to specify settings in advance so agents report to an already created bucket. It requires staging the [Pansift.dmg](Pansift.dmg) file as above but also includes `3` additional configuration files.
 
 > :information_source: Buckets form one boundary for account based reads and agent writes. Buckets also define the test host records used by DNS, HTTP, and traces for all the agents in the bucket. Please consider what agents you want to report in to what buckets. Multiagent buckets allow you to administer a group of agents rather than the default 1-1 agent to bucket mapping.
 
