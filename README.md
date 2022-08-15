@@ -18,7 +18,7 @@ You can then claim your agent from the menubar or manually in the web applicatio
 
 You can use the [unattended_install.sh](Scripts/unattended_install.sh) script to do a 'hands-off' install on a remote machine. This will provision a new bucket automatically which will need to be manually claimed (UUID will need to be communicated for a remote claim) unless you use the [automatic claim](https://github.com/pansift/p3#automatic-claim--multiagent) method.
 
-> :warning: **You must run the script as a logged in user you with to monitor and not with a headless system or service account.**
+> :warning: **You must run the script as the logged in user you with to monitor and not with a headless system or service account.**
 
 Pre-position the `Pansift.app` bundle from the [Pansift.dmg](Pansift.dmg) file in a remote machine directory (**not** the `/Application` directory, but your preferred staging directory, as the script will then copy the files to `/Applications` and `~Library` etc). 
 
@@ -35,7 +35,7 @@ This section details how to use the [unattended_install.sh](Scripts/unattended_i
 
 > :information_source: Buckets form one boundary for account based reads and agent writes. Buckets also define the test host records used by DNS, HTTP, and traces for all the agents in the bucket. Please consider what agents you want to report in to what buckets. Multiagent buckets allow you to administer a group of agents rather than the default 1-1 agent to bucket mapping.
 
-> :warning: **You must run the script as a logged in user you with to monitor and not with a headless system or service account.**
+> :warning: **You must run the script as the logged in user you with to monitor and not with a headless system or service account.**
 
 You can pre-stage populated `pansift_uuid.conf`, `pansift_token.conf`, and `pansift_ingest.conf` files (in the same staging directory as the downloaded or pre-positioned `Pansift.app` mentioned in the previous "Manual Claim" process). This is how you get PanSift to use an existing *claimed* bucket without any additional provisioning process. This is useful for mass-deployments to machines you have access to remotely via MDM (Mobile Device Management) or other orchestration software. 
 
