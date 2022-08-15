@@ -16,7 +16,7 @@ You can then claim your agent from the menubar or manually in the web applicatio
 
 ### Manual Claim
 
-You can use the [unattended_install.sh](Scripts/unattended_install.sh) script to do a 'hands-off' install on a remote machine. This will provision a new bucket automatically which will need to be manually claimed unless you use
+You can use the [unattended_install.sh](Scripts/unattended_install.sh) script to do a 'hands-off' install on a remote machine. This will provision a new bucket automatically which will need to be manually claimed (UUID will need to be communicated or user has to click to claim on their account) unless you use the [automatic claim](https://github.com/pansift/p3#automatic-claim--multiagent) method.
 
 > :warning: **You must run the script as a logged in user, not a headless system or service account.**
 
