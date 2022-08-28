@@ -2,6 +2,12 @@
 
 # NOTE: Default pbadr.sh runs every 60s
 
+# Scenario where re-copying in the App after an uninstall but same App version
+# so the bootstrap does not get run hence we need to run it.
+if [[ ! -f "$HOME"/Library/Preferences/Pansift/pansift.conf ]]; then
+ /Applications/Pansift.app/Contents/Resources/Scripts/bootstrap.sh "/Applications/Pansift.app"
+fi
+
 source "$HOME"/Library/Preferences/Pansift/pansift.conf
 pansift_uuid_file="$PANSIFT_PREFERENCES"/pansift_uuid.conf
 
@@ -24,7 +30,10 @@ fi
 
 # Scenario when after an uninstall and copying same version of Pansift.app
 # that this file is missing on first iteration.. so let's touch it.
-touch "$PANSIFT_LOGS"/telegraf.log
+if [[ ! -f "$PANSIFT_LOGS"/telegraf.log ]]; then
+	mkdir -p "$PANSIFT_LOGS"
+	touch "$PANSIFT_LOGS"/telegraf.log
+fi
 
 agent_check() {
 	logs=$(tail -n 3 "$PANSIFT_LOGS"/telegraf.log)

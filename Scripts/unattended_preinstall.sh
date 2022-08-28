@@ -21,7 +21,7 @@
 CURRENTDIR="$(pwd)"
 
 function timenow {
-  date "+%Y%m%dT%H%M%S%z"
+	date "+%Y%m%dT%H%M%S%z"
 }
 
 echo "Running PanSift unattended_preinstall.sh at $(timenow) with..."
@@ -31,9 +31,25 @@ echo "Directory: $CURRENTDIR"
 echo "Getting basic configuration from pre-staged Pansift.app in Applications..."
 source /Applications/Pansift.app/Contents/Resources/Preferences/pansift.conf
 
+echo "Running basic bootstrap to ensure latest versions of files and directories are present and used"
 # Basic Configuration and then additional preferences files if present.
-echo "Creating preferences directory if non-existent: $PANSIFT_PREFERENCES"
+echo "Creating PanSift directories if non-existent..."
+# Configuration and preferences files
 mkdir -p "$PANSIFT_PREFERENCES"
+# Scripts and additional executables
+mkdir -p "$PANSIFT_SCRIPTS"
+mkdir -p "$PANSIFT_SCRIPTS"/Plugins
+# Logs, logs, logs
+mkdir -p "$PANSIFT_LOGS"
+# PIDs and other flotsam
+mkdir -p "$PANSIFT_SUPPORT"
+# Main scripts and settings possibly need updating...
+# scripts to ~/Library/Pansift
+rsync -aru /Applications/Pansift.app/Contents/Resources/Scripts/* "$PANSIFT_SCRIPTS"
+# conf to ~/Library/Preferences/Pansift
+rsync -aru /Applications/Pansift.app/Contents/Resources/Preferences/*.conf "$PANSIFT_PREFERENCES"
+# Telegraf Support
+rsync -aru /Applications/Pansift.app/Contents/Resources/Support/telegraf "$PANSIFT_SUPPORT"
 
 echo "Setting up custom Pansift.conf settings for automated claim"
 #
