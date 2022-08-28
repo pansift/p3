@@ -11,7 +11,9 @@ source "$HOME"/Library/Preferences/Pansift/pansift.conf
 bad_answers=()
 scripts_location="https://raw.githubusercontent.com/pansift/p3/main/Scripts"
 file_list=("ztp.sh" "pansift_about.sh" "pansift_env_show.sh" "pansift_agent_config_update.sh" "pansift_webapp.sh" "pansift_ingest_show.sh" "pansift_token_show.sh" "pansift_uuid_show.sh" "pansift_ingest_update.sh" "pansift_token_update.sh" "pansift_uuid_update.sh" "pansift_annotate_update.sh" "osx_default_script.sh" "uninstall.sh" "telegraf_log_show.sh")
-# Note we don't want to update ourselves in case we break but what about script additions? Shame we can't use rsync?
+# We are intentionally not updating the main pansift script and the Plugins/pbar to leave them for manual app installs.
+# Also we don't want to update ourselves in case we break.
+
 mkdir -p "$PANSIFT_PREFERENCES"
 
 for file in ${file_list[@]};
