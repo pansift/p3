@@ -28,7 +28,7 @@ Automatic provisioning requires staging the `Pansift.app` file from the [Pansift
 
 > :information_source: Buckets form one boundary for account based reads and agent writes. Buckets also define the test host records used by DNS, HTTP, and traces for all the agents in the bucket. Please consider what agents you want to report in to what buckets. Multiagent buckets allow you to administer a group of agents rather than the default 1-1 agent to bucket mapping.
 
-> :warning: **You must run the script as the logged in user you with to monitor and not with a headless system or service account.**
+> :warning: **You must run the script as the logged in user you wish to monitor and not with a headless system or service account.**
 
 *Note:* You can also pre-stage fully populated `pansift_uuid.conf`, `pansift_token.conf`, and `pansift_ingest.conf` yourself if you wish (though this is what the [unattended_preinstall.sh](Scripts/unattended_preinstall.sh) does). You should be able to copy the script to your MDM or orchestration tool's pre-installation script window.
 
