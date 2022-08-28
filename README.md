@@ -6,46 +6,47 @@ Pansift is a macOS troubleshooting and monitoring tool with a focus on the netwo
 
 Pansift is about helping others to avoid stress and stay productive with optimally functioning tools and networks. It's about saving you time, maintaining situational awareness, and getting to root causes quickly, easily, and **remotely** (even for historical issues). Whether it's for WiFi, DNS, IPv4, IPv6, or simple disk utilization issues - PanSift allows you to keep an eye on multiple remote machines (just like server monitoring) only with a more lightweight, heavily wireless focused, and user-friendly footprint. More info: [https://pansift.com](https://pansift.com) 
  
-## Attended Installs
+## Attended Installs (Free Users)
 
 **Download [Pansift DMG](https://github.com/pansift/p3/raw/main/Pansift.dmg), open it, and drag `Pansift.app` to the `Applications` folder and double click to run or use Command+O to open.**
 
 You can then claim your agent from the options in the menubar or manually in the web application (using the bucket UUID code). Claiming will require you to register an account at [https://pansift.com](https://app.pansift.com/demo/logout_demo) to view your data and insights. Happy troubleshooting!
 
-## Unattended Installs
+## Unattended Installs (Company /  MSPs)
 
-### Manual Claim
+Unattended installs assume that an orchestration or MDM (Mobile Device Management) like platform is available to you including command line access within a user's valid and full window session (i.e. not just terminal access only). This also assumes you have paid for > 2 agents and want minimal interaction with the user or endpoint for provisioning.
 
-You can use the [unattended_install.sh](Scripts/unattended_install.sh) script to do a 'hands-off' install on a remote machine. This will provision a new bucket automatically which will need to be manually claimed (UUID will need to be communicated for a remote claim) unless you use the [automatic claim](https://github.com/pansift/p3#automatic-claim--multiagent) method.
+### IT Teams and MSPs (Managed Service Providers)
 
-> :warning: **You must run the script as the logged in user you with to monitor and not with a headless system or service account.**
+For paid accounts (i.e. > 2 agents) please [contact support](https://pansift.com/contact) to have a commercial _multi-agent_ bucket _pre-prepared_ for you in advance (otherwise each agent will get its own bucket on the free platform and lots of individual bucket UUIDs will need to be communicated and claimed individually). We are working to simplify and automate this process.
 
-Pre-position the `Pansift.app` bundle from the [Pansift.dmg](Pansift.dmg) file in a directory on the remote machine (**not** the `/Application` directory, but your preferred staging directory, as the script will then copy the files to `/Applications` and `~Library` etc). 
+### Automatic Claims For Multi-Agent Scenarios
 
-The script will then start the application in the current context, so it expects a full session (GUI and the correct user). PanSift, once running, will **not** automatically claim a bucket or register an account, but it will initiate the ZTP (Zero Touch Provisioning) process, and start writing metrics to a remote bucket. You can then claim the bucket from the agent or via the web based claim using the PanSift/bucket UUID. 
+This method **prevents** the ZTP (Zero Touch Provisioning) process from running and allows you to specify settings in advance. This ensures that agents will report to an already created and claimed data bucket.
 
-*Example* Usage: `./unattended_install.sh /tmp/Pansift.app 2>&1 | tee pansift_install.log` 
-
-**Note:** The ZTP process remotely provisions buckets to a special holding account until claimed. It gets a write token and is told which remote URL to send data to for ingestion. If you want to specify the bucket, token, and URL **in advance**, please see the next section.
-
-
-### Automatic Claim / Multiagent
-
-This section details how to use the [unattended_install.sh](Scripts/unattended_install.sh) script to do a 'hands-off' install on a remote machine *with specific configuration for an existing bucket*. This method prevents the ZTP process from running and allows you to specify settings in advance so agents report to an already created bucket. It requires staging the `Pansift.app` file from the [Pansift.app](Pansift.dmg) as above but you also need to include the `3` additional configuration files mentioned below.
+Automatic provisioning requires staging the `Pansift.app` file from the [Pansift.app](Pansift.dmg) and then running the [unattended_preinstall.sh](Scripts/unattended_preinstall.sh) on remote machines. You also need to update `3` configuration items (<BUCKET_UUID>, <INGEST_URL>, <WRITE_TOKEN>) in the [unattended_preinstall.sh](Scripts/unattended_preinstall.sh) **before** running it.
 
 > :information_source: Buckets form one boundary for account based reads and agent writes. Buckets also define the test host records used by DNS, HTTP, and traces for all the agents in the bucket. Please consider what agents you want to report in to what buckets. Multiagent buckets allow you to administer a group of agents rather than the default 1-1 agent to bucket mapping.
 
 > :warning: **You must run the script as the logged in user you with to monitor and not with a headless system or service account.**
 
-You can pre-stage populated `pansift_uuid.conf`, `pansift_token.conf`, and `pansift_ingest.conf` files (in the same staging directory as the downloaded or pre-positioned `Pansift.app`). PanSift then recognizes it has a full configuration and uses an existing *claimed* bucket without any additional provisioning process (other than an agent sync in the web dashboard). This is useful for mass-deployments to machines you have access to remotely via MDM (Mobile Device Management) or other orchestration software. 
+*Note:* You can also pre-stage fully populated `pansift_uuid.conf`, `pansift_token.conf`, and `pansift_ingest.conf` yourself if you wish (though this is what the [unattended_preinstall.sh](Scripts/unattended_preinstall.sh) does). You should be able to copy the script to your MDM or orchestration tool's pre-installation script window.
 
-1. Please remember that you must run the script as the user account you intend to implement RUM (Real User Monitoring) on and you must also have a full window session.
-2. If you do not have an existing bucket but you wish to use one for multiple agents (or want extra buckets for greater separation of agents) please [contact support](https://pansift.com/contact) for the *simple steps* to create a new 'holding' bucket including the requisite UUID, token, and URL. You can use an existing bucket if you have claimed one already.
-3. For **commercial customers** please [contact support](https://pansift.com/contact) if you want to ensure your bucket and data resides in the Influx cloud rather than our Influx OSS instances.
+Once the Pansift.app then runs for the first time, it bootstraps its configuration, so if the files above are **not** present, it will run the normal ZTP process to get **new** bucket details (which you probably **don't want** as then you need to interact with the user and need to collect lots of bucket details and then claim them manually). 
 
-#### Agent Configuration Files For Pre-staging
+You then run the [unattended_postinstall.sh](Scripts/unattended_postinstall.sh) to **remove** the user interaction requirement and then **open** the application for the first time (which will bootstrap the remaining settings). Once PanSift recognizes it has a full configuration it will use the configured *claimed* bucket without any additional provisioning process (other than an" "agent sync" being required in your account dashboard). 
 
- * `pansift_uuid.conf` contains a single string comprised of a UUIDv4 value e.g. `84b878ec-da07-490e-8375-c36dfbb098fa`. This is actually the bucket UUID that you want the agent to writes to. This bucket UUID is available from your account. If you have not claimed any buckets yet or wish to use a totally new bucket then please [contact support](https://pansift.com/contact)
+This is useful for mass-deployments to machines you have access to remotely via MDM (Mobile Device Management) or other orchestration software. 
+
+1. Please remember that you must run the script as the user account you intend to implement PanSift's RUM (Real User Monitoring) on. You must also have a full window session as you need to open the application.
+2. Please [contact support](https://pansift.com/contact) to create a new multi-agent bucket. You _can_ use an existing bucket if you have claimed one already though it will probably be from the free tier.
+3. For **commercial customers** please [contact support](https://pansift.com/contact) if you want to ensure your bucket and data resides in the Influx cloud rather than on one of our Influx OSS instances.
+
+#### Information on Configuration Files
+
+> :warning: **The below files are auto-generated by normal installs so you must populate and place them in advance if you wish to use a multi-agent bucket as per the methods outlined above.**
+
+ * `pansift_uuid.conf` contains a single string comprised of a UUIDv4 value e.g. `84b878ec-da07-490e-8375-c36dfbb098fa`. YOU CAN NOT ARBITRARILY CREATE IDs YOURSELF, they must be provisioned in advance. This is actually the bucket UUID that you want the agent to writes to. This bucket UUID is **available** from your account. If you have not claimed any buckets yet or wish to use a new and dedicated bucket then please [contact support](https://pansift.com/contact)
 
  * `pansift_token.conf` contains a single string comprised of an 86 character hexadecimal string ending in a double equals "==" (so it's 88 characters long). This ZTP write token is available from the bucket details in your account. The write token for the bucket can be used by multiple agents hence a 'multiagent' bucket. [Contact support](https://pansift.com/contact) if you are using a "multiagent" bucket and want discrete tokens per agent rather than creating more buckets as a grouping boundary. :warning: **This token only allows writes and not reads to a specific bucket.**
 
@@ -53,4 +54,3 @@ You can pre-stage populated `pansift_uuid.conf`, `pansift_token.conf`, and `pans
 
 > :warning: **Do not configure the `pansift_ingest.conf` datastore URL with the A record. Use "https://" + the CNAME which follows the pattern of `https://<uuid>.ingest.pansift.com`** otherwise backend operational changes may cause interruptions to your agents ability to write.
 
-*Example* Usage: `./unattended_install.sh /tmp/Pansift.app 2>&1 | tee pansift_install.log`

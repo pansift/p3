@@ -56,8 +56,4 @@ echo "<WRITE_TOKEN>" > "$PANSIFT_PREFERENCES"/pansift_token.conf
 echo "Unsetting flag on quarantine of app which requires user interaction..."
 xattr -r -d com.apple.quarantine /Applications/Pansift.app
 
-# Open the app on the remote machine (or use as a post-install script)
-echo "Open PanSift (PS) in menu bar"
-osascript -e "tell application \"Pansift.app\"" -e "launch" -e "end tell"
-
 exit
