@@ -11,6 +11,7 @@
 
 # Note: We are passing in the app bundle path via $1 so it works
 # irrespective of the drag/install location on dev or prod
+# This is triggered on run by the application
 
 # Get Basic script settings
 source "$1"/Contents/Resources/Preferences/pansift.conf
@@ -60,5 +61,9 @@ else
   echo "Not supported on this platform yet"
 fi
 
-cd "$PANSIFT_SCRIPTS" && ./pansift -b
+cd "$PANSIFT_SCRIPTS" && ./pansift -b &
+disown -a
+#message="You can access PanSift via the 'PS' in the menubar (top of screen) and don't forget to claim your agent."
+#applescriptCode="display dialog \"$message\" buttons {\"OK\"} default button \"OK\" with title \"PanSift Installer\""
+#show=$(osascript -e "$applescriptCode");
 exit

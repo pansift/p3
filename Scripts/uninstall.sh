@@ -8,23 +8,23 @@
 
 preferences="$HOME"/Library/Preferences/Pansift/pansift.conf
 if test -f "$preferences"; then
-  source "$preferences"
+	source "$preferences"
 fi
 
 pansift_uuid_file="$PANSIFT_PREFERENCES"/pansift_uuid.conf
 if test -f "$pansift_uuid_file"; then
-  line=$(head -n 1 $pansift_uuid_file)
-  uuid=$(echo -n "$line" | xargs)
+	line=$(head -n 1 $pansift_uuid_file)
+	uuid=$(echo -n "$line" | xargs)
 fi
 pansift_token_file=$PANSIFT_PREFERENCES/pansift_token.conf
 if test -f "$pansift_token_file"; then
-  line=$(head -n 1 $pansift_token_file)
-  token=$(echo -n "$line" | xargs)
+	line=$(head -n 1 $pansift_token_file)
+	token=$(echo -n "$line" | xargs)
 fi
 pansift_ingest_file="$PANSIFT_PREFERENCES"/pansift_ingest.conf
 if test -f "$pansift_ingest_file"; then
-  line=$(head -n 1 $pansift_ingest_file)
-  ingest=$(echo -n "$line" | xargs)
+	line=$(head -n 1 $pansift_ingest_file)
+	ingest=$(echo -n "$line" | xargs)
 fi
 
 echo "=========================================================="
@@ -33,7 +33,11 @@ echo " Bucket UUID: ${uuid}"
 echo " Write Token: ${token}" 
 echo " Ingest URL: ${ingest}" 
 echo "=========================================================="
-read -n 1 -s -r -p "Press any key to continue or Ctrl+C to stop."
+if [[ "$1" == "-s" ]]; then
+	echo "Doing a silent uninstall as the -s switch was passed to the script." 
+else
+	read -n 1 -s -r -p "Press any key to continue or Ctrl+C to stop."
+fi
 echo
 
 pkill -9 -f Pansift.app
@@ -41,61 +45,61 @@ defaults delete com.pansift.p3bar
 osascript -e 'tell application "System Events" to delete login item "Pansift"'
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-  echo "Not supported on Linux yet" 
+	echo "Not supported on Linux yet" 
 elif [[ "$OSTYPE" == "darwin"* ]]; then
-  # Mac OSX
-  # Scripts to Trash
-  if [[ -d "$PANSIFT_SCRIPTS" ]]; then
-    cp -R "$PANSIFT_SCRIPTS" "$HOME"/.Trash
-    cd "$PANSIFT_SCRIPTS" && rm -rf ../Pansift/*
-    cd .. && rmdir ./Pansift
-    cd "$HOME"
-  fi
-  # Conf files
-  if [[ -d "$PANSIFT_PREFERENCES" ]]; then
-    if [[ -f "$PANSIFT_PREFERENCES"/pansift_token.conf ]]; then
-      rm "$PANSIFT_PREFERENCES"/pansift_token.conf 
-    fi
-    cp -R "$PANSIFT_PREFERENCES" "$HOME"/.Trash
-    cd "$PANSIFT_PREFERENCES" && rm -rf ../Pansift/*
-    cd .. && rmdir ./Pansift
-    cd "$HOME"
-  fi
-  # /Applications
-  if [[ -d "/Applications/Pansift.app" ]]; then
-    cp -R /Applications/Pansift.app "$HOME"/.Trash
-    cd /Applications 
-    rm -rf ./Pansift.app &
-    wait $!
-  fi
-  # Logs
-  if [[ -d "$PANSIFT_LOGS" ]]; then
-    cp -R "$PANSIFT_LOGS" "$HOME"/.Trash
-    cd "$PANSIFT_LOGS" && rm -rf ../Pansift/*
-    cd .. && rmdir ./Pansift
-    cd "$HOME"
-  fi
-  # Telegraf Support
-  if [[ -d "$PANSIFT_SUPPORT" ]]; then
-    cp -R "$PANSIFT_SUPPORT" "$HOME"/.Trash
-    cd "$PANSIFT_SUPPORT" && rm -rf ../Pansift/*
-    cd .. && rmdir ./Pansift
-    cd "$HOME"
-  fi
+	# Mac OSX
+	# Scripts to Trash
+	if [[ -d "$PANSIFT_SCRIPTS" ]]; then
+		cp -R "$PANSIFT_SCRIPTS" "$HOME"/.Trash
+		cd "$PANSIFT_SCRIPTS" && rm -rf ../Pansift/*
+		cd .. && rmdir ./Pansift
+		cd "$HOME"
+	fi
+	# Conf files
+	if [[ -d "$PANSIFT_PREFERENCES" ]]; then
+		if [[ -f "$PANSIFT_PREFERENCES"/pansift_token.conf ]]; then
+			rm "$PANSIFT_PREFERENCES"/pansift_token.conf 
+		fi
+		cp -R "$PANSIFT_PREFERENCES" "$HOME"/.Trash
+		cd "$PANSIFT_PREFERENCES" && rm -rf ../Pansift/*
+		cd .. && rmdir ./Pansift
+		cd "$HOME"
+	fi
+	# /Applications
+	if [[ -d "/Applications/Pansift.app" ]]; then
+		cp -R /Applications/Pansift.app "$HOME"/.Trash
+		cd /Applications 
+		rm -rf ./Pansift.app &
+		wait $!
+	fi
+	# Logs
+	if [[ -d "$PANSIFT_LOGS" ]]; then
+		cp -R "$PANSIFT_LOGS" "$HOME"/.Trash
+		cd "$PANSIFT_LOGS" && rm -rf ../Pansift/*
+		cd .. && rmdir ./Pansift
+		cd "$HOME"
+	fi
+	# Telegraf Support
+	if [[ -d "$PANSIFT_SUPPORT" ]]; then
+		cp -R "$PANSIFT_SUPPORT" "$HOME"/.Trash
+		cd "$PANSIFT_SUPPORT" && rm -rf ../Pansift/*
+		cd .. && rmdir ./Pansift
+		cd "$HOME"
+	fi
 elif [[ "$OSTYPE" == "cygwin" ]]; then
-  # POSIX compatibility layer and Linux environment emulation for Windows
-  echo "Not supported on Cygwin yet" 
+	# POSIX compatibility layer and Linux environment emulation for Windows
+	echo "Not supported on Cygwin yet" 
 elif [[ "$OSTYPE" == "msys" ]]; then
-  # Lightweight shell and GNU utilities compiled for Windows (part of MinGW)
-  echo "Not supported on MinGW yet."
+	# Lightweight shell and GNU utilities compiled for Windows (part of MinGW)
+	echo "Not supported on MinGW yet."
 elif [[ "$OSTYPE" == "win32" ]]; then
-  # I'm not sure this can happen.
-  echo "Not supported on Windows yet"
+	# I'm not sure this can happen.
+	echo "Not supported on Windows yet"
 elif [[ "$OSTYPE" == "freebsd"* ]]; then
-  echo "Not supported on FreeBSD yet."
-  # ...
+	echo "Not supported on FreeBSD yet."
+	# ...
 else
-  echo "Not supported on this platform yet"
+	echo "Not supported on this platform yet"
 fi
 
 pkill -9 telegraf

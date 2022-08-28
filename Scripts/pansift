@@ -3,7 +3,6 @@
 #set -e
 #set -vx
 
-export PANSIFT_AGENT_VERSION="0.4.5"
 PANSIFT_UUID=""
 PANSIFT_INGEST=""
 PANSIFT_TOKEN=""
@@ -12,6 +11,10 @@ umask 077
 
 # Macro settings for paths etc.
 source "$HOME"/Library/Preferences/Pansift/pansift.conf
+
+function timenow {
+	date "+%Y%m%dT%H%M%S%z"
+}
 
 # Configuration and preferences files
 mkdir -p "$PANSIFT_PREFERENCES"
@@ -24,7 +27,6 @@ mkdir -p "$PANSIFT_LOGS"
 
 #PANSIFT_SUPPORT="$HOME"/Library/Application\ Support/Pansift
 mkdir -p "$PANSIFT_SUPPORT"
-
 
 # Next line will need changing once a full Pansift flip
 #defaults write /Library/Preferences/com.matryer.BitBar pluginsDirectory "$PANSIFT_SCRIPTS"/Plugins
@@ -49,21 +51,7 @@ machine_uuid_file="$PANSIFT_PREFERENCES"/machine_uuid.conf
 annotations_file="$PANSIFT_LOGS"/pansift_annotations.log
 touch "$annotations_file" # This is just to create for tailing if not already there.
 
-url_regex='(https?|ftp|file)://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]'
-
-# If we're restarting then clean up...
-# telegraf_pid_file="$PANSIFT_SUPPORT"/telegraf.pid
-# if test -f "$telegraf_pid_file"; then
-#	rm "$PANSIFT_SUPPORT"/telegraf.pid || true
-# fi 
-if [[ $(pgrep "telegraf") ]]; then
-	# TERM waits too long for a long running telegraf test via scripts
-	# We could wait in a loop or check with wait and $! but once the SIG
-	# is sent it's technically successful and telegraf takes a while to 
-	# clean up so we're just banging it on the head with KILL
-	# pkill -TERM -f "$PANSIFT_SUPPORT"/telegraf; sleep 15 || true
-	pkill -KILL -f "$PANSIFT_SUPPORT"/telegraf; sleep 3 || true
-fi
+url_regex='https://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]'
 
 if test -f "$pansift_uuid_file"; then
 	line=$(head -n 1 "$pansift_uuid_file")
@@ -77,8 +65,6 @@ fi
 # We need the ENV variable for the subshell...
 export PANSIFT_UUID=$pansift_uuid
 curl_user_agent="pansift_"$pansift_uuid
-
-
 
 # ZTP Function
 function ztp () {
@@ -131,7 +117,6 @@ else
 fi
 export PANSIFT_INGEST=$pansift_ingest
 
-
 if test -f "$machine_uuid_file"; then
 	line=$(head -n 1 "$machine_uuid_file")
 	machine_uuid=$(echo -n "$line" | awk '{$1=$1;print}' | tr ',' '.' | tr -s ' ' | tr '[:upper:]' '[:lower:]' | tr -d '\r')
@@ -165,18 +150,42 @@ else
 fi
 export MACHINE_UUID=$machine_uuid
 
-touch "$PANSIFT_SUPPORT"/telegraf.pid "$PANSIFT_LOGS"/telegraf.log
-if [[ "$1" == "-b" ]]; then 
-	echo "Running special once off config to push system details before resorting to normal configuration..."
-	touch "$PANSIFT_SUPPORT"/telegraf-once.pid
-	# $PANSIFT_SUPPORT"/telegraf --once --config "$PANSIFT_PREFERENCES"/telegraf-osx-once.conf --pidfile "$PANSIFT_SUPPORT"/telegraf-once.pid
-	"$PANSIFT_SUPPORT"/telegraf --once --config "$PANSIFT_PREFERENCES"/telegraf-osx-once.conf --pidfile "$PANSIFT_SUPPORT"/telegraf-once.pid >/dev/null 2>&1 &
-	# wait $!
-	disown -a
-fi
-sleep 4 # Give Telegraf a little more time to flush buffers and shut down
+touch "$PANSIFT_LOGS"/telegraf.log
 
 # Simple switch for Environment only. Future state, use getopts and functions.
+if [[ "$1" == "-b" ]]; then 
+	echo "Running special once off config to push system details before resorting to normal configuration..."
+	# touch "$PANSIFT_SUPPORT"/telegraf-once-"$(timenow)".pid
+	# $PANSIFT_SUPPORT"/telegraf --once --config "$PANSIFT_PREFERENCES"/telegraf-osx-once.conf --pidfile "$PANSIFT_SUPPORT"/telegraf-once.pid
+	# Removing the pidfile as there's an issue with extra telegrafs starting and even unique pidfiles makes a mess right now!
+	"$PANSIFT_SUPPORT"/telegraf --once --config "$PANSIFT_PREFERENCES"/telegraf-osx-once.conf >/dev/null 2>&1 &
+	# wait $!
+	disown -a
+	sleep 3
+else
+	# If we're restarting then clean up... but not going to use pidfiles as duplication issue
+	# telegraf_pid_file="$PANSIFT_SUPPORT"/telegraf.pid
+	# if test -f "$telegraf_pid_file"; then
+	#	rm "$PANSIFT_SUPPORT"/telegraf.pid || true
+	# fi 
+	if [[ $(pgrep -f "$PANSIFT_SUPPORT"/telegraf) ]]; then
+		# TERM waits too long for a long running telegraf test via scripts
+		# We could wait in a loop or check with wait and $! but once the SIG
+		# is sent it's technically successful and telegraf takes a while to 
+		# clean up so we're just banging it on the head with KILL
+		# pkill -TERM -f "$PANSIFT_SUPPORT"/telegraf; sleep 15 || true
+		pkill -KILL -f "$PANSIFT_SUPPORT"/telegraf || true
+		pkill -KILL -f "$PANSIFT_SCRIPTS"/osx_default_script.sh || true
+		# Sending -TERM takes telegraf 10-15 seconds to clean up...
+		# pkill -KILL -f "$PANSIFT_SUPPORT"/telegraf || true
+		sleep 3 # Wait for cleanup...
+	fi
+	echo "Running normal telegraf config..."
+	"$PANSIFT_SUPPORT"/telegraf --config "$PANSIFT_PREFERENCES"/telegraf-osx.conf >/dev/null 2>&1 &
+	disown -a
+fi
+# sleep 4 # Give Telegraf a little more time to flush buffers and shut down
+
 echo "Agent Version: $PANSIFT_AGENT_VERSION"
 echo "Preferences Path: \"$PANSIFT_PREFERENCES\""
 echo "Application Scripts Path: \"$PANSIFT_SCRIPTS\""
@@ -192,7 +201,4 @@ echo "Home: $HOME"
 echo "Path: $PATH"
 echo "Host: $HOSTNAME"
 
-# We need to get the pansift_osx_machine data up fast and not have to wait for the longet interval...
-"$PANSIFT_SUPPORT"/telegraf --config "$PANSIFT_PREFERENCES"/telegraf-osx.conf --pidfile "$PANSIFT_SUPPORT"/telegraf.pid >/dev/null 2>&1 &
-disown -a
 exit 0
