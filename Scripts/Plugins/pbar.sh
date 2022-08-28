@@ -22,6 +22,10 @@ else
 	disown -a
 fi
 
+# Scenario when after an uninstall and copying same version of Pansift.app
+# that this file is missing on first iteration.. so let's touch it.
+touch "$PANSIFT_LOGS"/telegraf.log
+
 agent_check() {
 	logs=$(tail -n 3 "$PANSIFT_LOGS"/telegraf.log)
 	log_msg="$(echo -n "$logs" | egrep -qi "\[agent\] error" || { echo -n 'Agent (OK) | color=green'; exit 0; }; echo -n "$logs" | egrep -i "\[agent\] error" | cut -d":" -f3 | awk '{print $0"| color=red"}')"
