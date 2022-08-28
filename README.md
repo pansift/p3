@@ -14,7 +14,7 @@ You can then claim your agent from the options in the menubar or manually in the
 
 ## Unattended Installs (Company /  MSPs)
 
-Unattended installs assume that an orchestration or MDM (Mobile Device Management) like platform is available to you including command line access within a user's valid and full window session (i.e. not just terminal access only). This also assumes you have paid for > 2 agents and want minimal interaction with the user or endpoint for provisioning.
+Unattended installs assume that an orchestration or MDM (Mobile Device Management) like platform is available to you. It also assumes command line access within a user's valid session (as the targeted user) and a full window session (i.e. not just terminal access only as we want to open the app). This also assumes you have paid for > 2 agents and want minimal interaction with the user(s) or endpoint(s) for provisioning.
 
 ### IT Teams and MSPs (Managed Service Providers)
 
@@ -24,7 +24,7 @@ For paid accounts (i.e. > 2 agents) please [contact support](https://pansift.com
 
 This method **prevents** the ZTP (Zero Touch Provisioning) process from running and allows you to specify settings in advance. This ensures that agents will report to an already created and claimed data bucket.
 
-Automatic provisioning requires staging the `Pansift.app` file from the [Pansift.app](Pansift.dmg) and then running the [unattended_preinstall.sh](Scripts/unattended_preinstall.sh) on remote machines. You also need to update `3` configuration items (<BUCKET_UUID>, <INGEST_URL>, <WRITE_TOKEN>) in the [unattended_preinstall.sh](Scripts/unattended_preinstall.sh) **before** running it.
+Automatic provisioning requires staging the `Pansift.app` file from the [Pansift.dmg](Pansift.dmg) and then running the [unattended_preinstall.sh](Scripts/unattended_preinstall.sh) on remote machines. You also need to update `3` configuration items (<BUCKET_UUID>, <INGEST_URL>, <WRITE_TOKEN>) in the [unattended_preinstall.sh](Scripts/unattended_preinstall.sh) **before** running it.
 
 > :information_source: Buckets form one boundary for account based reads and agent writes. Buckets also define the test host records used by DNS, HTTP, and traces for all the agents in the bucket. Please consider what agents you want to report in to what buckets. Multiagent buckets allow you to administer a group of agents rather than the default 1-1 agent to bucket mapping.
 
