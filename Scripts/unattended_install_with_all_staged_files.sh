@@ -86,7 +86,7 @@ xattr -r -d com.apple.quarantine "$DIR"/"$APP"
 # Do a similar once off like the bootstrap script
 echo "Running PanSift first run of watcher script..." 
 cd "$PANSIFT_SCRIPTS" && ./pansift -b &
-disown 
+disown -a
 sleep 5
 
 # Open the app on the remote machine
