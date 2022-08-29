@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
-# This script is intended for deploying PanSift to multiple machines silently via automation
-# such as with an MDM app or similar. It requires an Pansift.app and 
+# The MSP or IT owner needs to use their own staging mechanism
+# to ensure the latest application bundle of "Pansift.app" is present
+# in /Applications via SFTP, SCP, FTP etc. before running this script.
 
 # THIS SCRIPT MUST BE RUN IN THE CONTEXT OF THE LOGGED IN USER NOT A SYSTEM OR HEADLESS ACCOUNT
 
@@ -48,7 +49,7 @@ source "$DIR"/"$APP"/Contents/Resources/Preferences/pansift.conf
 
 # Basic Configuration and then additional preferences files if present.
 echo "Creating preferences directory if non-existent: $PANSIFT_PREFERENCES"
-mkdir -p "$PANSIFT_PREFERENCES":/
+mkdir -p "$PANSIFT_PREFERENCES"
 echo "Copying additional prestaged configuration files if found from: $DIR"
 if compgen -G "${DIR}/*.conf" > /dev/null; then
 	rsync -aru "$DIR"/*.conf "$PANSIFT_PREFERENCES"

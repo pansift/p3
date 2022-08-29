@@ -1,29 +1,32 @@
 #!/usr/bin/env bash
 
-# This script is intended for MSP use AND REQUIRES MODIFICATION 
-# It is a "preinstall" script *but* assumes Pansift.app has been 
-# copied to /Applications already *and* not opened yet. The MSP
-# or IT owner will use their own staging mechanism to ensure the
-# application bundle is present e.g. SFTP, SCP, FTP etc.
+# This script is intended for MSPs or IT owners 
+# !!!!!! IT REQUIRES MODIFICATION BY YOU !!!!!!! 
+
+# The MSP or IT owner needs to use their own staging mechanism
+# to ensure the latest application bundle of "Pansift.app" is present
+# in /Applications via SFTP, SCP, FTP etc. after running this script.
+# and before running the follow on "unattended_postinstall.sh" script.
 
 # You must update <BUCKET_UUID>, <INGEST_URL>, and <WRITE_TOKEN> in the script below.
 # This must occur *before* Pansift.app is opened or else it will revert to the free 
 # ZTP(Zero Touch Provisioning) with no control over bucket choice per agent and will 
-# provision new buckets. You should have a specific bucket in mind if an MSP and 
-# contact Pansift support for commercial shared/multi-agent buckets.
+# provision new random buckets per agent. You should have a specific bucket in mind 
+# and be configuring it below with assistance from Pansift support 
+# This script is for commercial shared/multi-agent buckets.
 
 # THIS SCRIPT MUST BE RUN IN THE CONTEXT OF THE LOGGED IN USER AND NOT A SYSTEM OR HEADLESS ACCOUNT
 
 # set -e
 # set -vx
-# script_name=$(basename "$0")
+script_name=$(basename "$0")
 
 CURRENTDIR="$(pwd)"
 
 function timenow {
 	date "+%Y%m%dT%H%M%S%z"
 }
-echo "Running PanSift unattended_preinstall.sh at $(timenow) with..."
+echo "Running PanSift $script_name at $(timenow) with..."
 echo "Directory: $CURRENTDIR"
 
 echo "Shutting down any existing Pansift.app instances and related telegraf"
