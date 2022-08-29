@@ -19,8 +19,10 @@
 CURRENTDIR="$(pwd)"
 
 function timenow {
-  date "+%Y%m%dT%H%M%S%z"
+	date "+%Y%m%dT%H%M%S%z"
 }
+
+source /Applications/Pansift.app/Contents/Resources/Preferences/pansift.conf
 
 echo "Running PanSift unattended_postinstall.sh at $(timenow) with..."
 echo "Directory: $CURRENTDIR"
@@ -29,8 +31,19 @@ echo "Directory: $CURRENTDIR"
 echo "Unsetting flag on quarantine of app which requires user interaction..."
 xattr -r -d com.apple.quarantine /Applications/Pansift.app
 
+# Shut down the current Pansift.app if there is one
+if [[ $(pgrep -f Pansift.app) ]]; then
+	pkill -KILL -f Pansift.app
+fi
+if [[ $(pgrep -f telegraf-osx.conf) ]]; then
+  pkill -KILL -f telegraf-osx.conf
+	sleep 5
+fi
+
 # Open the app on the remote machine (or use as a post-install script)
 echo "Open PanSift (PS) in menu bar"
-osascript -e "tell application \"Pansift.app\"" -e "launch" -e "end tell"
+osascript -e "tell application \"Pansift.app\"" -e "activate" -e "end tell"
+# "activate" takes focus but also issues a run whereas "launch" doesn't!
+# osascript -e "tell application \"Pansift.app\"" -e "launch" -e "end tell"
 
 exit

@@ -161,21 +161,20 @@ if [[ "$1" == "-b" ]]; then
 	"$PANSIFT_SUPPORT"/telegraf --once --config "$PANSIFT_PREFERENCES"/telegraf-osx-once.conf >/dev/null 2>&1 &
 	# wait $!
 	disown -a
-	sleep 3
 else
 	# If we're restarting then clean up... but not going to use pidfiles as duplication issue
 	# telegraf_pid_file="$PANSIFT_SUPPORT"/telegraf.pid
 	# if test -f "$telegraf_pid_file"; then
 	#	rm "$PANSIFT_SUPPORT"/telegraf.pid || true
 	# fi 
-	if [[ $(pgrep -f "$PANSIFT_SUPPORT"/telegraf) ]]; then
+	if [[ $(pgrep -f telegraf-osx.conf) ]]; then
 		# TERM waits too long for a long running telegraf test via scripts
 		# We could wait in a loop or check with wait and $! but once the SIG
 		# is sent it's technically successful and telegraf takes a while to 
 		# clean up so we're just banging it on the head with KILL
 		# pkill -TERM -f "$PANSIFT_SUPPORT"/telegraf; sleep 15 || true
-		pkill -KILL -f "$PANSIFT_SUPPORT"/telegraf || true
-		pkill -KILL -f "$PANSIFT_SCRIPTS"/osx_default_script.sh || true
+		pkill -KILL -f Pansift/telegraf-osx.conf 
+		pkill -KILL -f "$PANSIFT_SCRIPTS"/osx_default_script.sh
 		# Sending -TERM takes telegraf 10-15 seconds to clean up...
 		# pkill -KILL -f "$PANSIFT_SUPPORT"/telegraf || true
 		sleep 3 # Wait for cleanup...
@@ -184,21 +183,5 @@ else
 	"$PANSIFT_SUPPORT"/telegraf --config "$PANSIFT_PREFERENCES"/telegraf-osx.conf >/dev/null 2>&1 &
 	disown -a
 fi
-# sleep 4 # Give Telegraf a little more time to flush buffers and shut down
-
-echo "Agent Version: $PANSIFT_AGENT_VERSION"
-echo "Preferences Path: \"$PANSIFT_PREFERENCES\""
-echo "Application Scripts Path: \"$PANSIFT_SCRIPTS\""
-echo "Logs Path: \"$PANSIFT_LOGS\""
-echo "Application Support Path: \"$PANSIFT_SUPPORT\""
-echo "Lighthouse: \"$PANSIFT_LIGHTHOUSE\""
-echo "Bucket/PanSift UUID: $PANSIFT_UUID"
-echo "Machine UUID: $MACHINE_UUID"
-echo "Ingest URL: $PANSIFT_INGEST"
-echo "ZTP Token: $PANSIFT_TOKEN"
-echo "User: $USER"
-echo "Home: $HOME"
-echo "Path: $PATH"
-echo "Host: $HOSTNAME"
 
 exit 0

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 # NOTE: Default pbadr.sh runs every 60s
-
 # Scenario where re-copying in the App after an uninstall but same App version
+
 # so the bootstrap does not get run hence we need to run it.
 if [[ ! -f "$HOME"/Library/Preferences/Pansift/pansift.conf ]]; then
  /Applications/Pansift.app/Contents/Resources/Scripts/bootstrap.sh "/Applications/Pansift.app"
@@ -15,15 +15,20 @@ pansift_uuid_file="$PANSIFT_PREFERENCES"/pansift_uuid.conf
 # We still need to address duplicate processes on some machines and "$PANSIFT_SUPPORT"/telegraf.pid
 # isn't reliable...
 
-if [[ $(pgrep -f "$PANSIFT_SUPPORT"/telegraf) ]]; then
-	if [[ $(pgrep -f "$PANSIFT_SUPPORT"/telegraf | awk 'NR >= 2') ]]; then
-		pgrep -f "$PANSIFT_SUPPORT"/telegraf | tail -r | awk 'NR >= 2' | xargs -n1 kill -s TERM
+# The App seems to run pbar.sh twice so we need to avert a race condition
+# on the following pgrep which can launch 2 telegrafs in the "else"
+pause=$(( ($RANDOM % 5) + 1 ))
+sleep $pause # Important to get round pbar running twice on first open
+
+if [[ $(pgrep -f Pansift/telegraf-osx.conf) ]]; then
+	if [[ $(pgrep -f Pansift/telegraf-osx.conf | awk 'NR >= 2') ]]; then
+		pgrep -f Pansift/telegraf-osx.conf | awk 'NR >= 2' | xargs -n1 kill -s TERM
 	else
 		# echo "There is only 1 telegraf process"
 		true
 	fi
 else
-	# Nothing found so start telegraf...
+	# Nothing found so start telegraf via main pansift script
 	"$PANSIFT_SCRIPTS"/pansift >/dev/null 2>&1 &
 	disown -a
 fi

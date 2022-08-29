@@ -84,6 +84,8 @@ sleep 5
 
 # Open the app on the remote machine
 echo "Open PanSift (PS) in menu bar" 
-osascript -e "tell application \"${APP%.*}\"" -e "launch" -e "end tell"
+osascript -e "tell application \"Pansift.app\"" -e "activate" -e "end tell"
+# "activate" takes focus but also issues a run whereas "launch" doesn't!
+# osascript -e "tell application \"Pansift.app\"" -e "launch" -e "end tell"
 
 exit
