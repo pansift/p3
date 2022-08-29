@@ -173,8 +173,8 @@ else
 		# is sent it's technically successful and telegraf takes a while to 
 		# clean up so we're just banging it on the head with KILL
 		# pkill -TERM -f "$PANSIFT_SUPPORT"/telegraf; sleep 15 || true
-		pkill -KILL -f Pansift/telegraf-osx.conf 
-		pkill -KILL -f "$PANSIFT_SCRIPTS"/osx_default_script.sh
+		pkill -9 -f Pansift/telegraf-osx.conf 
+		pkill -9 -f "$PANSIFT_SCRIPTS"/osx_default_script.sh
 		# Sending -TERM takes telegraf 10-15 seconds to clean up...
 		# pkill -KILL -f "$PANSIFT_SUPPORT"/telegraf || true
 		sleep 3 # Wait for cleanup...

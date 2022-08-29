@@ -33,10 +33,10 @@ echo "App Bundle: $APP"
 echo "Shutting down any existing Pansift.app instances and related telegraf"
 # Shut down the current Pansift.app if there is one
 if [[ $(pgrep -f Pansift.app) ]]; then
-  pkill -KILL -f Pansift.app
+  pkill -9 -f Pansift.app
 fi
 if [[ $(pgrep -f Pansift/telegraf-osx.conf) ]]; then
-  pkill -KILL -f Pansift/telegraf-osx.conf
+  pkill -9 -f Pansift/telegraf-osx.conf
 fi
 
 # This script has some overlap with the bootstrap script which is fine
