@@ -24,32 +24,23 @@ function timenow {
 	date "+%Y%m%dT%H%M%S%z"
 }
 
+echo "Shutting down any existing Pansift.app instances and related telegraf"
+# Shut down the current Pansift.app if there is one
+if [[ $(pgrep -f Pansift.app) ]]; then
+  pkill -KILL -f Pansift.app
+fi
+if [[ $(pgrep -f Pansift/telegraf-osx.conf) ]]; then
+  pkill -KILL -f Pansift/telegraf-osx.conf
+fi
+
 echo "Running PanSift unattended_preinstall.sh at $(timenow) with..."
 echo "Directory: $CURRENTDIR"
 
-# Get the base config to help with set up which assumes Pansift.app is now there.
-echo "Getting basic configuration from pre-staged Pansift.app in Applications..."
-source /Applications/Pansift.app/Contents/Resources/Preferences/pansift.conf
-
-echo "Running basic bootstrap to ensure latest versions of files and directories are present and used"
 # Basic Configuration and then additional preferences files if present.
-echo "Creating PanSift directories if non-existent..."
+echo "Creating PanSift Preferences directory if non-existent..."
 # Configuration and preferences files
-mkdir -p "$PANSIFT_PREFERENCES"
-# Scripts and additional executables
-mkdir -p "$PANSIFT_SCRIPTS"
-mkdir -p "$PANSIFT_SCRIPTS"/Plugins
-# Logs, logs, logs
-mkdir -p "$PANSIFT_LOGS"
-# PIDs and other flotsam
-mkdir -p "$PANSIFT_SUPPORT"
-# Main scripts and settings possibly need updating...
-# scripts to ~/Library/Pansift
-rsync -aru /Applications/Pansift.app/Contents/Resources/Scripts/* "$PANSIFT_SCRIPTS"
-# conf to ~/Library/Preferences/Pansift
-rsync -aru /Applications/Pansift.app/Contents/Resources/Preferences/*.conf "$PANSIFT_PREFERENCES"
-# Telegraf Support
-rsync -aru /Applications/Pansift.app/Contents/Resources/Support/telegraf "$PANSIFT_SUPPORT"
+preferences="$HOME"/Library/Preferences/Pansift
+mkdir -p $preferences
 
 echo "Setting up custom Pansift.conf settings for automated claim"
 #
@@ -58,18 +49,11 @@ echo "Setting up custom Pansift.conf settings for automated claim"
 # !!! REPLACE THE <WRITE_TOKEN> with the API token string
 #######  ALL OF THE ABOVE CAN BE FOUND IN YOUR BUCKET SETTINGS #########
 #
-echo "<BUCKET_UUID>" > "$PANSIFT_PREFERENCES"/pansift_uuid.conf
-echo "<INGEST_URL>" > "$PANSIFT_PREFERENCES"/pansift_ingest.conf
-echo "<WRITE_TOKEN>" > "$PANSIFT_PREFERENCES"/pansift_token.conf
+echo "<BUCKET_UUID>" > "$preferences"/pansift_uuid.conf
+echo "<INGEST_URL>" > "$preferences"/pansift_ingest.conf
+echo "<WRITE_TOKEN>" > "$preferences"/pansift_token.conf
 #
 # !!! REPLACE THE ABOVE WITH YOUR SPECIFIC UUID, INGEST, AND TOKEN !!!
 #
-
-# This script has some overlap with the bootstrap script which is fine
-# Bootstrap will still be run on first app run.
-
-# Remove the interactive Internet app warning
-echo "Unsetting flag on quarantine of app which requires user interaction..."
-xattr -r -d com.apple.quarantine /Applications/Pansift.app
 
 exit

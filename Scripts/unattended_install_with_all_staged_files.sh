@@ -30,10 +30,17 @@ echo "Running unattended at $(timenow) with..."
 echo "Directory: $DIR"
 echo "App Bundle: $APP"
 
-# Note: We are going to require better failure mode logging and feedback
+echo "Shutting down any existing Pansift.app instances and related telegraf"
+# Shut down the current Pansift.app if there is one
+if [[ $(pgrep -f Pansift.app) ]]; then
+  pkill -KILL -f Pansift.app
+fi
+if [[ $(pgrep -f Pansift/telegraf-osx.conf) ]]; then
+  pkill -KILL -f Pansift/telegraf-osx.conf
+fi
 
 # This script has some overlap with the bootstrap script which is fine
-# Bootstrap will still be run on first app run.
+# Bootstrap will still be run on first app run if required.
 
 # Get the base config to help with set up
 echo "Getting basic configuration for directory creation..."
