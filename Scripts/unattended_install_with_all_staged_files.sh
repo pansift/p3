@@ -26,7 +26,7 @@ function timenow {
   date "+%Y%m%dT%H%M%S%z"
 }
 
-echo "Running unattended at $(timenow) with..." 
+echo "Running $script_name at $(timenow) with..." 
 echo "Directory: $DIR"
 echo "App Bundle: $APP"
 

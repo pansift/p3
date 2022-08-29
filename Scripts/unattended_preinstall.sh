@@ -23,6 +23,8 @@ CURRENTDIR="$(pwd)"
 function timenow {
 	date "+%Y%m%dT%H%M%S%z"
 }
+echo "Running PanSift unattended_preinstall.sh at $(timenow) with..."
+echo "Directory: $CURRENTDIR"
 
 echo "Shutting down any existing Pansift.app instances and related telegraf"
 # Shut down the current Pansift.app if there is one
@@ -32,9 +34,6 @@ fi
 if [[ $(pgrep -f Pansift/telegraf-osx.conf) ]]; then
   pkill -9 -f Pansift/telegraf-osx.conf
 fi
-
-echo "Running PanSift unattended_preinstall.sh at $(timenow) with..."
-echo "Directory: $CURRENTDIR"
 
 # Basic Configuration and then additional preferences files if present.
 echo "Creating PanSift Preferences directory if non-existent..."
