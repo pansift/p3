@@ -102,7 +102,7 @@ else
 	echo "Not supported on this platform yet"
 fi
 
-pkill -9 Pansift/telegraf
+pkill -9 -f Pansift/telegraf
 #launchctl unload -w ~/Library/LaunchAgents/com.pansift.p3bar
 # Need to find where the launchagent went in Big Sur?
 
