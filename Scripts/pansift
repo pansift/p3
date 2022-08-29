@@ -168,15 +168,15 @@ else
 	#	rm "$PANSIFT_SUPPORT"/telegraf.pid || true
 	# fi 
 	if [[ $(pgrep -f telegraf-osx.conf) ]]; then
-		# TERM waits too long for a long running telegraf test via scripts
+		# SIGTERM waits too long for a long running telegraf test via scripts
 		# We could wait in a loop or check with wait and $! but once the SIG
 		# is sent it's technically successful and telegraf takes a while to 
 		# clean up so we're just banging it on the head with KILL
-		# pkill -TERM -f "$PANSIFT_SUPPORT"/telegraf; sleep 15 || true
+		# pkill -SIGTERM -f "$PANSIFT_SUPPORT"/telegraf; sleep 15 || true
 		pkill -9 -f Pansift/telegraf-osx.conf 
 		pkill -9 -f "$PANSIFT_SCRIPTS"/osx_default_script.sh
-		# Sending -TERM takes telegraf 10-15 seconds to clean up...
-		# pkill -KILL -f "$PANSIFT_SUPPORT"/telegraf || true
+		# Sending -15 takes telegraf 10-15 seconds to clean up...
+		# pkill -9 -f "$PANSIFT_SUPPORT"/telegraf || true
 		sleep 3 # Wait for cleanup...
 	fi
 	echo "Running normal telegraf config..."

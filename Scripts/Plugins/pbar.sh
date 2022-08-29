@@ -22,7 +22,8 @@ sleep $pause # Important to get round pbar running twice on first open
 
 if [[ $(pgrep -f Pansift/telegraf-osx.conf) ]]; then
 	if [[ $(pgrep -f Pansift/telegraf-osx.conf | awk 'NR >= 2') ]]; then
-		pgrep -f Pansift/telegraf-osx.conf | awk 'NR >= 2' | xargs -n1 kill -s TERM
+		pgrep -f Pansift/telegraf-osx.conf | awk 'NR >= 2' | xargs -n1 kill -15
+		# Sending -15 SIGTERM here rather than -9 SIGKILL to let graceful cleanup occur
 	else
 		# echo "There is only 1 telegraf process"
 		true
