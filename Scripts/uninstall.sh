@@ -111,3 +111,5 @@ echo "Now please empty your Trash at your discretion"
 echo "And log in to https://pansift.com to request data deletion"
 echo "Note: Only account admins can request deletions!"
 echo "=========================================================="
+
+exit 0
