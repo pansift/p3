@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# NOTE: Default pbadr.sh runs every 60s
+# NOTE: Default pbar.sh runs every 60s
 # Scenario where re-copying in the App after an uninstall but same App version
 
 # so the bootstrap does not get run hence we need to run it.
