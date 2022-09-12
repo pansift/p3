@@ -86,11 +86,11 @@ timeout () {
 
 get_test_hosts () {
 	# Assumes dig in the system
-	test_hosts=$(timeout 5 dig +short TXT hosts.${PANSIFT_UUID}.ingest.pansift.com)
+	test_hosts=$(timeout 4 dig +time=3 +short TXT hosts.${PANSIFT_UUID}.ingest.pansift.com)
 	if [[ $test_hosts =~ "h="[[:alnum:]] ]]; then
 		hosts=$(echo -n "$test_hosts" | tr -d '"' | awk -F 'h=' '{print $2}' | awk -F '[[:alpha:]]=' '{print $1}' | remove_chars_except_commas)
 	else
-		test_hosts=$(timeout 5 dig +short TXT hosts.default.ingest.pansift.com)
+		test_hosts=$(timeout 4 dig +time=3 +short TXT hosts.default.ingest.pansift.com)
 		if [[ $test_hosts =~ "h="[[:alnum:]] ]]; then
 			hosts=$(echo -n "$test_hosts" | tr -d '"' | awk -F 'h=' '{print $2}' | awk -F '[[:alpha:]]=' '{print $1}' | remove_chars_except_commas)
 		fi
@@ -313,7 +313,7 @@ dns_cache_rr_measure () {
 			do
 				if [ ! -z "$host" ]; then
 					target_host=$(echo -n "$host" | remove_chars)
-					dns4_cache_query_output=$(timeout 5 dig -4 +time=5 +tries=1 @"$dns4_primary" "$target_host")
+					dns4_cache_query_output=$(timeout 4 dig -4 +time=3 +tries=1 @"$dns4_primary" "$target_host")
 					dns4_cache_query_response=$(echo -n "$dns4_cache_query_output" | grep -m1 -i "query time" | cut -d' ' -f4 | remove_chars)
 					tagset=$(echo -n "ip_version=4,locally4_connected=${locally4_connected:=false},locally_connected=$locally_connected,dns4_primary_found=true,destination=$target_host")
 					fieldset=$(echo -n "dns4_primary=\"$dns4_primary\",dns4_cache_query_response=${dns4_cache_query_response:=0.0}")
@@ -341,7 +341,7 @@ dns_cache_rr_measure () {
 			do
 				if [ ! -z "$host" ]; then
 					target_host=$(echo -n "$host" | remove_chars)
-					dns6_cache_query_output=$(timeout 5 dig -6 AAAA +time=5 +tries=1 @"$dns6_primary" "$target_host")
+					dns6_cache_query_output=$(timeout 4 dig -6 AAAA +time=3 +tries=1 @"$dns6_primary" "$target_host")
 					dns6_cache_query_response=$(echo -n "$dns6_cache_query_output" | grep -m1 -i "query time" | cut -d' ' -f4 | remove_chars)
 					tagset=$(echo -n "ip_version=6,locally6_connected=${locally6_connected:=false},locally_connected=$locally_connected,dns6_primary_found=true,destination=$target_host")
 					fieldset=$(echo -n "dns6_primary=\"$dns6_primary\",dns6_cache_query_response=${dns6_cache_query_response:=0.0}")
@@ -391,14 +391,14 @@ dns_random_rr_measure () {
 		dns4_primary=$(cat /etc/resolv.conf | grep -q 'nameserver.*\..*\..*\.' || { echo -n 'none'; exit 0; }; cat /etc/resolv.conf | grep 'nameserver.*\..*\..*\.' | head -n1 | cut -d' ' -f2 | remove_chars)
 		dns6_primary=$(cat /etc/resolv.conf | grep -q 'nameserver.*:' || { echo -n 'none'; exit 0; }; cat /etc/resolv.conf | grep 'nameserver.*:' | head -n1 | cut -d' ' -f2 | remove_chars)
 		if [ $dns4_primary != "none" ]; then
-			dns4_query_output=$(dig -4 +time=5 +tries=1 @"$dns4_primary" "$dns_query")
+			dns4_query_output=$(dig -4 +time=3 +tries=1 @"$dns4_primary" "$dns_query")
 			dns4_query_response=$(echo -n "$dns4_query_output" | grep -m1 -i "query time" | cut -d' ' -f4 | remove_chars)
 			[ -z "$dns4_query_response" ] && dns4_query_response=0.0
 		else
 			dns4_query_response=0.0
 		fi
 		if [ $dns6_primary != "none" ]; then
-			dns6_query_output=$(dig -6 +time=5 +tries=1 @"$dns6_primary" "$dns_query")
+			dns6_query_output=$(dig -6 +time=3 +tries=1 @"$dns6_primary" "$dns_query")
 			dns6_query_response=$(echo -n "$dns6_query_output" | grep -m1 -i "query time" | cut -d' ' -f4 | remove_chars)
 			[ -z "$dns6_query_response" ] && dns6_query_response=0.0
 		else 
@@ -730,9 +730,9 @@ while :; do
 			results
 			;;
 		-n|--network) 
-			internet_measure # No dependency
-			network_measure
-			dns_random_rr_measure
+			internet_measure # No dependency, max 10s ping(s) and 14s cURL
+			network_measure # Can take 10s
+			dns_random_rr_measure # Can take 6s for random UUID on v4 and v6
 			local_ips # dependency on both prior internet_measure and network_measure
 			wlan_measure
 			measurement="pansift_osx_network"
@@ -746,19 +746,19 @@ while :; do
 			;;
 		-w|--web)
 			# The reason we don't set the single measurement here is we are looping in the checks
-			get_test_hosts
+			get_test_hosts # Can take 8-10s
 			http_checks
 			;;
 		-t|--trace)
 			# The reason we don't set the single measurement here is we are looping in the checks
-			get_test_hosts
+			get_test_hosts # Can take 8-10s
 			ip_trace
 			;;
 		-d|--dns)
 			# The reason we don't set the single measurement here is we are looping in the checks
-			get_test_hosts
-			network_measure # Needed to set locally_connected boolean tag
-			dns_cache_rr_measure
+			get_test_hosts # Can take 8-10s
+			network_measure # Needed to set locally_connected boolean tag, can take 10s
+			dns_cache_rr_measure # 3s per host checked
 			;;
 		*) break
 	esac
