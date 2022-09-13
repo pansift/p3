@@ -61,6 +61,9 @@ else
   echo "Not supported on this platform yet"
 fi
 
+if [[ $(pgrep -f Pansift/telegraf-osx.conf) ]]; then
+	pkill -9 -f Pansift/telegraf-osx.conf;
+fi
 cd "$PANSIFT_SCRIPTS" && ./pansift -b &
 disown -a
 #message="You can access PanSift via the 'PS' in the menubar (top of screen) and don't forget to claim your agent."
