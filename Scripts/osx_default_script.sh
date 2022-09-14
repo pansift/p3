@@ -262,15 +262,15 @@ network_measure () {
 
 	who_first="$(($RANDOM % 2))"
 	# We got some interesting results in the IPv6 v IPv4 which is faster/latency tests so we want to randomize which one goes first so results are
-  # not potentially skewed by sleeping radios, ARP, NDP etc...
+	# not potentially skewed by sleeping radios, ARP, NDP etc...
 	if [ "$who_first" -eq 0 ]; then
 		# echo "$who_first means IPv4 first"
-	 	dg4_response=$(echo -n "$netstat4" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg4_ip" == "none" ]] && ping -t5 -c3 -i1 -k BE "$dg4_ip" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
-	 	dg6_response=$(echo -n "$netstat6" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg6_ip" == "none" ]] && timeout 5 ping6 -c3 -i1 -k BE "$dg6_fullgw" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
+		dg4_response=$(echo -n "$netstat4" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg4_ip" == "none" ]] && ping -t5 -c3 -i1 -k BE "$dg4_ip" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
+		dg6_response=$(echo -n "$netstat6" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg6_ip" == "none" ]] && timeout 5 ping6 -c3 -i1 -k BE "$dg6_fullgw" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
 	else
 		# echo "$who_first means IPv6 first"
-	 	dg6_response=$(echo -n "$netstat6" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg6_ip" == "none" ]] && timeout 5 ping6 -c3 -i1 -k BE "$dg6_fullgw" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
-	 	dg4_response=$(echo -n "$netstat4" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg4_ip" == "none" ]] && ping -t5 -c3 -i1 -k BE "$dg4_ip" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
+		dg6_response=$(echo -n "$netstat6" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg6_ip" == "none" ]] && timeout 5 ping6 -c3 -i1 -k BE "$dg6_fullgw" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
+		dg4_response=$(echo -n "$netstat4" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg4_ip" == "none" ]] && ping -t5 -c3 -i1 -k BE "$dg4_ip" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
 	fi
 
 
@@ -299,8 +299,8 @@ dns_cache_rr_measure () {
 	# infrequently on a per-bucket basis
 
 	measurement="pansift_osx_dns_cache"
-	dns4_cache_query_response=0i
-	dns6_cache_query_response=0i
+	dns4_cache_query_response=0.0
+	dns6_cache_query_response=0.0
 	RESOLV=/etc/resolv.conf
 	if test -f "$RESOLV"; then
 		dns4_primary=$(cat /etc/resolv.conf | grep -q 'nameserver.*\..*\..*\.' || { echo -n 'none'; exit 0; }; cat /etc/resolv.conf | grep 'nameserver.*\..*\..*\.' | head -n1 | cut -d' ' -f2 | remove_chars)
@@ -314,7 +314,12 @@ dns_cache_rr_measure () {
 				if [ ! -z "$host" ]; then
 					target_host=$(echo -n "$host" | remove_chars)
 					dns4_cache_query_output=$(timeout 4 dig -4 +time=3 +tries=1 @"$dns4_primary" "$target_host")
-					dns4_cache_query_response=$(echo -n "$dns4_cache_query_output" | grep -m1 -i "query time" | cut -d' ' -f4 | remove_chars)
+					# dns4_cache_query_response=$(echo -n "$dns4_cache_query_output" | grep -m1 -i "query time" | cut -d' ' -f4 | remove_chars)
+					dns4_cache_query_response=$(echo -n "$dns4_cache_query_output" | grep -m1 -i 'Query time:' | grep -oEe '[0-9]+' | remove_chars)
+					if [[ ! -z "$dns4_cache_query_response" ]] && [[ "$dns4_cache_query_response" == "0" ]]; then
+						# Successful fast query probably local or wired so rewriting response to 1 msec
+						dns4_cache_query_response=1.0
+					fi
 					tagset=$(echo -n "ip_version=4,locally4_connected=${locally4_connected:=false},locally_connected=$locally_connected,dns4_primary_found=true,destination=$target_host")
 					fieldset=$(echo -n "dns4_primary=\"$dns4_primary\",dns4_cache_query_response=${dns4_cache_query_response:=0.0}")
 					timesuffix=$(expr 1000000000 + $i + 1) # This is to get around duplicates in Influx with measurement, tag, and timestamp the same.
@@ -342,7 +347,12 @@ dns_cache_rr_measure () {
 				if [ ! -z "$host" ]; then
 					target_host=$(echo -n "$host" | remove_chars)
 					dns6_cache_query_output=$(timeout 4 dig -6 AAAA +time=3 +tries=1 @"$dns6_primary" "$target_host")
-					dns6_cache_query_response=$(echo -n "$dns6_cache_query_output" | grep -m1 -i "query time" | cut -d' ' -f4 | remove_chars)
+					# dns6_cache_query_response=$(echo -n "$dns6_cache_query_output" | grep -m1 -i "query time" | cut -d' ' -f4 | remove_chars)
+					dns6_cache_query_response=$(echo -n "$dns6_cache_query_output" | grep -m1 -i 'Query time:' | grep -oEe '[0-9]+' | remove_chars)
+					if [[ ! -z "$dns6_cache_query_response" ]] && [[ "$dns6_cache_query_response" == "0" ]]; then
+						# Successful fast query probably local or wired so rewriting response to 1 msec
+						dns6_cache_query_response=1.0
+					fi
 					tagset=$(echo -n "ip_version=6,locally6_connected=${locally6_connected:=false},locally_connected=$locally_connected,dns6_primary_found=true,destination=$target_host")
 					fieldset=$(echo -n "dns6_primary=\"$dns6_primary\",dns6_cache_query_response=${dns6_cache_query_response:=0.0}")
 					timesuffix=$(expr 1000000000 + $i + 1) # This is to get around duplicates in Influx with measurement, tag, and timestamp the same.
@@ -390,17 +400,29 @@ dns_random_rr_measure () {
 	if test -f "$RESOLV"; then
 		dns4_primary=$(cat /etc/resolv.conf | grep -q 'nameserver.*\..*\..*\.' || { echo -n 'none'; exit 0; }; cat /etc/resolv.conf | grep 'nameserver.*\..*\..*\.' | head -n1 | cut -d' ' -f2 | remove_chars)
 		dns6_primary=$(cat /etc/resolv.conf | grep -q 'nameserver.*:' || { echo -n 'none'; exit 0; }; cat /etc/resolv.conf | grep 'nameserver.*:' | head -n1 | cut -d' ' -f2 | remove_chars)
-		if [ $dns4_primary != "none" ]; then
+		if [[ "$dns4_primary" != "none" ]]; then
 			dns4_query_output=$(dig -4 +time=3 +tries=1 @"$dns4_primary" "$dns_query")
-			dns4_query_response=$(echo -n "$dns4_query_output" | grep -m1 -i "query time" | cut -d' ' -f4 | remove_chars)
-			[ -z "$dns4_query_response" ] && dns4_query_response=0.0
+			# dns4_query_response=$(echo -n "$dns4_query_output" | grep -m1 -i "query time" | cut -d' ' -f4 | remove_chars)
+			dns4_query_response=$(echo -n "$dns4_query_output" | grep -m1 -i 'Query time:' | grep -oEe '[0-9]+' | remove_chars)
+			if [[ ! -z "$dns4_query_response" ]] && [[ "$dns4_query_response" == "0" ]]; then
+				# Successful fast query probably local or wired so rewriting response to 1 msec
+				dns4_query_response=1.0
+			fi
+			# [ -z "$dns4_query_response" ] && dns4_query_response=0.0
+			dns4_query_response=${dns4_query_response:=0.0}
 		else
 			dns4_query_response=0.0
 		fi
-		if [ $dns6_primary != "none" ]; then
+		if [[ "$dns6_primary" != "none" ]]; then
 			dns6_query_output=$(dig -6 +time=3 +tries=1 @"$dns6_primary" "$dns_query")
-			dns6_query_response=$(echo -n "$dns6_query_output" | grep -m1 -i "query time" | cut -d' ' -f4 | remove_chars)
-			[ -z "$dns6_query_response" ] && dns6_query_response=0.0
+			# dns6_query_response=$(echo -n "$dns6_query_output" | grep -m1 -i "query time" | cut -d' ' -f4 | remove_chars)
+			dns6_query_response=$(echo -n "$dns6_query_output" | grep -m1 -i 'Query time:' | grep -oEe '[0-9]+' | remove_chars)
+			if [[ ! -z "$dns6_query_response" ]] && [[ "$dns6_query_response" == "0" ]]; then
+				# Successful fast query probably local or wired so rewriting response to 1 msec
+				dns6_query_response=1.0
+			fi
+			# [ -z "$dns6_query_response" ] && dns6_query_response=0.0
+			dns6_query_response=${dns6_query_response:=0.0}
 		else 
 			dns6_query_response=0.0
 		fi
@@ -524,7 +546,7 @@ wlan_measure () {
 		wlan_max_rate=$(echo -n "$airport_output" | egrep -i '[[:space:]]maxRate' | cut -d':' -f2- | remove_chars)i
 		wlan_ssid=$(echo -n "$airport_output" | egrep -i '[[:space:]]ssid' | cut -d':' -f2- | awk '{$1=$1;print}')
 		# Bug in Monterey airport -I is missing BSSID in 12.4 and 12.5 :( it requires sudo as per 
-    # https://www.reddit.com/r/MacOS/comments/qlqhld/airport_reports_blank_bssid_since_monterey/
+		# https://www.reddit.com/r/MacOS/comments/qlqhld/airport_reports_blank_bssid_since_monterey/
 		if [[ "$osx_mainline" -ge 12 ]]; then
 			wlan_bssid=""
 		else
@@ -703,7 +725,7 @@ http_checks () {
 			http_speed_megabits=$(echo "scale=3;($http_speed_bytes * 8) / 1000000" | bc -l | tr -d '\n' | sed 's/^\./0./' | remove_chars)
 			http_ttfb=$(echo "scale=0;(($http_time_connect - $http_time_namelookup) * 10000) / 10;" | bc -l | tr -d '\n' | sed 's/^\./0./' | remove_chars)
 			tagset=$(echo -n "ip_version=4,http_url=$http_url")
-			fieldset=$( echo -n "http_time_namelookup=${http_time_namelookup:=0},http_time_connect=${http_time_connect:=0},http_time_appconnect=${http_time_appconnect:=0},http_time_pretransfer=${http_time_pretransfer:=0},http_time_starttransfer=${http_time_starttransfer:=0},http_time_total=${http_time_total:=0},http_size_megabytes=${http_size_megabytes:=0},http_size_kilobytes=${http_size_kilobytes:=0},http_ttfb=${http_ttfb:=0},http_status=${http_status:=0},http_speed_megabits=${http_speed_megabits:=0}")
+			fieldset=$( echo -n "http_time_namelookup=${http_time_namelookup:=0},http_time_connect=${http_time_connect:=0},http_time_appconnect=${http_time_appconnect:=0},http_time_pretransfer=${http_time_pretransfer:=0},http_time_starttransfer=${http_time_starttransfer:=0},http_time_total=${http_time_total:=0},http_size_megabytes=${http_size_megabytes:=0},http_size_kilobytes=${http_size_kilobytes:=0},http_ttfb=${http_ttfb:=0},http_status=${http_status:=0i},http_speed_megabits=${http_speed_megabits:=0}")
 			timesuffix=$(expr 1000000000 + $i + 1) # This is to get around duplicates in Influx with measurement, tag, and timestamp the same.
 			timesuffix=${timesuffix:1} # We drop the leading "1" and end up with incrementing nanoseconds 9 digits long
 			timestamp=$(date +%s)$timesuffix
