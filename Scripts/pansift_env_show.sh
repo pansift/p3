@@ -29,7 +29,7 @@ if test -f "$pansift_ingest_file"; then
   if [[ $line =~ $url_regex ]]; then
     pansift_ingest=$(echo -n "$line" | xargs | tr ',' '.' | tr -s ' ' | tr '[:upper:]' '[:lower:]' | tr -d '\r')
   else
-		pansift_ingest="Problem with ingest URL format at: ${pansift_ingest_file}"
+		pansift_ingest="Problem with ingest URL format: ${line}"
   fi
 else
 	 pansift_ingest="Missing pansift_ingest.conf file"
