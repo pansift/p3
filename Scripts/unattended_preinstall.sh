@@ -51,9 +51,20 @@ echo "Setting up custom Pansift.conf settings for automated claim"
 # !!! REPLACE THE <WRITE_TOKEN> with the API token string
 #######  ALL OF THE ABOVE CAN BE FOUND IN YOUR BUCKET SETTINGS #########
 #
-echo "<BUCKET_UUID>" > "$preferences"/pansift_uuid.conf
-echo "<INGEST_URL>" > "$preferences"/pansift_ingest.conf
-echo "<WRITE_TOKEN>" > "$preferences"/pansift_token.conf
+# WE ARE NOT GOING TO OVERWRITE IF FILE ALREADY THERE #
+#
+$pansift_uuid_file="$preferences"/pansift_uuid.conf
+if [[ ! -f "$pansift_uuid_file" ]]; then
+	echo "<BUCKET_UUID>" > "$pansift_uuid_file"
+fi
+$pansift_ingest_file="$preferences"/pansift_ingest.conf
+if [[ ! -f "$pansift_ingest_file" ]]; then
+	echo "<INGEST_URL>" > "$pansift_ingest_file"
+fi
+$pansift_token_file="$preferences"/pansift_token.conf
+if [[ ! -f "$pansift_token_file" ]]; then
+	echo "<WRITE_TOKEN>" > "$pansift_token_file"
+fi
 #
 # !!! REPLACE THE ABOVE WITH YOUR SPECIFIC UUID, INGEST, AND TOKEN !!!
 #
