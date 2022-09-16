@@ -44,7 +44,7 @@ echo "Creating PanSift Preferences directory if non-existent..."
 preferences="$HOME"/Library/Preferences/Pansift
 mkdir -p $preferences
 
-echo "Setting up custom Pansift.conf settings for automated claim"
+echo "Setting up custom Pansift.conf settings for automated claim if missing"
 #
 # !!! REPLACE THE <BUCKET_UUID> with your bucket UUID also known as the Pansift UUID
 # !!! REPLACE THE <INGEST_URL> with the full URL of "https://<UUID>.ingest.pansift.com"
@@ -53,16 +53,25 @@ echo "Setting up custom Pansift.conf settings for automated claim"
 #
 # WE ARE NOT GOING TO OVERWRITE IF FILE ALREADY THERE #
 #
-$pansift_uuid_file="$preferences"/pansift_uuid.conf
-if [[ ! -f "$pansift_uuid_file" ]]; then
+pansift_uuid_file="${preferences}/pansift_uuid.conf"
+if [[ -f "$pansift_uuid_file" ]]; then
+	echo "Existing ${pansift_uuid_file} so leaving it alone"
+else
+	echo "Writing to ${pansift_uuid_file}"
 	echo "<BUCKET_UUID>" > "$pansift_uuid_file"
 fi
-$pansift_ingest_file="$preferences"/pansift_ingest.conf
-if [[ ! -f "$pansift_ingest_file" ]]; then
+pansift_ingest_file="${preferences}/pansift_ingest.conf"
+if [[ -f "$pansift_ingest_file" ]]; then
+	echo "Existing ${pansift_ingest_file} so leaving it alone"
+else
+	echo "Writing to ${pansift_ingest_file}"
 	echo "<INGEST_URL>" > "$pansift_ingest_file"
 fi
-$pansift_token_file="$preferences"/pansift_token.conf
-if [[ ! -f "$pansift_token_file" ]]; then
+pansift_token_file="${preferences}/pansift_token.conf"
+if [[ -f "$pansift_token_file" ]]; then
+	echo "Existing ${pansift_token_file} so leaving it alone"
+else
+	echo "Writing to ${pansift_token_file}"
 	echo "<WRITE_TOKEN>" > "$pansift_token_file"
 fi
 #
