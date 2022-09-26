@@ -108,7 +108,7 @@ ip_trace () {
 		IFS=","
 		for host in $PANSIFT_HOSTS_CSV
 		do
-			if [ ! -z "$host" ]; then
+			if [[ -n "$host" ]]; then
 				ip_trace=$(timeout 30 traceroute -I -w2 -n "$host" 2>/dev/null | grep -E "^ \d+ .*|^\d+ .*" | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | awk '{ORS=";"}{print $1}' | sed 's/.$//' | remove_chars)
 				target_host=$(echo -n "$host" | remove_chars)
 				tagset=$(echo -n "internet4_connected=true,from_asn=$internet4_asn,destination=$target_host")
@@ -133,7 +133,7 @@ ip_trace () {
 		IFS=","
 		for host in $PANSIFT_HOSTS_CSV
 		do
-			if [ ! -z "$host" ]; then
+			if [[ -n "$host" ]]; then
 				ip_trace=$(timeout 30 traceroute6 -I -w2 -n "$host" 2>/dev/null | grep -E "^ \d+ .*|^\d+ .*" | grep -oE "(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))" | awk '{ORS=";"}{print $1}' | sed 's/.$//' | remove_chars)
 				target_host=$(echo -n "$host" | remove_chars)
 				tagset=$(echo -n "internet6_connected=true,from_asn=$internet6_asn,destination=$target_host")
@@ -311,12 +311,12 @@ dns_cache_rr_measure () {
 			IFS=","
 			for host in $PANSIFT_HOSTS_CSV
 			do
-				if [ ! -z "$host" ]; then
+				if [[ -n "$host" ]]; then
 					target_host=$(echo -n "$host" | remove_chars)
 					dns4_cache_query_output=$(timeout 4 dig -4 +time=3 +tries=1 @"$dns4_primary" "$target_host")
 					# dns4_cache_query_response=$(echo -n "$dns4_cache_query_output" | grep -m1 -i "query time" | cut -d' ' -f4 | remove_chars)
 					dns4_cache_query_response=$(echo -n "$dns4_cache_query_output" | grep -m1 -i 'Query time:' | grep -oEe '[0-9]+' | remove_chars)
-					if [[ ! -z "$dns4_cache_query_response" ]] && [[ "$dns4_cache_query_response" == "0" ]]; then
+					if [[ -n "$dns4_cache_query_response" ]] && [[ "$dns4_cache_query_response" == "0" ]]; then
 						# Successful fast query probably local or wired so rewriting response to 1 msec
 						dns4_cache_query_response=1.0
 					fi
@@ -344,12 +344,12 @@ dns_cache_rr_measure () {
 			IFS=","
 			for host in $PANSIFT_HOSTS_CSV
 			do
-				if [ ! -z "$host" ]; then
+				if [[ -n "$host" ]]; then
 					target_host=$(echo -n "$host" | remove_chars)
 					dns6_cache_query_output=$(timeout 4 dig -6 AAAA +time=3 +tries=1 @"$dns6_primary" "$target_host")
 					# dns6_cache_query_response=$(echo -n "$dns6_cache_query_output" | grep -m1 -i "query time" | cut -d' ' -f4 | remove_chars)
 					dns6_cache_query_response=$(echo -n "$dns6_cache_query_output" | grep -m1 -i 'Query time:' | grep -oEe '[0-9]+' | remove_chars)
-					if [[ ! -z "$dns6_cache_query_response" ]] && [[ "$dns6_cache_query_response" == "0" ]]; then
+					if [[ -n "$dns6_cache_query_response" ]] && [[ "$dns6_cache_query_response" == "0" ]]; then
 						# Successful fast query probably local or wired so rewriting response to 1 msec
 						dns6_cache_query_response=1.0
 					fi
@@ -390,9 +390,9 @@ dns_cache_rr_measure () {
 
 dns_random_rr_measure () {
 
-	dns_query_host=$(uuidgen)
-	dns_query_domain="doesnotexist.pansift.com"
-	dns_query="$dns_query_host.$dns_query_domain"
+	# dns_query_host=$(uuidgen) # This seems to be failing to gain enough entropy when this script is run repetitively
+	# dns_query_domain="doesnotexist.pansift.com"
+	# dns_query="$dns_query_host.$dns_query_domain"
 
 	dns4_query_response=0.0
 	dns6_query_response=0.0
@@ -401,27 +401,27 @@ dns_random_rr_measure () {
 		dns4_primary=$(cat /etc/resolv.conf | grep -q 'nameserver.*\..*\..*\.' || { echo -n 'none'; exit 0; }; cat /etc/resolv.conf | grep 'nameserver.*\..*\..*\.' | head -n1 | cut -d' ' -f2 | remove_chars)
 		dns6_primary=$(cat /etc/resolv.conf | grep -q 'nameserver.*:' || { echo -n 'none'; exit 0; }; cat /etc/resolv.conf | grep 'nameserver.*:' | head -n1 | cut -d' ' -f2 | remove_chars)
 		if [[ "$dns4_primary" != "none" ]]; then
-			dns4_query_output=$(dig -4 +time=3 +tries=1 @"$dns4_primary" "$dns_query")
+			dns4_query_output=$(dig -4 +time=3 +tries=1 @"$dns4_primary" $(uuidgen).doesnotexist.pansift.com)
 			# dns4_query_response=$(echo -n "$dns4_query_output" | grep -m1 -i "query time" | cut -d' ' -f4 | remove_chars)
 			dns4_query_response=$(echo -n "$dns4_query_output" | grep -m1 -i 'Query time:' | grep -oEe '[0-9]+' | remove_chars)
-			if [[ ! -z "$dns4_query_response" ]] && [[ "$dns4_query_response" == "0" ]]; then
+			if [[ -n "$dns4_query_response" ]] && [[ "$dns4_query_response" == "0" ]]; then
 				# Successful fast query probably local or wired so rewriting response to 1 msec
 				dns4_query_response=1.0
 			fi
-			# [ -z "$dns4_query_response" ] && dns4_query_response=0.0
 			dns4_query_response=${dns4_query_response:=0.0}
 		else
 			dns4_query_response=0.0
 		fi
 		if [[ "$dns6_primary" != "none" ]]; then
-			dns6_query_output=$(dig -6 +time=3 +tries=1 @"$dns6_primary" "$dns_query")
+			dns6_query_output=$(dig -6 +time=3 +tries=1 @"$dns6_primary" $(uuidgen).doesnotexist.pansift.com)
 			# dns6_query_response=$(echo -n "$dns6_query_output" | grep -m1 -i "query time" | cut -d' ' -f4 | remove_chars)
 			dns6_query_response=$(echo -n "$dns6_query_output" | grep -m1 -i 'Query time:' | grep -oEe '[0-9]+' | remove_chars)
-			if [[ ! -z "$dns6_query_response" ]] && [[ "$dns6_query_response" == "0" ]]; then
+			if [[ -n "$dns6_query_response" ]] && [[ "$dns6_query_response" == "0" ]]; then
 				# Successful fast query probably local or wired so rewriting response to 1 msec
+				# This seems to be happening too often?
+				# echo "Using $dns6_primary to ask about $dns_query with response of $dns6_query_response from output of $dns6_query_output"
 				dns6_query_response=1.0
 			fi
-			# [ -z "$dns6_query_response" ] && dns6_query_response=0.0
 			dns6_query_response=${dns6_query_response:=0.0}
 		else 
 			dns6_query_response=0.0
@@ -639,7 +639,7 @@ wlan_measure () {
 
 wlan_scan () {
 	airport_output=$("$airport" -s -x)
-	if [ -z "$airport_output" ]; then
+	if [[ -z "$airport_output" ]]; then
 		# echo -n "No airport output in scan"
 		wlan_scan_on="false"
 		wlan_scan_data="none"
@@ -716,7 +716,7 @@ http_checks () {
 	IFS=","
 	for host in $PANSIFT_HOSTS_CSV
 	do
-		if [ ! -z "$host" ]; then
+		if [[ -n "$host" ]]; then
 			http_url=$(echo -n "$host" | remove_chars)
 			target_host="https://"$host
 			# Max time for operation -m doesn't work
