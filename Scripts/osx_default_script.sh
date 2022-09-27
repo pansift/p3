@@ -19,6 +19,7 @@ if [[ ${#1} = 0 ]]; then
 	exit 0;
 fi
 
+utc_offset=$(date +%z)
 airport="/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport"
 plistbuddy="/usr/libexec/PlistBuddy"
 curl_path="/opt/local/bin/curl"
@@ -112,7 +113,7 @@ ip_trace () {
 				ip_trace=$(timeout 30 traceroute -I -w2 -n "$host" 2>/dev/null | grep -E "^ \d+ .*|^\d+ .*" | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | awk '{ORS=";"}{print $1}' | sed 's/.$//' | remove_chars)
 				target_host=$(echo -n "$host" | remove_chars)
 				tagset=$(echo -n "internet4_connected=true,from_asn=$internet4_asn,destination=$target_host")
-				fieldset=$( echo -n "ip_trace=\"$ip_trace\"")
+				fieldset=$( echo -n "utc_offset=\"$utc_offset\",ip_trace=\"$ip_trace\"")
 				timesuffix=$(expr 1000000000 + $i + 1) # This is to get around duplicates in Influx with measurement, tag, and timestamp the same.
 				timesuffix=${timesuffix:1} # We drop the leading "1" and end up with incrementing nanoseconds 9 digits long
 				timestamp=$(date +%s)$timesuffix
@@ -123,7 +124,7 @@ ip_trace () {
 		IFS=$OLDIFS
 	else
 		tagset="internet4_connected=false,from_asn=AS0,destination=localhost"
-		fieldset="ip_trace=\"none\""
+		fieldset="utc_offset=\"$utc_offset\",ip_trace=\"none\""
 		timestamp=$(date +%s)000000000
 		echo -ne "$measurement,$tagset $fieldset $timestamp\n"
 	fi
@@ -137,7 +138,7 @@ ip_trace () {
 				ip_trace=$(timeout 30 traceroute6 -I -w2 -n "$host" 2>/dev/null | grep -E "^ \d+ .*|^\d+ .*" | grep -oE "(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))" | awk '{ORS=";"}{print $1}' | sed 's/.$//' | remove_chars)
 				target_host=$(echo -n "$host" | remove_chars)
 				tagset=$(echo -n "internet6_connected=true,from_asn=$internet6_asn,destination=$target_host")
-				fieldset=$( echo -n "ip_trace=\"$ip_trace\"")
+				fieldset=$( echo -n "utc_offset=\"$utc_offset\",ip_trace=\"$ip_trace\"")
 				timesuffix=$(expr 1000000000 + $i + 1) # This is to get around duplicates in Influx with measurement, tag, and timestamp the same.
 				timesuffix=${timesuffix:1} # We drop the leading "1" and end up with incrementing nanoseconds 9 digits long
 				timestamp=$(date +%s)$timesuffix
@@ -148,7 +149,7 @@ ip_trace () {
 		IFS=$OLDIFS
 	else
 		tagset="internet6_connected=false,from_asn=AS0,destination=localhost"
-		fieldset="ip_trace=\"none\""
+		fieldset="utc_offset=\"$utc_offset\",ip_trace=\"none\""
 		timestamp=$(date +%s)000000000
 		echo -ne "$measurement,$tagset $fieldset $timestamp\n"
 	fi
@@ -321,7 +322,7 @@ dns_cache_rr_measure () {
 						dns4_cache_query_response=1.0
 					fi
 					tagset=$(echo -n "ip_version=4,locally4_connected=${locally4_connected:=false},locally_connected=$locally_connected,dns4_primary_found=true,destination=$target_host")
-					fieldset=$(echo -n "dns4_primary=\"$dns4_primary\",dns4_cache_query_response=${dns4_cache_query_response:=0.0}")
+					fieldset=$(echo -n "utc_offset=\"$utc_offset\",dns4_primary=\"$dns4_primary\",dns4_cache_query_response=${dns4_cache_query_response:=0.0}")
 					timesuffix=$(expr 1000000000 + $i + 1) # This is to get around duplicates in Influx with measurement, tag, and timestamp the same.
 					timesuffix=${timesuffix:1} # We drop the leading "1" and end up with incrementing nanoseconds 9 digits long
 					timestamp=$(date +%s)$timesuffix
@@ -334,7 +335,7 @@ dns_cache_rr_measure () {
 			dns4_primary="none"
 			target_host="none"
 			tagset="ip_version=4,locally4_connected=${locally4_connected:=false},locally_connected=$locally_connected,dns4_primary_found=false,destination=$target_host"
-			fieldset=$(echo -n "dns4_primary=\"$dns4_primary\",dns4_cache_query_response=0.0")
+			fieldset=$(echo -n "utc_offset=\"$utc_offset\",dns4_primary=\"$dns4_primary\",dns4_cache_query_response=0.0")
 			timestamp=$(date +%s)000000004
 			echo -ne "$measurement,$tagset $fieldset $timestamp\n"
 		fi
@@ -354,7 +355,7 @@ dns_cache_rr_measure () {
 						dns6_cache_query_response=1.0
 					fi
 					tagset=$(echo -n "ip_version=6,locally6_connected=${locally6_connected:=false},locally_connected=$locally_connected,dns6_primary_found=true,destination=$target_host")
-					fieldset=$(echo -n "dns6_primary=\"$dns6_primary\",dns6_cache_query_response=${dns6_cache_query_response:=0.0}")
+					fieldset=$(echo -n "utc_offset=\"$utc_offset\",dns6_primary=\"$dns6_primary\",dns6_cache_query_response=${dns6_cache_query_response:=0.0}")
 					timesuffix=$(expr 1000000000 + $i + 1) # This is to get around duplicates in Influx with measurement, tag, and timestamp the same.
 					timesuffix=${timesuffix:1} # We drop the leading "1" and end up with incrementing nanoseconds 9 digits long
 					timestamp=$(date +%s)$timesuffix
@@ -367,7 +368,7 @@ dns_cache_rr_measure () {
 			dns6_primary="none"
 			target_host="none"
 			tagset="ip_version=6,locally6_connected=${locally6_connected:=false},locally_connected=$locally_connected,dns6_primary_found=false,destination=$target_host"
-			fieldset=$(echo -n "dns6_primary=\"$dns6_primary\",dns6_cache_query_response=0.0")
+			fieldset=$(echo -n "utc_offset=\"$utc_offset\",dns6_primary=\"$dns6_primary\",dns6_cache_query_response=0.0")
 			timestamp=$(date +%s)000000006
 			echo -ne "$measurement,$tagset $fieldset $timestamp\n"
 		fi
@@ -377,9 +378,9 @@ dns_cache_rr_measure () {
 		dns4_primary="none"
 		target_host="none"
 		tagset4="ip_version=4,locally4_connected=${locally4_connected:=false},locally_connected=$locally_connected,dns4_primary_found=false,destination=$target_host"
-		fieldset4=$( echo -n "dns4_primary=\"$dns4_primary\",dns4_cache_query_response=0.0")
+		fieldset4=$( echo -n "utc_offset=\"$utc_offset\",dns4_primary=\"$dns4_primary\",dns4_cache_query_response=0.0")
 		tagset6="ip_version=6,locally6_connected=${locally6_connected:=false},locally_connected=$locally_connected,dns6_primary_found=false,destination=$target_host"
-		fieldset6=$(echo -n "dns6_primary=\"$dns6_primary\",dns6_cache_query_response=0.0")
+		fieldset6=$(echo -n "utc_offset=\"$utc_offset\",dns6_primary=\"$dns6_primary\",dns6_cache_query_response=0.0")
 		timestamp4=$(date +%s)000000004
 		timestamp6=$(date +%s)000000006
 		echo -ne "$measurement,$tagset4 $fieldset4 $timestamp4\n"
@@ -645,7 +646,7 @@ wlan_scan () {
 		wlan_scan_data="none"
 		measurement="pansift_osx_wlanscan"
 		tagset=$(echo -n "wlan_scan_on=$wlan_scan_on")
-		fieldset=$( echo -n "wlan_on=false")
+		fieldset=$( echo -n "utc_offset=\"$utc_offset\",wlan_on=false")
 		results
 	else
 		# Need to migrate this to XML output and a data structure that Influx can ingest that includes taking in to account spaces in SSID hence XML
@@ -697,7 +698,7 @@ wlan_scan () {
 			measurement="pansift_osx_wlanscan"
 			#tagset=$(echo -n "wlan_scan_on=$wlan_scan_on,wlan_scan_bssid_tag=$wlan_scan_bssid_tag")
 			tagset=$(echo -n "wlan_scan_on=$wlan_scan_on")
-			fieldset=$( echo -n "wlan_scan_ssid=\"$wlan_scan_ssid\",wlan_scan_bssid=\"$wlan_scan_bssid\",wlan_scan_channel=$wlan_scan_channel,wlan_scan_rssi=$wlan_scan_rssi,wlan_scan_noise=$wlan_scan_noise,wlan_scan_vht_op_channel_center_frequency_seg0=$wlan_scan_vht_op_channel_center_frequency_seg0,wlan_scan_vht_op_channel_center_frequency_seg1=$wlan_scan_vht_op_channel_center_frequency_seg1,wlan_scan_vht_op_channel_width=$wlan_scan_vht_op_channel_width,wlan_scan_cc=\"${wlan_scan_cc:=none}\",wlan_scan_ht_secondary_chan_offset=$wlan_scan_ht_secondary_chan_offset")
+			fieldset=$( echo -n "utc_offset=\"$utc_offset\",wlan_scan_ssid=\"$wlan_scan_ssid\",wlan_scan_bssid=\"$wlan_scan_bssid\",wlan_scan_channel=$wlan_scan_channel,wlan_scan_rssi=$wlan_scan_rssi,wlan_scan_noise=$wlan_scan_noise,wlan_scan_vht_op_channel_center_frequency_seg0=$wlan_scan_vht_op_channel_center_frequency_seg0,wlan_scan_vht_op_channel_center_frequency_seg1=$wlan_scan_vht_op_channel_center_frequency_seg1,wlan_scan_vht_op_channel_width=$wlan_scan_vht_op_channel_width,wlan_scan_cc=\"${wlan_scan_cc:=none}\",wlan_scan_ht_secondary_chan_offset=$wlan_scan_ht_secondary_chan_offset")
 			timesuffix=$(expr 1000000000 + $i + 1) # This is to get around duplicates in Influx with measurement, tag, and timestamp the same. 
 			timesuffix=${timesuffix:1} # We drop the leading "1" and end up with incrementing nanoseconds 9 digits long
 			timestamp=$(date +%s)$timesuffix
@@ -740,7 +741,7 @@ http_checks () {
 			http_speed_megabits=$(echo "scale=3;($http_speed_bytes * 8) / 1000000" | bc -l | tr -d '\n' | sed 's/^\./0./' | remove_chars)
 			http_ttfb=$(echo "scale=0;(($http_time_connect - $http_time_namelookup) * 10000) / 10;" | bc -l | tr -d '\n' | sed 's/^\./0./' | remove_chars)
 			tagset=$(echo -n "ip_version=4,http_url=$http_url")
-			fieldset=$( echo -n "http_time_namelookup=${http_time_namelookup:=0},http_time_connect=${http_time_connect:=0},http_time_appconnect=${http_time_appconnect:=0},http_time_pretransfer=${http_time_pretransfer:=0},http_time_starttransfer=${http_time_starttransfer:=0},http_time_total=${http_time_total:=0},http_size_megabytes=${http_size_megabytes:=0},http_size_kilobytes=${http_size_kilobytes:=0},http_ttfb=${http_ttfb:=0},http_status=${http_status:=0i},http_speed_megabits=${http_speed_megabits:=0}")
+			fieldset=$( echo -n "utc_offset=\"$utc_offset\",http_time_namelookup=${http_time_namelookup:=0},http_time_connect=${http_time_connect:=0},http_time_appconnect=${http_time_appconnect:=0},http_time_pretransfer=${http_time_pretransfer:=0},http_time_starttransfer=${http_time_starttransfer:=0},http_time_total=${http_time_total:=0},http_size_megabytes=${http_size_megabytes:=0},http_size_kilobytes=${http_size_kilobytes:=0},http_ttfb=${http_ttfb:=0},http_status=${http_status:=0i},http_speed_megabits=${http_speed_megabits:=0}")
 			timesuffix=$(expr 1000000000 + $i + 1) # This is to get around duplicates in Influx with measurement, tag, and timestamp the same.
 			timesuffix=${timesuffix:1} # We drop the leading "1" and end up with incrementing nanoseconds 9 digits long
 			timestamp=$(date +%s)$timesuffix
@@ -763,7 +764,7 @@ while :; do
 			system_measure
 			measurement="pansift_osx_machine"            
 			tagset=$(echo -n "product_name=$product_name,model_name=$model_name,model_identifier=$model_identifier,serial_number=$serial_number")
-			fieldset=$(echo -n "product_version=\"$product_version\",boot_romversion=\"$boot_romversion\",smc_version=\"$smc_version\",memory=\"$memory\"")
+			fieldset=$(echo -n "utc_offset=\"$utc_offset\",product_version=\"$product_version\",boot_romversion=\"$boot_romversion\",smc_version=\"$smc_version\",memory=\"$memory\"")
 			results
 			;;
 		-n|--network) 
@@ -774,7 +775,7 @@ while :; do
 			wlan_measure
 			measurement="pansift_osx_network"
 			tagset=$(echo -n "internet_connected=$internet_connected,internet_dualstack=$internet_dualstack,ipv4_only=$ipv4_only,ipv6_only=$ipv6_only,locally_connected=$locally_connected,wlan_connected=$wlan_connected,wlan_state=$wlan_state,wlan_op_mode=$wlan_op_mode,wlan_supported_phy_mode=$wlan_supported_phy_mode") 
-			fieldset=$( echo -n "internet4_public_ip=\"$internet4_public_ip\",internet6_public_ip=\"$internet6_public_ip\",internet4_asn=$internet4_asn,internet6_asn=$internet6_asn,dg4_ip=\"$dg4_ip\",dg4_router_ether=\"$dg4_router_ether\",dg6_router_ether=\"$dg4_router_ether\",dg6_ip=\"$dg6_ip\",dg4_hardware_type=\"$dg4_hardware_type\",dg6_hardware_type=\"$dg6_hardware_type\",dg4_interface=\"$dg4_interface\",dg6_interface=\"$dg6_interface\",dg6_interface_device_only=\"$dg6_interface_device_only\",dg4_interface_ether=\"$dg4_interface_ether\",dg6_interface_ether=\"$dg6_interface_ether\",dg4_local_ip=\"$dg4_local_ip\",dg4_local_netmask=\"$dg4_local_netmask\",dg4_response=${dg4_response:=0},dg6_local_ip=\"$dg6_local_ip\",dg6_local_prefixlen=\"$dg6_local_prefixlen\",dg6_response=${dg6_response:=0},dns4_primary=\"$dns4_primary\",dns6_primary=\"$dns6_primary\",dns4_query_response=$dns4_query_response,dns6_query_response=$dns6_query_response,wlan_rssi=$wlan_rssi,wlan_noise=$wlan_noise,wlan_snr=$wlan_snr,wlan_last_tx_rate=$wlan_last_tx_rate,wlan_max_rate=$wlan_max_rate,wlan_ssid=\"$wlan_ssid\",wlan_bssid=\"$wlan_bssid\",wlan_phy_mode=\"$wlan_phy_mode\",wlan_mcs=$wlan_mcs_i,wlan_number_spatial_streams=$wlan_number_spatial_streams,wlan_last_assoc_status=$wlan_last_assoc_status,wlan_channel=$wlan_channel_i,wlan_width=$wlan_width,wlan_current_phy_mode=\"$wlan_current_phy_mode\",wlan_supported_channels=\"$wlan_supported_channels\",wlan_80211_auth=\"$wlan_80211_auth\",wlan_link_auth=\"$wlan_link_auth\"")
+			fieldset=$( echo -n "utc_offset=\"$utc_offset\",internet4_public_ip=\"$internet4_public_ip\",internet6_public_ip=\"$internet6_public_ip\",internet4_asn=$internet4_asn,internet6_asn=$internet6_asn,dg4_ip=\"$dg4_ip\",dg4_router_ether=\"$dg4_router_ether\",dg6_router_ether=\"$dg4_router_ether\",dg6_ip=\"$dg6_ip\",dg4_hardware_type=\"$dg4_hardware_type\",dg6_hardware_type=\"$dg6_hardware_type\",dg4_interface=\"$dg4_interface\",dg6_interface=\"$dg6_interface\",dg6_interface_device_only=\"$dg6_interface_device_only\",dg4_interface_ether=\"$dg4_interface_ether\",dg6_interface_ether=\"$dg6_interface_ether\",dg4_local_ip=\"$dg4_local_ip\",dg4_local_netmask=\"$dg4_local_netmask\",dg4_response=${dg4_response:=0},dg6_local_ip=\"$dg6_local_ip\",dg6_local_prefixlen=\"$dg6_local_prefixlen\",dg6_response=${dg6_response:=0},dns4_primary=\"$dns4_primary\",dns6_primary=\"$dns6_primary\",dns4_query_response=$dns4_query_response,dns6_query_response=$dns6_query_response,wlan_rssi=$wlan_rssi,wlan_noise=$wlan_noise,wlan_snr=$wlan_snr,wlan_last_tx_rate=$wlan_last_tx_rate,wlan_max_rate=$wlan_max_rate,wlan_ssid=\"$wlan_ssid\",wlan_bssid=\"$wlan_bssid\",wlan_phy_mode=\"$wlan_phy_mode\",wlan_mcs=$wlan_mcs_i,wlan_number_spatial_streams=$wlan_number_spatial_streams,wlan_last_assoc_status=$wlan_last_assoc_status,wlan_channel=$wlan_channel_i,wlan_width=$wlan_width,wlan_current_phy_mode=\"$wlan_current_phy_mode\",wlan_supported_channels=\"$wlan_supported_channels\",wlan_80211_auth=\"$wlan_80211_auth\",wlan_link_auth=\"$wlan_link_auth\"")
 			results
 			;;
 		-s|--scan)
