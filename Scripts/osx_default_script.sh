@@ -528,6 +528,7 @@ wlan_measure () {
 	wlan_connected=$(echo -n "$airport_output" | grep -q 'AirPort: Off' && echo -n 'false' || echo -n 'true')
 	if [ $wlan_connected == "true" ]; then
 		wlan_state=$(echo -n "$airport_output" | egrep -i '[[:space:]]state' | cut -d':' -f2- | remove_chars) 
+		# There are states of init (problematic for stats), authenticating (also problematic), scanning, running
 		if [ $wlan_state == "scanning" ]; then
 			wlan_state="running" # This is increasing the cardinality needlessly, can revert if queries actually need scanning time
 		fi
