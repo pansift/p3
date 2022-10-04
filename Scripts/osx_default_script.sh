@@ -583,17 +583,15 @@ wlan_measure () {
 		printf "%s" "$airport_info_xml" > "$airport_more_data" &
 		pid=$!
 		wait $pid
-		if [[ "$wlan_channel" -lt 15 ]] && [[ $osx_mainline == 11 ]]; then
-			if [[ "$wlan_op_mode" != "none" ]]; then
-			
+		if [[ "$wlan_op_mode" != "none" ]] && [[ $osx_mainline == 11 ]] && [[ "$wlan_channel" -lt 15 ]]; then
 				wlan_number_spatial_streams=0i
 				wlan_width=0i
-			else
-				wlan_number_spatial_streams=$("$plistbuddy" "${airport_more_data}" -c "print NSS" | remove_chars)i
-				wlan_width=$("$plistbuddy" "${airport_more_data}" -c "print BANDWIDTH" | remove_chars)i
-			fi
+		elif [[ "$wlan_op_mode" != "none" ]] && [[ $osx_mainline == 10 ]]; then
+				wlan_number_spatial_streams=0i
+				wlan_width=0i
 		else 
 			wlan_number_spatial_streams=$("$plistbuddy" "${airport_more_data}" -c "print NSS" | remove_chars)i
+			# wlan_width=$("$plistbuddy" "${airport_more_data}" -c "print BANDWIDTH" | remove_chars)i
 			# There is still a bug presenting in 11.X with 802.11ax for spatial streams even on 5GHz where we can't get data as set to 0 in airport -Ix
 			width_increment=$(echo -n "$airport_output"| egrep -i '[[:space:]]channel' |  cut -d':' -f2 | awk '{$1=$1;print}' | cut -d',' -f2 | remove_chars)
 			if [[ "$width_increment" == 1 ]] || [[ "$width_increment" == 40 ]]; then
