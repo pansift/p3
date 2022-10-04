@@ -525,57 +525,58 @@ local_ips () {
 wlan_measure () {
 	# Need to add a separate PlistBuddy to extract keys rather than below as is cleaner + can get NSS (Number of Spatial Streams)
 	airport_output=$($airport -I)
+	# Here we grab more information about the local airport card or about the currently connected network (not available above)
+	wlan_sp_airport_data_type=$(system_profiler SPAirPortDataType)
 	wlan_connected=$(echo -n "$airport_output" | grep -q 'AirPort: Off' && echo -n 'false' || echo -n 'true')
 	if [ $wlan_connected == "true" ]; then
 		wlan_state=$(echo -n "$airport_output" | egrep -i '[[:space:]]state' | cut -d':' -f2- | remove_chars) 
-		# There are states of init (problematic for stats), authenticating (also problematic), scanning, running
-		if [ $wlan_state == "scanning" ]; then
+		# There are states of init (problematic for stats), authenticating, associating (also problematic), scanning, running
+		if [[ $wlan_state == "scanning" ]] || [[ $wlan_state == "running" ]]; then
 			wlan_state="running" # This is increasing the cardinality needlessly, can revert if queries actually need scanning time
-		fi
-		wlan_op_mode=$(echo -n "$airport_output"| egrep -i '[[:space:]]op mode' | cut -d':' -f2- | remove_chars)
-		# In an enviornment with the Airport on and no known or previously connected networks this needs to be set
-		if [ ${#wlan_op_mode} == 0 ]; then
-			wlan_op_mode="none"
-		fi
-		wlan_rssi=$(echo -n "$airport_output" | egrep -i '[[:space:]]agrCtlRSSI' | cut -d':' -f2- | remove_chars)
-		wlan_noise=$(echo -n "$airport_output" | egrep -i '[[:space:]]agrCtlNoise' | cut -d':' -f2- | remove_chars)
-		wlan_snr=$(var=$(( $(( $wlan_noise * -1)) - $(( $wlan_rssi * -1)) )); echo -n $var)i
-		# wlan_spatial_streams doesn't work for NSS with 802.11ax on 2.4GHz
-		# because of mathematical operation, add back in i
-		wlan_rssi="$wlan_rssi"i
-		wlan_noise="$wlan_noise"i
-		wlan_last_tx_rate=$(echo -n "$airport_output"| egrep -i '[[:space:]]lastTxRate' | cut -d':' -f2- | remove_chars)i
-		wlan_max_rate=$(echo -n "$airport_output" | egrep -i '[[:space:]]maxRate' | cut -d':' -f2- | remove_chars)i
-		wlan_ssid=$(echo -n "$airport_output" | egrep -i '[[:space:]]ssid' | cut -d':' -f2- | awk '{$1=$1;print}')
-		# Missing information due to bugs in macOS and the airport CLI command both for -I and -x
-		# Bugs related to no MCS in 2.4GHz on 11.x and also on 802.1ax missing MCS
-		# We also want to add in the phy-type here as a string so we can pivot off it in DB
-		wlan_missing_info=$(system_profiler SPAirPortDataType | grep -A10 "$wlan_ssid" | head -10)
-		wlan_phy_mode=$(echo -n "$wlan_missing_info" | grep -i 'PHY Mode:' | cut -d':' -f2 | xargs)
-		wlan_mcs=-1 # Default just to set it in case we change the if/else logic below and mess up
-		if [[ "$wlan_phy_mode" == "802.11ax" ]]; then
-			# If 802.11ax then we need to user the system_profiler :(
-			wlan_mcs=$(echo -n "$wlan_missing_info" | grep -i 'MCS Index:' | cut -d':' -f2 | xargs)
-		elif [[ "$wlan_channel" -lt 15 ]] && [[ $osx_mainline == 11 ]] ; then
-			# Here we have an OSX bug where the CLI reports MCS 0 even when MCS can be 15 when on the 2.4GHz range i.e. channels 1-14
-			wlan_mcs=$(echo -n "$wlan_missing_info" | grep -i 'MCS Index:' | cut -d':' -f2 | xargs)
-		else
-			wlan_mcs=$(echo -n "$airport_output"| egrep -i '[[:space:]]mcs' | cut -d':' -f2 | remove_chars)
-		fi
-		wlan_mcs_i="$wlan_mcs"i
-		wlan_mcs_i=${wlan_mcs_i:=-1i}
-		# Bug in Monterey airport -I is missing BSSID in 12.4 and 12.5 :( it requires sudo as per 
-		# https://www.reddit.com/r/MacOS/comments/qlqhld/airport_reports_blank_bssid_since_monterey/
-		if [[ "$osx_mainline" -ge 12 ]]; then
-			wlan_bssid=""
-		else
-			wlan_bssid=$(echo -n "$airport_output" | egrep -i '[[:space:]]bssid' | awk '{$1=$1;print}' | cut -d' ' -f2)
-		fi
-		wlan_channel=$(echo -n "$airport_output"| egrep -i '[[:space:]]channel' |  cut -d':' -f2 | awk '{$1=$1;print}' | cut -d',' -f1 | remove_chars)
-		wlan_channel_i="$wlan_channel"i
-		wlan_80211_auth=$(echo -n "$airport_output"| egrep -i '[[:space:]]802\.11 auth' |  cut -d':' -f2 | remove_chars)
-		wlan_link_auth=$(echo -n "$airport_output" | egrep -i '[[:space:]]link auth' |  cut -d':' -f2 | remove_chars)
-		wlan_last_assoc_status=$(echo -n "$airport_output" | egrep -i 'lastassocstatus' |  cut -d':' -f2 | remove_chars)i
+			wlan_op_mode=$(echo -n "$airport_output"| egrep -i '[[:space:]]op mode' | cut -d':' -f2- | remove_chars)
+			# In an enviornment with the Airport on and no known or previously connected networks this needs to be set
+			if [[ ${#wlan_op_mode} == 0 ]]; then
+				wlan_op_mode="none"
+			fi
+			wlan_rssi=$(echo -n "$airport_output" | egrep -i '[[:space:]]agrCtlRSSI' | cut -d':' -f2- | remove_chars)
+			wlan_noise=$(echo -n "$airport_output" | egrep -i '[[:space:]]agrCtlNoise' | cut -d':' -f2- | remove_chars)
+			wlan_snr=$(var=$(( $(( $wlan_noise * -1)) - $(( $wlan_rssi * -1)) )); echo -n $var)i
+			# wlan_spatial_streams doesn't work for NSS with 802.11ax on 2.4GHz
+			# because of mathematical operation, add back in i
+			wlan_rssi="$wlan_rssi"i
+			wlan_noise="$wlan_noise"i
+			wlan_last_tx_rate=$(echo -n "$airport_output"| egrep -i '[[:space:]]lastTxRate' | cut -d':' -f2- | remove_chars)i
+			wlan_max_rate=$(echo -n "$airport_output" | egrep -i '[[:space:]]maxRate' | cut -d':' -f2- | remove_chars)i
+			wlan_ssid=$(echo -n "$airport_output" | egrep -i '[[:space:]]ssid' | cut -d':' -f2- | awk '{$1=$1;print}')
+			# Missing information due to bugs in macOS and the airport CLI command both for -I and -x
+			# Bugs related to no MCS in 2.4GHz on 11.x and also on 802.1ax missing MCS
+			# We also want to add in the phy-type here as a string so we can pivot off it in DB
+			wlan_missing_info=$(echo -n "$wlan_sp_airport_data_type" | grep -A10 "$wlan_ssid" | head -10)
+			wlan_phy_mode=$(echo -n "$wlan_missing_info" | grep -i 'PHY Mode:' | cut -d':' -f2 | xargs)
+			wlan_mcs=-1 # Default just to set it in case we change the if/else logic below and mess up
+			if [[ "$wlan_phy_mode" == "802.11ax" ]]; then
+				# If 802.11ax then we need to user the system_profiler :(
+				wlan_mcs=$(echo -n "$wlan_missing_info" | grep -i 'MCS Index:' | cut -d':' -f2 | xargs)
+			elif [[ "$wlan_channel" -lt 15 ]] && [[ $osx_mainline == 11 ]] ; then
+				# Here we have an OSX bug where the CLI reports MCS 0 even when MCS can be 15 when on the 2.4GHz range i.e. channels 1-14
+				wlan_mcs=$(echo -n "$wlan_missing_info" | grep -i 'MCS Index:' | cut -d':' -f2 | xargs)
+			else
+				wlan_mcs=$(echo -n "$airport_output"| egrep -i '[[:space:]]mcs' | cut -d':' -f2 | remove_chars)
+			fi
+			wlan_mcs_i="$wlan_mcs"i
+			wlan_mcs_i=${wlan_mcs_i:=-1i}
+			# Bug in Monterey airport -I is missing BSSID in 12.4 and 12.5 :( it requires sudo as per 
+			# https://www.reddit.com/r/MacOS/comments/qlqhld/airport_reports_blank_bssid_since_monterey/
+			if [[ "$osx_mainline" -ge 12 ]]; then
+				wlan_bssid=""
+			else
+				wlan_bssid=$(echo -n "$airport_output" | egrep -i '[[:space:]]bssid' | awk '{$1=$1;print}' | cut -d' ' -f2)
+			fi
+			wlan_channel=$(echo -n "$airport_output"| egrep -i '[[:space:]]channel' |  cut -d':' -f2 | awk '{$1=$1;print}' | cut -d',' -f1 | remove_chars)
+			wlan_channel_i="$wlan_channel"i
+			wlan_80211_auth=$(echo -n "$airport_output"| egrep -i '[[:space:]]802\.11 auth' |  cut -d':' -f2 | remove_chars)
+			wlan_link_auth=$(echo -n "$airport_output" | egrep -i '[[:space:]]link auth' |  cut -d':' -f2 | remove_chars)
+			wlan_last_assoc_status=$(echo -n "$airport_output" | egrep -i 'lastassocstatus' |  cut -d':' -f2 | remove_chars)i
 
 		# Here we need to add airport -I -x for PLIST and then extract the NSS if available. Also can direct extract channel width value as BANDWIDTH
 		# Turns out that (other than using native API) the airport -I vs -Ix give additional information
@@ -585,31 +586,51 @@ wlan_measure () {
 		pid=$!
 		wait $pid
 		if [[ "$wlan_op_mode" != "none" ]] && [[ $osx_mainline == 11 ]] && [[ "$wlan_channel" -lt 15 ]]; then
-				wlan_number_spatial_streams=0i
-				wlan_width=0i
+			wlan_number_spatial_streams=0i
+			wlan_width=0i
 		elif [[ "$wlan_op_mode" != "none" ]] && [[ $osx_mainline == 10 ]]; then
-				wlan_number_spatial_streams=0i
-				wlan_width=0i
+			wlan_number_spatial_streams=0i
+			wlan_width=0i
 		else 
 			wlan_number_spatial_streams=$("$plistbuddy" "${airport_more_data}" -c "print NSS" | remove_chars)i
-			# wlan_width=$("$plistbuddy" "${airport_more_data}" -c "print BANDWIDTH" | remove_chars)i
-			# There is still a bug presenting in 11.X with 802.11ax for spatial streams even on 5GHz where we can't get data as set to 0 in airport -Ix
-			width_increment=$(echo -n "$airport_output"| egrep -i '[[:space:]]channel' |  cut -d':' -f2 | awk '{$1=$1;print}' | cut -d',' -f2 | remove_chars)
-			if [[ "$width_increment" == 1 ]] || [[ "$width_increment" == 40 ]]; then
-				wlan_width=40i
-			elif [[ "$width_increment" == 2 ]] || [[ "$width_increment" == 80 ]]; then
-				wlan_width=80i
-			elif [[ "$width_increment" == 3 ]] || [[ "$width_increment" == 160 ]]; then
-				wlan_width=160i
-			else
-				wlan_width=20i
-			fi
+		fi
+		# wlan_width=$("$plistbuddy" "${airport_more_data}" -c "print BANDWIDTH" | remove_chars)i
+		# There is still a bug presenting in 11.X with 802.11ax for spatial streams even on 5GHz where we can't get data as set to 0 in airport -Ix
+		width_increment=$(echo -n "$airport_output"| egrep -i '[[:space:]]channel' |  cut -d':' -f2 | awk '{$1=$1;print}' | cut -d',' -f2 | remove_chars)
+		if [[ "$width_increment" == 1 ]] || [[ "$width_increment" == 40 ]]; then
+			wlan_width=40i
+		elif [[ "$width_increment" == 2 ]] || [[ "$width_increment" == 80 ]]; then
+			wlan_width=80i
+		elif [[ "$width_increment" == 3 ]] || [[ "$width_increment" == 160 ]]; then
+			wlan_width=160i
+		else
+			wlan_width=20i
 		fi
 
-		# Here we grab more information about the local airport card or about the currently connected network (not available above)
-		wlan_sp_airport_data_type=$(system_profiler SPAirPortDataType)
-		wlan_supported_phy_mode=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "Supported PHY Modes" | cut -d':' -f2- | remove_chars)
 		wlan_current_phy_mode=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "PHY Mode:" | head -n1 | cut -d':' -f2- | remove_chars)
+		# We need to take in to account the following 2 states of init / associating where much of the data is unavailable.
+		elif [[ "$wlan_state" == "init" ]] || [[ "$wlan_state" == "associating" ]] || [[ "$wlan_state" == "authenticating" ]]; then
+		wlan_80211_auth="none"
+		wlan_link_auth="none" # Though this is available for init
+		wlan_current_phy_mode="none"
+		wlan_channel_i=0i
+		wlan_width=-1i # Can we default to 20 (20MHz) i.e. does 0 mean 20, what about .ax?
+		wlan_rssi=0i
+		wlan_noise=0i
+		wlan_snr=0i
+		wlan_last_tx_rate=0i
+		wlan_max_rate=0i
+		wlan_ssid=""
+		wlan_bssid=""
+		wlan_phy_mode=""
+		wlan_mcs_i=-1i # MCS can be 0 as per https://mcsindex.com/
+		wlan_last_assoc_status=-1i
+		wlan_number_spatial_streams=0i
+		else
+		 # We should never get here?
+		 echo "We should never get here!"
+		fi
+		wlan_supported_phy_mode=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "Supported PHY Modes" | cut -d':' -f2- | remove_chars)
 		wlan_supported_channels=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "Supported Channels:" | head -n1 | cut -d':' -f2- | remove_chars_delimit_colon)
 	else
 		# set all values null as can not have an empty tag and safer than in the fieldset for everything?
