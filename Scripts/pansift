@@ -152,13 +152,26 @@ export MACHINE_UUID=$machine_uuid
 
 touch "$PANSIFT_LOGS"/telegraf.log
 
+
+# It turns out that Rosetta is not installed by default on out of the box builds and running something in terminal
+# does not prompt for this, so previously it was luck on the side of people installing rosetta first. We now try
+# to address this with different binaries for easier use. i386 is 1.17.2 and arm64 is 1.24.2
+telegraf_binary="telegraf"
+if [[ "$(arch)" == "i386" ]]; then
+	telegraf_binary="telegraf"
+elif [[ "$(arch)" == "arm64" ]] && [[ -e "$PANSIFT_SUPPORT"/telegrafm ]]; then
+	telegraf_binary="telegrafm"
+else
+	telegraf_binary="telegraf"
+fi
+
 # Simple switch for Environment only. Future state, use getopts and functions.
 if [[ "$1" == "-b" ]]; then 
 	echo "Running special once off config to push system details before resorting to normal configuration..."
 	# touch "$PANSIFT_SUPPORT"/telegraf-once-"$(timenow)".pid
-	# $PANSIFT_SUPPORT"/telegraf --once --config "$PANSIFT_PREFERENCES"/telegraf-osx-once.conf --pidfile "$PANSIFT_SUPPORT"/telegraf-once.pid
+	# $PANSIFT_SUPPORT"/"$telegraf_binary" --once --config "$PANSIFT_PREFERENCES"/telegraf-osx-once.conf --pidfile "$PANSIFT_SUPPORT"/telegraf-once.pid
 	# Removing the pidfile as there's an issue with extra telegrafs starting and even unique pidfiles makes a mess right now!
-	"$PANSIFT_SUPPORT"/telegraf --once --config "$PANSIFT_PREFERENCES"/telegraf-osx-once.conf >/dev/null 2>&1 &
+	"$PANSIFT_SUPPORT"/"$telegraf_binary" --once --config "$PANSIFT_PREFERENCES"/telegraf-osx-once.conf >/dev/null 2>&1 &
 	# wait $!
 	disown -a
 else
@@ -180,7 +193,7 @@ else
 		sleep 3 # Wait for cleanup...
 	fi
 	echo "Running normal telegraf config..."
-	"$PANSIFT_SUPPORT"/telegraf --config "$PANSIFT_PREFERENCES"/telegraf-osx.conf >/dev/null 2>&1 &
+	"$PANSIFT_SUPPORT"/"$telegraf_binary" --config "$PANSIFT_PREFERENCES"/telegraf-osx.conf >/dev/null 2>&1 &
 	disown -a
 fi
 

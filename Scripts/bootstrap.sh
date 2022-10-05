@@ -44,7 +44,7 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
   # conf to ~/Library/Preferences/Pansift
   rsync -aru "$1"/Contents/Resources/Preferences/*.conf "$PANSIFT_PREFERENCES"
   # Telegraf Support
-  rsync -aru "$1"/Contents/Resources/Support/telegraf "$PANSIFT_SUPPORT"
+  rsync -aru "$1"/Contents/Resources/Support/telegraf* "$PANSIFT_SUPPORT"
 elif [[ "$OSTYPE" == "cygwin" ]]; then
   # POSIX compatibility layer and Linux environment emulation for Windows
   echo "Not supported on Cygwin yet"

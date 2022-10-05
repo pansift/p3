@@ -47,7 +47,7 @@ rsync -aru /Applications/Pansift.app/Contents/Resources/Scripts/* "$PANSIFT_SCRI
 # conf to ~/Library/Preferences/Pansift
 rsync -aru /Applications/Pansift.app/Contents/Resources/Preferences/*.conf "$PANSIFT_PREFERENCES"
 # Telegraf Support
-rsync -aru /Applications/Pansift.app/Contents/Resources/Support/telegraf "$PANSIFT_SUPPORT"
+rsync -aru /Applications/Pansift.app/Contents/Resources/Support/telegraf* "$PANSIFT_SUPPORT"
 
 # Remove the interactive Internet app warning
 echo "Unsetting flag on quarantine of app which requires user interaction..."
