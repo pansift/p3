@@ -21,9 +21,12 @@ function timenow {
 echo "Running PanSift: $script_name at $(timenow) with..."
 echo "Directory: $CURRENTDIR"
 
-# Remove the interactive Internet app warning
-echo "Unsetting flag on quarantine of app which requires user interaction..."
-xattr -r -d com.apple.quarantine /Applications/Pansift.app
+# Remove the interactive Internet app warning (Not required if packaged and signed)
+# echo "Unsetting flag on quarantine of app which requires user interaction..."
+# xattr -r -d com.apple.quarantine /Applications/Pansift.app
+
+# Add back in the Login Item in case this is a reinstall
+osascript -e 'tell application "System Events" to make login item at end with properties {path:"/Applications/Pansift.app", hidden:false, name:"Pansift"}'
 
 # Open the app on the remote machine (or use as a post-install script)
 echo "Open PanSift (PS) in menu bar"
