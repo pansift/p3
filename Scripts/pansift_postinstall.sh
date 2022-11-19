@@ -31,6 +31,7 @@ xattr -r -d com.apple.quarantine /Applications/Pansift.app
 
 # Open the app on the remote machine (or use as a post-install script)
 echo "Open PanSift (PS) in menu bar"
+sleep 7 # Wait for slower disks to finish the Pansift app copy
 osascript -e "tell application \"Pansift.app\"" -e "activate" -e "end tell"
 # "activate" takes focus but also issues a run whereas "launch" doesn't!
 # osascript -e "tell application \"Pansift.app\"" -e "launch" -e "end tell"
