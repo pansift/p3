@@ -26,7 +26,8 @@ echo "Directory: $CURRENTDIR"
 # xattr -r -d com.apple.quarantine /Applications/Pansift.app
 
 # Add back in the Login Item in case this is a reinstall
-osascript -e 'tell application "System Events" to make login item at end with properties {path:"/Applications/Pansift.app", hidden:false, name:"Pansift"}'
+# Can't use this as it asks for more permissions during the installer app 
+# osascript -e 'tell application "System Events" to make login item at end with properties {path:"/Applications/Pansift.app", hidden:false, name:"Pansift"}'
 
 # Open the app on the remote machine (or use as a post-install script)
 echo "Open PanSift (PS) in menu bar"
