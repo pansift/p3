@@ -23,10 +23,10 @@ echo "Directory: $CURRENTDIR"
 
 # Remove the interactive Internet app warning (Not required if packaged and signed)
 # echo "Unsetting flag on quarantine of app which requires user interaction..."
-# xattr -r -d com.apple.quarantine /Applications/Pansift.app
+xattr -r -d com.apple.quarantine /Applications/Pansift.app
 
 # Add back in the Login Item in case this is a reinstall
-# Can't use this as it asks for more permissions during the installer app 
+# Can't use this as it asks for more permissions during the installer app, needs to live elsewhere
 # osascript -e 'tell application "System Events" to make login item at end with properties {path:"/Applications/Pansift.app", hidden:false, name:"Pansift"}'
 
 # Open the app on the remote machine (or use as a post-install script)
