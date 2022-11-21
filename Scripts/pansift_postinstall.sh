@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 # This script will remove the user interaction required to click yes 
 # to opening the app from the Internet. The app has indeed been notarized 
 # by Apple already. It will also move the correct files and create 
@@ -10,6 +9,7 @@
 
 # set -e
 # set -vx
+
 script_name=$(basename "$0")
 
 CURRENTDIR="$(pwd)"
@@ -23,7 +23,7 @@ echo "Directory: $CURRENTDIR"
 
 # Remove the interactive Internet app warning (Not required if packaged and signed)
 # echo "Unsetting flag on quarantine of app which requires user interaction..."
-xattr -r -d com.apple.quarantine /Applications/Pansift.app
+sudo xattr -r -d com.apple.quarantine /Applications/Pansift.app
 
 # Add back in the Login Item in case this is a reinstall
 # Can't use this as it asks for more permissions during the installer app, needs to live elsewhere
