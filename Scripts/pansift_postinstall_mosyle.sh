@@ -21,7 +21,7 @@ function timenow {
 echo "Running PanSift: $script_name at $(timenow) with..."
 echo "Directory: $CURRENTDIR"
 
-sleep 7 # Wait for slower disks to finish the Pansift app copy
+sleep 3 # Wait for slower disks to finish the Pansift app copy
 
 # Remove the interactive Internet app warning (Not required if packaged and signed)
 # echo "Unsetting flag on quarantine of app which requires user interaction..."
@@ -39,33 +39,36 @@ install_path="/Applications/Pansift.app"
 source "$install_path"/Contents/Resources/Preferences/pansift.conf
 
 # Configuration and preferences files
-mkdir -p "$PANSIFT_PREFERENCES"
+mkdir -p "$PANSIFT_PREFERENCES" || echo "Error: Could not create $PANSIFT_PREFERENCES"
 
 # Scripts and additional executables
-mkdir -p "$PANSIFT_SCRIPTS"
-mkdir -p "$PANSIFT_SCRIPTS"/Plugins
+mkdir -p "$PANSIFT_SCRIPTS" || echo "Error: Could not create $PANSIFT_SCRIPTS"
+mkdir -p "$PANSIFT_SCRIPTS"/Plugins || echo "Error: Could not create $PANSIFT_SCRIPTS/Plugins"
 
 # Logs, logs, logs
-mkdir -p "$PANSIFT_LOGS"
+mkdir -p "$PANSIFT_LOGS" || echo "Error: Could not create $PANSIFT_LOGS"
 
 # PIDs and other flotsam
-mkdir -p "$PANSIFT_SUPPORT"
+mkdir -p "$PANSIFT_SUPPORT" || echo "Error: Could not create $PANSIFT_SUPPORT"
 
 # macOS
 # Main scripts and settings need to get moved...
 # scripts to ~/Library/Pansift
-rsync -aru "$install_path"/Contents/Resources/Scripts/* "$PANSIFT_SCRIPTS"
+rsync -vvaru "$install_path"/Contents/Resources/Scripts/* "$PANSIFT_SCRIPTS"
 
 # conf to ~/Library/Preferences/Pansift
-rsync -aru "$install_path"/Contents/Resources/Preferences/*.conf "$PANSIFT_PREFERENCES"
+rsync -vvaru "$install_path"/Contents/Resources/Preferences/*.conf "$PANSIFT_PREFERENCES"
 
 # Telegraf Support
-rsync -aru "$install_path"/Contents/Resources/Support/telegraf* "$PANSIFT_SUPPORT"
+rsync -vvaru "$install_path"/Contents/Resources/Support/telegraf* "$PANSIFT_SUPPORT"
 
 # Open the app on the remote machine (or use as a post-install script)
 echo "Open PanSift (PS) in menu bar"
 
-osascript -e "tell application \"Pansift.app\"" -e "activate" -e "end tell"
+# Trying to use open only
+sudo open /Applications/Pansift.app || exit 1
+
+# osascript -e "tell application \"Pansift.app\"" -e "activate" -e "end tell"
 # "activate" takes focus but also issues a run whereas "launch" doesn't!
 # osascript -e "tell application \"Pansift.app\"" -e "launch" -e "end tell"
 
