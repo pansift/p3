@@ -21,7 +21,8 @@ function timenow {
 echo "Running PanSift: $script_name at $(timenow) with..."
 echo "Directory: $CURRENTDIR"
 
-sleep 3 # Wait for slower disks to finish the Pansift app copy
+
+sleep 3 # Wait for slower disks to finish the Pansift app copy though this should not be necessary
 
 # Remove the interactive Internet app warning (Not required if packaged and signed)
 # echo "Unsetting flag on quarantine of app which requires user interaction..."
@@ -30,6 +31,10 @@ sudo xattr -r -d com.apple.quarantine /Applications/Pansift.app
 # Add back in the Login Item in case this is a reinstall
 # Can't use this as it asks for more permissions during the installer app, needs to live elsewhere
 # osascript -e 'tell application "System Events" to make login item at end with properties {path:"/Applications/Pansift.app", hidden:false, name:"Pansift"}'
+
+currentuser=$(stat -f '%Su' /dev/console)
+echo "Switch to user: $currentuser"
+sudo -u $(stat -f "%Su" /dev/console) /bin/bash <<'END'
 
 # Sync files as a backup incase the app boostrap can not.
 echo "Setup PanSift dirs and files (if not already)"
@@ -61,6 +66,8 @@ rsync -vvaru "$install_path"/Contents/Resources/Preferences/*.conf "$PANSIFT_PRE
 
 # Telegraf Support
 rsync -vvaru "$install_path"/Contents/Resources/Support/telegraf* "$PANSIFT_SUPPORT"
+
+END
 
 # Open the app on the remote machine (or use as a post-install script)
 echo "Open PanSift (PS) in menu bar"
