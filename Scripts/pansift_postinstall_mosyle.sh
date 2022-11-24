@@ -34,7 +34,8 @@ sudo xattr -r -d com.apple.quarantine /Applications/Pansift.app
 
 currentuser=$(stat -f '%Su' /dev/console)
 echo "Switch to user: $currentuser"
-sudo -u $(stat -f "%Su" /dev/console) /bin/bash <<'END'
+sudo -H -u $(stat -f "%Su" /dev/console) /bin/bash <<'END'
+echo "HOME is $HOME"
 
 # Sync files as a backup incase the app boostrap can not.
 echo "Setup PanSift dirs and files (if not already)"
@@ -44,13 +45,16 @@ install_path="/Applications/Pansift.app"
 source "$install_path"/Contents/Resources/Preferences/pansift.conf
 
 # Configuration and preferences files
+echo "PANSIFT_PREFERENCES path is $PANSIFT_PREFERENCES"
 mkdir -p "$PANSIFT_PREFERENCES" || echo "Error: Could not create $PANSIFT_PREFERENCES"
 
 # Scripts and additional executables
+echo "PANSIFT_SCRIPTS path is $PANSIFT_SCRIPTS"
 mkdir -p "$PANSIFT_SCRIPTS" || echo "Error: Could not create $PANSIFT_SCRIPTS"
 mkdir -p "$PANSIFT_SCRIPTS"/Plugins || echo "Error: Could not create $PANSIFT_SCRIPTS/Plugins"
 
 # Logs, logs, logs
+echo "PANSIFT_LOGS path is $PANSIFT_LOGS"
 mkdir -p "$PANSIFT_LOGS" || echo "Error: Could not create $PANSIFT_LOGS"
 
 # PIDs and other flotsam
