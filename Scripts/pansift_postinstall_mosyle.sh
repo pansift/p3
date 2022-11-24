@@ -83,4 +83,7 @@ open /Applications/Pansift.app || exit 1
 
 END
 
+# Another option here outside of the END
+# sudo -H -u $currentuser open /Applications/Pansift.app
+
 exit
