@@ -71,16 +71,16 @@ rsync -vvaru "$install_path"/Contents/Resources/Preferences/*.conf "$PANSIFT_PRE
 # Telegraf Support
 rsync -vvaru "$install_path"/Contents/Resources/Support/telegraf* "$PANSIFT_SUPPORT"
 
-END
-
 # Open the app on the remote machine (or use as a post-install script)
 echo "Open PanSift (PS) in menu bar"
 
 # Trying to use open only
-sudo open /Applications/Pansift.app || exit 1
+open /Applications/Pansift.app || exit 1
 
 # osascript -e "tell application \"Pansift.app\"" -e "activate" -e "end tell"
 # "activate" takes focus but also issues a run whereas "launch" doesn't!
 # osascript -e "tell application \"Pansift.app\"" -e "launch" -e "end tell"
+
+END
 
 exit
