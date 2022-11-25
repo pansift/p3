@@ -19,7 +19,7 @@ function timenow {
 }
 
 echo "Running PanSift: $script_name at $(timenow) with..."
-echo "Directory: $CURRENTDIR"
+echo "Current Directory: $CURRENTDIR"
 
 
 sleep 3 # Wait for slower disks to finish the Pansift app copy though this should not be necessary

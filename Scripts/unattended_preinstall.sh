@@ -15,10 +15,13 @@
 # and be configuring it below with assistance from Pansift support 
 # This script is for commercial shared/multi-agent buckets.
 
+# *************************************************************************************************
 # THIS SCRIPT MUST BE RUN IN THE CONTEXT OF THE LOGGED IN USER AND NOT A SYSTEM OR HEADLESS ACCOUNT
+# *************************************************************************************************
 
 # set -e
 # set -vx
+
 script_name=$(basename "$0")
 
 CURRENTDIR="$(pwd)"
@@ -38,6 +41,11 @@ if [[ $(pgrep -f Pansift/telegraf-osx.conf) ]]; then
   pkill -9 -f Pansift/telegraf-osx.conf
 fi
 
+currentuser=$(stat -f '%Su' /dev/console)
+echo "Switch to user: $currentuser"
+sudo -H -u $(stat -f "%Su" /dev/console) /bin/bash <<'END'
+echo "HOME is $HOME"
+
 # Basic Configuration and then additional preferences files if present.
 echo "Creating PanSift Preferences directory if non-existent..."
 # Configuration and preferences files
@@ -48,7 +56,8 @@ echo "Setting up custom Pansift.conf settings for automated claim if missing"
 #
 # !!! REPLACE THE <BUCKET_UUID> with your bucket UUID also known as the Pansift UUID
 # !!! REPLACE THE <INGEST_URL> with the full URL of "https://<UUID>.ingest.pansift.com"
-# !!! REPLACE THE <WRITE_TOKEN> with the API token string
+# !!! REPLACE THE <ZTP_TOKEN> (write token) with the API token string
+# 
 #######  ALL OF THE ABOVE CAN BE FOUND IN YOUR BUCKET SETTINGS #########
 #
 # WE ARE NOT GOING TO OVERWRITE IF FILE ALREADY THERE #
@@ -72,10 +81,12 @@ if [[ -f "$pansift_token_file" ]]; then
 	echo "Existing ${pansift_token_file} so leaving it alone"
 else
 	echo "Writing to ${pansift_token_file}"
-	echo "<WRITE_TOKEN>" > "$pansift_token_file"
+	echo "<ZTP_TOKEN>" > "$pansift_token_file"
 fi
 #
-# !!! REPLACE THE ABOVE WITH YOUR SPECIFIC UUID, INGEST, AND TOKEN !!!
+# !!! REPLACE THE ABOVE WITH YOUR SPECIFIC <BUCKET_UUID>, <INGEST_URL>, AND <ZTP_TOKEN> !!!
 #
+
+END
 
 exit

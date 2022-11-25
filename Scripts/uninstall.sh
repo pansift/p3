@@ -6,6 +6,21 @@
 # Moving things to the right places :)
 # Being super verbose and as careful as can be with "rm"
 
+CURRENTDIR="$(pwd)"
+
+function timenow {
+  date "+%Y%m%dT%H%M%S%z"
+}
+
+echo "Running PanSift: $script_name at $(timenow) with..."
+echo "Current Directory: $CURRENTDIR"
+
+
+currentuser=$(stat -f '%Su' /dev/console)
+echo "Switch to user: $currentuser"
+sudo -H -u $(stat -f "%Su" /dev/console) /bin/bash <<'END'
+echo "HOME is $HOME"
+
 preferences="$HOME"/Library/Preferences/Pansift/pansift.conf
 if test -f "$preferences"; then
 	source "$preferences"
@@ -112,4 +127,6 @@ echo "And log in to https://pansift.com to request data deletion"
 echo "Note: Only account admins can request deletions!"
 echo "=========================================================="
 
-exit 0
+END 
+
+exit

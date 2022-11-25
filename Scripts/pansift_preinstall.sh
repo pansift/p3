@@ -12,7 +12,7 @@ function timenow {
 	date "+%Y%m%dT%H%M%S%z"
 }
 echo "Running PanSift: $script_name at $(timenow) with..."
-echo "Directory: $CURRENTDIR"
+echo "Current Directory: $CURRENTDIR"
 
 echo "Shutting down any existing Pansift.app instances and related telegraf"
 # Shut down the current Pansift.app if there is one
