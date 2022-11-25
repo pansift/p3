@@ -31,7 +31,7 @@ else
 fi
 
 echo "Getting user password if required:"
-sudo ls
+sudo true
 
 pansift_uuid_file="$PANSIFT_PREFERENCES"/pansift_uuid.conf
 if test -f "$pansift_uuid_file"; then
