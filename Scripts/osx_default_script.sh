@@ -609,7 +609,7 @@ wlan_measure () {
 
 		wlan_current_phy_mode=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "PHY Mode:" | head -n1 | cut -d':' -f2- | remove_chars)
 		# We need to take in to account the following 2 states of init / associating where much of the data is unavailable.
-		elif [[ "$wlan_state" == "init" ]] || [[ "$wlan_state" == "associating" ]] || [[ "$wlan_state" == "authenticating" ]]; then
+	elif [[ "$wlan_state" == "init" ]] || [[ "$wlan_state" == "associating" ]] || [[ "$wlan_state" == "authenticating" ]]; then
 		wlan_80211_auth="none"
 		wlan_link_auth="none" # Though this is available for init
 		wlan_current_phy_mode="none"
@@ -626,9 +626,25 @@ wlan_measure () {
 		wlan_mcs_i=-1i # MCS can be 0 as per https://mcsindex.com/
 		wlan_last_assoc_status=-1i
 		wlan_number_spatial_streams=0i
-		else
-		 # We should never get here?
-		 echo "We should never get here!"
+	else
+		# This can happen in a VM where there is no wlan_state but the airport tool still works and returns blank
+		wlan_state="unknown"
+		wlan_80211_auth="none"
+		wlan_link_auth="none" # Though this is available for init
+		wlan_current_phy_mode="none"
+		wlan_channel_i=0i
+		wlan_width=-1i # Can we default to 20 (20MHz) i.e. does 0 mean 20, what about .ax?
+		wlan_rssi=0i
+		wlan_noise=0i
+		wlan_snr=0i
+		wlan_last_tx_rate=0i
+		wlan_max_rate=0i
+		wlan_ssid=""
+		wlan_bssid=""
+		wlan_phy_mode=""
+		wlan_mcs_i=-1i # MCS can be 0 as per https://mcsindex.com/
+		wlan_last_assoc_status=-1i
+		wlan_number_spatial_streams=0i
 		fi
 		wlan_supported_phy_mode=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "Supported PHY Modes" | cut -d':' -f2- | remove_chars)
 		wlan_supported_channels=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "Supported Channels:" | head -n1 | cut -d':' -f2- | remove_chars_delimit_colon)
