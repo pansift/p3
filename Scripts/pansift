@@ -36,13 +36,13 @@ defaults write com.pansift.p3bar NSNavLastRootDirectory "$PANSIFT_SCRIPTS"/Plugi
 defaults write com.pansift.p3bar userConfigDisabled -bool true
 
 # Need a better way to get this check going on upgrades
-# login_item=$(osascript -e 'tell application "System Events" to get the name of every login item')
-# if [[ ! $login_item =~ Pansift ]]; then
-#	echo "Going to add Pansift as a Login Item for user $USER"
-#	osascript -e 'tell application "System Events" to make login item at end with properties {name: "Pansift",path:"/Applications/Pansift.app", hidden:false}'
-# else
-# echo "Pansift is already a Login Item for user $USER"
-# fi
+login_item=$(osascript -e 'tell application "System Events" to get the name of every login item')
+if [[ ! $login_item =~ Pansift ]]; then
+	echo "Going to add Pansift as a Login Item for user $USER"
+	osascript -e 'tell application "System Events" to make login item at end with properties {name: "Pansift",path:"/Applications/Pansift.app", hidden:false}'
+else
+  echo "Pansift is already a Login Item for user $USER"
+fi
 
 pansift_uuid_file="$PANSIFT_PREFERENCES"/pansift_uuid.conf
 pansift_ingest_file="$PANSIFT_PREFERENCES"/pansift_ingest.conf
@@ -190,7 +190,7 @@ else
 		pkill -9 -f "$PANSIFT_SCRIPTS"/osx_default_script.sh
 		# Sending -15 takes telegraf 10-15 seconds to clean up...
 		# pkill -9 -f "$PANSIFT_SUPPORT"/telegraf || true
-		sleep 3 # Wait for cleanup...
+		sleep 5 # Wait for cleanup...
 	fi
 	echo "Running normal telegraf config..."
 	"$PANSIFT_SUPPORT"/"$telegraf_binary" --config "$PANSIFT_PREFERENCES"/telegraf-osx.conf >/dev/null 2>&1 &
