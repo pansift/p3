@@ -74,7 +74,7 @@ rsync -vvaru "$install_path"/Contents/Resources/Support/telegraf* "$PANSIFT_SUPP
 # Open the app on the remote machine (or use as a post-install script)
 echo "Open PanSift (PS) in menu bar"
 
-# Trying to use open only
+# Trying to use open only as the user in question
 open /Applications/Pansift.app || exit 1
 
 # osascript -e "tell application \"Pansift.app\"" -e "activate" -e "end tell"
