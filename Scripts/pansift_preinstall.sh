@@ -23,4 +23,18 @@ if [[ $(pgrep -f Pansift/telegraf-osx.conf) ]]; then
   pkill -9 -f Pansift/telegraf-osx.conf
 fi
 
+version=$(sw_vers -productVersion)
+pansift_app_full_path="/Applications/Pansift.app"
+
+if [[ $version =~ ^13 ]]; then
+	echo "Important: Found macOS version $version (Ventura)"
+	if [[ -d $pansift_app_full_path ]]; then
+		echo "Existing Pansift.app so going to remove it to address Ventura: Privacy Policy Controls (PPPC)"
+		echo "Rather than allow installer to fail (until Apple fix it)"
+		sudo rm -rf $pansift_app_full_path
+	fi 
+else
+	echo "Found macOS version: $version"
+fi
+
 exit
