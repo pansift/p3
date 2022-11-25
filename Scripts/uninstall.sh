@@ -22,7 +22,7 @@ echo "Running as user: $currentuser"
 # Source settings for this script
 install_path="/Applications/Pansift.app"
 
-preferences="$install_path"/Contents/Library/Preferences/Pansift/pansift.conf
+preferences="$install_path"/Contents/Resources/Preferences/pansift.conf
 if test -f "$preferences"; then
 	source "$preferences"
 else
@@ -120,7 +120,7 @@ sudo pkill -9 -f Pansift/telegraf
 
 echo "=========================================================="
 echo "Check Applications and move Pansift to Trash if requried."
-echo "Logg in to https://pansift.com to request data deletion, "
+echo "Log in to https://pansift.com to request data deletion, "
 echo "or ask your administrator / managed service provider."
 echo "Note: Only Pansift admins can request web data deletions!"
 echo "=========================================================="
