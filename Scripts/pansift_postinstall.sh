@@ -21,13 +21,17 @@ function timenow {
 echo "Running PanSift: $script_name at $(timenow) with..."
 echo "Current Directory: $CURRENTDIR"
 
+currentuser=$(stat -f '%Su' /dev/console)
+echo "Switch to user: $currentuser"
+
+
 # Need a better way to get this check going on upgrades
 login_items=$(osascript -e 'tell application "System Events" to get the name of every login item')
 if [[ ! $login_items =~ Pansift ]]; then
-  echo "Going to add Pansift as a Login Item for user $USER"
+  echo "Going to add Pansift as a Login Item for user $currentuser"
   osascript -e 'tell application "System Events" to make login item at end with properties {name: "Pansift",path:"/Applications/Pansift.app", hidden:false}'
 else
-  echo "Pansift is already a Login Item for user $USER"
+  echo "Pansift is already a Login Item for user $currentuser"
 fi
 
 
@@ -41,9 +45,7 @@ sudo xattr -r -d com.apple.quarantine /Applications/Pansift.app
 # Can't use this as it asks for more permissions during the installer app, needs to live elsewhere
 # osascript -e 'tell application "System Events" to make login item at end with properties {path:"/Applications/Pansift.app", hidden:false, name:"Pansift"}'
 
-currentuser=$(stat -f '%Su' /dev/console)
-echo "Switch to user: $currentuser"
-sudo -H -u $(stat -f "%Su" /dev/console) /bin/bash <<'END'
+sudo -H -u $currentuser /bin/bash <<'END'
 echo "HOME is $HOME"
 
 # Sync files as a backup incase the app boostrap can not.
