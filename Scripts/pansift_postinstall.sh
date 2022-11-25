@@ -21,6 +21,15 @@ function timenow {
 echo "Running PanSift: $script_name at $(timenow) with..."
 echo "Current Directory: $CURRENTDIR"
 
+# Need a better way to get this check going on upgrades
+login_items=$(osascript -e 'tell application "System Events" to get the name of every login item')
+if [[ ! $login_items =~ Pansift ]]; then
+  echo "Going to add Pansift as a Login Item for user $USER"
+  osascript -e 'tell application "System Events" to make login item at end with properties {name: "Pansift",path:"/Applications/Pansift.app", hidden:false}'
+else
+  echo "Pansift is already a Login Item for user $USER"
+fi
+
 
 sleep 3 # Wait for slower disks to finish the Pansift app copy though this should not be necessary
 
