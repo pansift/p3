@@ -15,16 +15,23 @@ function timenow {
 echo "Running PanSift: $script_name at $(timenow) with..."
 echo "Current Directory: $CURRENTDIR"
 
-
 currentuser=$(stat -f '%Su' /dev/console)
-echo "Switch to user: $currentuser"
-sudo -H -u $(stat -f "%Su" /dev/console) /bin/bash <<'END'
-echo "HOME is $HOME"
+echo "Running as user: $currentuser"
+# sudo -H -u $(stat -f "%Su" /dev/console) /bin/bash <<'END'
 
-preferences="$HOME"/Library/Preferences/Pansift/pansift.conf
+# Source settings for this script
+install_path="/Applications/Pansift.app"
+
+preferences="$install_path"/Contents/Library/Preferences/Pansift/pansift.conf
 if test -f "$preferences"; then
 	source "$preferences"
+else
+	echo "Can not find pansift.conf preferences file... exiting"
+	exit 1
 fi
+
+echo "Getting user password if required:"
+sudo ls
 
 pansift_uuid_file="$PANSIFT_PREFERENCES"/pansift_uuid.conf
 if test -f "$pansift_uuid_file"; then
@@ -55,9 +62,9 @@ else
 fi
 echo
 
-pkill -9 -f Pansift.app
-defaults delete com.pansift.p3bar
-osascript -e 'tell application "System Events" to delete login item "Pansift"'
+sudo pkill -9 -f Pansift.app
+sudo defaults delete com.pansift.p3bar
+sudo osascript -e 'tell application "System Events" to delete login item "Pansift"'
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 	echo "Not supported on Linux yet" 
@@ -65,41 +72,31 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
 	# Mac OSX
 	# Scripts to Trash
 	if [[ -d "$PANSIFT_SCRIPTS" ]]; then
-		cp -R "$PANSIFT_SCRIPTS" "$HOME"/.Trash
-		cd "$PANSIFT_SCRIPTS" && rm -rf ../Pansift/*
-		cd .. && rmdir ./Pansift
-		cd "$HOME"
+		cd "$PANSIFT_SCRIPTS" && sudo rm -rf ../Pansift/*
+		cd .. && sudo rmdir ./Pansift
 	fi
 	# Conf files
 	if [[ -d "$PANSIFT_PREFERENCES" ]]; then
 		if [[ -f "$PANSIFT_PREFERENCES"/pansift_token.conf ]]; then
-			rm "$PANSIFT_PREFERENCES"/pansift_token.conf 
+			sudo rm "$PANSIFT_PREFERENCES"/pansift_token.conf 
 		fi
-		cp -R "$PANSIFT_PREFERENCES" "$HOME"/.Trash
-		cd "$PANSIFT_PREFERENCES" && rm -rf ../Pansift/*
-		cd .. && rmdir ./Pansift
-		cd "$HOME"
+		cd "$PANSIFT_PREFERENCES" && sudo rm -rf ../Pansift/*
+		cd .. && sudo rmdir ./Pansift
 	fi
 	# /Applications
 	if [[ -d "/Applications/Pansift.app" ]]; then
-		cp -R /Applications/Pansift.app "$HOME"/.Trash
 		cd /Applications 
-		rm -rf ./Pansift.app &
-		wait $!
+		sudo rm -rf ./Pansift.app
 	fi
 	# Logs
 	if [[ -d "$PANSIFT_LOGS" ]]; then
-		cp -R "$PANSIFT_LOGS" "$HOME"/.Trash
-		cd "$PANSIFT_LOGS" && rm -rf ../Pansift/*
-		cd .. && rmdir ./Pansift
-		cd "$HOME"
+		cd "$PANSIFT_LOGS" && sudo rm -rf ../Pansift/*
+		cd .. && sudo rmdir ./Pansift
 	fi
 	# Telegraf Support
 	if [[ -d "$PANSIFT_SUPPORT" ]]; then
-		cp -R "$PANSIFT_SUPPORT" "$HOME"/.Trash
-		cd "$PANSIFT_SUPPORT" && rm -rf ../Pansift/*
-		cd .. && rmdir ./Pansift
-		cd "$HOME"
+		cd "$PANSIFT_SUPPORT" && sudo rm -rf ../Pansift/*
+		cd .. && sudo rmdir ./Pansift
 	fi
 elif [[ "$OSTYPE" == "cygwin" ]]; then
 	# POSIX compatibility layer and Linux environment emulation for Windows
@@ -117,16 +114,15 @@ else
 	echo "Not supported on this platform yet"
 fi
 
-pkill -9 -f Pansift/telegraf
+sudo pkill -9 -f Pansift/telegraf
 #launchctl unload -w ~/Library/LaunchAgents/com.pansift.p3bar
 # Need to find where the launchagent went in Big Sur?
 
 echo "=========================================================="
-echo "Now please empty your Trash at your discretion"
-echo "And log in to https://pansift.com to request data deletion"
-echo "Note: Only account admins can request deletions!"
+echo "Check Applications and move Pansift to Trash if requried."
+echo "Logg in to https://pansift.com to request data deletion, "
+echo "or ask your administrator / managed service provider."
+echo "Note: Only Pansift admins can request web data deletions!"
 echo "=========================================================="
-
-END 
 
 exit
