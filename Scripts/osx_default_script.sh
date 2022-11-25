@@ -610,6 +610,7 @@ wlan_measure () {
 		wlan_current_phy_mode=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "PHY Mode:" | head -n1 | cut -d':' -f2- | remove_chars)
 		# We need to take in to account the following 2 states of init / associating where much of the data is unavailable.
 	elif [[ "$wlan_state" == "init" ]] || [[ "$wlan_state" == "associating" ]] || [[ "$wlan_state" == "authenticating" ]]; then
+		wlan_op_mode="none"
 		wlan_80211_auth="none"
 		wlan_link_auth="none" # Though this is available for init
 		wlan_current_phy_mode="none"
@@ -629,6 +630,7 @@ wlan_measure () {
 	else
 		# This can happen in a VM where there is no wlan_state but the airport tool still works and returns blank
 		wlan_state="unknown"
+		wlan_op_mode="none"
 		wlan_80211_auth="none"
 		wlan_link_auth="none" # Though this is available for init
 		wlan_current_phy_mode="none"
