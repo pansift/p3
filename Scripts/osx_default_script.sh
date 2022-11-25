@@ -528,7 +528,7 @@ wlan_measure () {
 	# Here we grab more information about the local airport card or about the currently connected network (not available above)
 	wlan_sp_airport_data_type=$(system_profiler SPAirPortDataType)
 	wlan_connected=$(echo -n "$airport_output" | grep -q 'AirPort: Off' && echo -n 'false' || echo -n 'true')
-	if [ $wlan_connected == "true" ]; then
+	if [[ $wlan_connected == "true" ]] && [[ ! -z "$wlan_connected" ]]; then
 		wlan_state=$(echo -n "$airport_output" | egrep -i '[[:space:]]state' | cut -d':' -f2- | remove_chars) 
 		# There are states of init (problematic for stats), authenticating, associating (also problematic), scanning, running
 		if [[ $wlan_state == "scanning" ]] || [[ $wlan_state == "running" ]]; then
@@ -608,6 +608,8 @@ wlan_measure () {
 		fi
 
 		wlan_current_phy_mode=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "PHY Mode:" | head -n1 | cut -d':' -f2- | remove_chars)
+		wlan_supported_phy_mode=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "Supported PHY Modes" | cut -d':' -f2- | remove_chars)
+		wlan_supported_channels=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "Supported Channels:" | head -n1 | cut -d':' -f2- | remove_chars_delimit_colon)
 		# We need to take in to account the following 2 states of init / associating where much of the data is unavailable.
 	elif [[ "$wlan_state" == "init" ]] || [[ "$wlan_state" == "associating" ]] || [[ "$wlan_state" == "authenticating" ]]; then
 		wlan_op_mode="none"
@@ -627,6 +629,8 @@ wlan_measure () {
 		wlan_mcs_i=-1i # MCS can be 0 as per https://mcsindex.com/
 		wlan_last_assoc_status=-1i
 		wlan_number_spatial_streams=0i
+		wlan_supported_phy_mode=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "Supported PHY Modes" | cut -d':' -f2- | remove_chars)
+		wlan_supported_channels=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "Supported Channels:" | head -n1 | cut -d':' -f2- | remove_chars_delimit_colon)
 	else
 		# This can happen in a VM where there is no wlan_state but the airport tool still works and returns blank
 		wlan_state="unknown"
@@ -634,6 +638,7 @@ wlan_measure () {
 		wlan_80211_auth="none"
 		wlan_link_auth="none" # Though this is available for init
 		wlan_current_phy_mode="none"
+		wlan_supported_phy_mode="none"
 		wlan_channel_i=0i
 		wlan_width=-1i # Can we default to 20 (20MHz) i.e. does 0 mean 20, what about .ax?
 		wlan_rssi=0i
@@ -647,9 +652,8 @@ wlan_measure () {
 		wlan_mcs_i=-1i # MCS can be 0 as per https://mcsindex.com/
 		wlan_last_assoc_status=-1i
 		wlan_number_spatial_streams=0i
+		wlan_supported_channels=""
 		fi
-		wlan_supported_phy_mode=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "Supported PHY Modes" | cut -d':' -f2- | remove_chars)
-		wlan_supported_channels=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "Supported Channels:" | head -n1 | cut -d':' -f2- | remove_chars_delimit_colon)
 	else
 		# set all values null as can not have an empty tag and safer than in the fieldset for everything?
 		# Note: We can do this with variable expansion such as ${wlan_state:='none'} in the tagset/fieldset
