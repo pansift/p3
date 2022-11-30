@@ -7,12 +7,13 @@
 # Being super verbose and as careful as can be with "rm"
 
 CURRENTDIR="$(pwd)"
+SCRIPT_NAME=$(basename "$0")
 
 function timenow {
   date "+%Y%m%dT%H%M%S%z"
 }
 
-echo "Running PanSift: $script_name at $(timenow) with..."
+echo "Running PanSift: $SCRIPT_NAME at $(timenow) with..."
 echo "Current Directory: $CURRENTDIR"
 
 currentuser=$(stat -f '%Su' /dev/console)
