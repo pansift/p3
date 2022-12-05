@@ -10,26 +10,29 @@
 # set -e
 # set -vx
 
-script_name=$(basename "$0")
+scriptName=$(basename "$0")
 
-CURRENTDIR="$(pwd)"
+currentDir="$(pwd)"
 
 function timenow {
 	date "+%Y%m%dT%H%M%S%z"
 }
 
-echo "Running PanSift: $script_name at $(timenow) with..."
-echo "Current Directory: $CURRENTDIR"
+echo "Running PanSift: $scriptName at $(timenow) with..."
+echo "Current Directory: $currentDir"
+
+# currentuser=$(stat -f '%Su' /dev/console)
+currentUser=$( echo "show State:/Users/ConsoleUser" | scutil | awk '/Name :/ { print $3 }' )
 
 # Login Items is not the best way for addressing a reinstall
 # It also doesn't work well as it prompts the user to give permissions
 # This asks for more permissions during the installer app, needs to live elsewhere?
 login_items=$(osascript -e 'tell application "System Events" to get the name of every login item')
 if [[ ! $login_items =~ Pansift ]]; then
-  echo "Going to add Pansift as a Login Item for user $currentuser"
-  osascript -e 'tell application "System Events" to make login item at end with properties {name: "Pansift",path:"/Applications/Pansift.app", hidden:false}'
+  echo "Going to add Pansift as a Login Item for user $currentUser"
+  sudo -H -u $currentUser osascript -e 'tell application "System Events" to make login item at end with properties {name: "Pansift",path:"/Applications/Pansift.app", hidden:false}'
 else
-  echo "Pansift is already a Login Item for user $currentuser"
+  echo "Pansift is already a Login Item for user $currentUser"
 fi
 
 sleep 3 # Wait for slower disks to finish the Pansift app copy though this should not be necessary
@@ -39,9 +42,8 @@ sleep 3 # Wait for slower disks to finish the Pansift app copy though this shoul
 sudo xattr -r -d com.apple.quarantine /Applications/Pansift.app
 
 
-currentuser=$(stat -f '%Su' /dev/console)
-echo "Switch to user: $currentuser"
-sudo -H -u $currentuser /bin/bash <<'END'
+echo "Switch to user: $currentUser"
+sudo -H -u $currentUser /bin/bash <<'END'
 echo "HOME is $HOME"
 
 # Sync files as a backup incase the app boostrap can not.

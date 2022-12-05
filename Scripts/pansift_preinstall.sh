@@ -4,15 +4,15 @@
 
 # set -e
 # set -vx
-script_name=$(basename "$0")
+scriptName=$(basename "$0")
 
-CURRENTDIR="$(pwd)"
+currentDir="$(pwd)"
 
 function timenow {
 	date "+%Y%m%dT%H%M%S%z"
 }
-echo "Running PanSift: $script_name at $(timenow) with..."
-echo "Current Directory: $CURRENTDIR"
+echo "Running PanSift: $scriptName at $(timenow) with..."
+echo "Current Directory: $currentDir"
 
 echo "Shutting down any existing Pansift.app instances and related telegraf"
 # Shut down the current Pansift.app if there is one
