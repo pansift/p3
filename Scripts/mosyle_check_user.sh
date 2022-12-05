@@ -31,10 +31,18 @@ userHomeFolder=$(dscl . -read /users/${currentUser} NFSHomeDirectory | cut -d " 
 echo "$currentUser HOME folder is: $userHomeFolder"
 
 echo "Ensuring we run as the logged in user..."
+
 sudo -H -u $currentUser userHomeFolder="$userHomeFolder" /bin/bash <<'END'
-echo "HOME is $userHomeFolder"
+echo "userHomeFolder: $userHomeFolder and HOME: $HOME"
+echo "Contents of $userHomeFolder/Library/Preferences/Pansift"
 ls -al "$userHomeFolder"/Library/Preferences/Pansift
+
+echo "Contents of $userHomeFolder/Library/Application\ Scripts/Pansift"
 ls -alR "$userHomeFolder"/Library/Application\ Scripts/Pansift
+
+echo "Contents of $userHomeFolder/Library/Application\ Support/Pansift"
 ls -alR "$userHomeFolder"/Library/Application\ Support/Pansift
+
+echo "Contents of $userHomeFolder/Library/Logs/Pansift"
 ls -alR "$userHomeFolder"/Library/Logs/Pansift
 END
