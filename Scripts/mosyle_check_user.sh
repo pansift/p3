@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
-# To be run in Mosyle "Custom Command" with "Execution Settings" of 
-# "Every user sign-in" and "Only once (Event Required)"
+# To be run in Mosyle "Custom Command" with - "Enable Variables for this profile"
+# and also - "Execution Settings" of 
+# -- "Every user sign-in" and 
+# -- "Only once (Event Required)"
 
 # set -e
 # set -x
