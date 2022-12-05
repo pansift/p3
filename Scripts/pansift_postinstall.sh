@@ -21,6 +21,16 @@ function timenow {
 echo "Running PanSift: $script_name at $(timenow) with..."
 echo "Current Directory: $CURRENTDIR"
 
+# Login Items is not the best way for addressing a reinstall
+# It also doesn't work well as it prompts the user to give permissions
+# This asks for more permissions during the installer app, needs to live elsewhere?
+login_items=$(osascript -e 'tell application "System Events" to get the name of every login item')
+if [[ ! $login_items =~ Pansift ]]; then
+  echo "Going to add Pansift as a Login Item for user $currentuser"
+  osascript -e 'tell application "System Events" to make login item at end with properties {name: "Pansift",path:"/Applications/Pansift.app", hidden:false}'
+else
+  echo "Pansift is already a Login Item for user $currentuser"
+fi
 
 sleep 3 # Wait for slower disks to finish the Pansift app copy though this should not be necessary
 
@@ -67,17 +77,6 @@ rsync -vvaru "$install_path"/Contents/Resources/Preferences/*.conf "$PANSIFT_PRE
 
 # Telegraf Support
 rsync -vvaru "$install_path"/Contents/Resources/Support/telegraf* "$PANSIFT_SUPPORT"
-
-# Need a better way to get this check going on upgrades
-# Add back in the Login Item in case this is a reinstall
-# This asks for more permissions during the installer app, needs to live elsewhere?
-login_items=$(osascript -e 'tell application "System Events" to get the name of every login item')
-if [[ ! $login_items =~ Pansift ]]; then
-  echo "Going to add Pansift as a Login Item for user $currentuser"
-  osascript -e 'tell application "System Events" to make login item at end with properties {name: "Pansift",path:"/Applications/Pansift.app", hidden:false}'
-else
-  echo "Pansift is already a Login Item for user $currentuser"
-fi
 
 # Open the app on the remote machine (or use as a post-install script)
 echo "Open PanSift (PS) in menu bar"
