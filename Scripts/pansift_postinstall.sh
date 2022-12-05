@@ -27,15 +27,16 @@ currentUser=$( echo "show State:/Users/ConsoleUser" | scutil | awk '/Name :/ { p
 # Login Items is not the best way for addressing a reinstall
 # It also doesn't work well as it prompts the user to give permissions
 # This asks for more permissions during the installer app, needs to live elsewhere?
-login_items=$(osascript -e 'tell application "System Events" to get the name of every login item')
-if [[ ! $login_items =~ Pansift ]]; then
-  echo "Going to add Pansift as a Login Item for user $currentUser"
-  sudo -H -u $currentUser osascript -e 'tell application "System Events" to make login item at end with properties {name: "Pansift",path:"/Applications/Pansift.app", hidden:false}'
-else
-  echo "Pansift is already a Login Item for user $currentUser"
-fi
 
-sleep 3 # Wait for slower disks to finish the Pansift app copy though this should not be necessary
+#login_items=$(osascript -e 'tell application "System Events" to get the name of every login item')
+#if [[ ! $login_items =~ Pansift ]]; then
+#  echo "Going to add Pansift as a Login Item for user $currentUser"
+#  sudo -H -u $currentUser osascript -e 'tell application "System Events" to make login item at end with properties {name: "Pansift",path:"/Applications/Pansift.app", hidden:false}'
+#else
+#  echo "Pansift is already a Login Item for user $currentUser"
+#fi
+
+sleep 3 # Wait for slower disks to finish the Pansift app copy though this should not be necessary but was in VM
 
 # Remove the interactive Internet app warning (Not required if packaged and signed)
 # echo "Unsetting flag on quarantine of app which requires user interaction..."
