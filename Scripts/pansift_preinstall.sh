@@ -33,7 +33,7 @@ if [[ $version =~ ^13 ]]; then
 		cd /Applications
 		sudo rm -rf Pansift.app
 	else
-		echo "No existing Pansift.app found in /Applications so continuiing as per normal."
+		echo "No existing Pansift.app found in /Applications so continuing as per normal."
 	fi 
 else
 	echo "Found macOS version: $version"
