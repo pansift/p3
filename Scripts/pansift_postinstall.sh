@@ -81,19 +81,19 @@ rsync -vvaru "$install_path"/Contents/Resources/Preferences/*.conf "$PANSIFT_PRE
 # Telegraf Support
 rsync -vvaru "$install_path"/Contents/Resources/Support/telegraf* "$PANSIFT_SUPPORT"
 
-# Open the app on the remote machine (or use as a post-install script)
-echo "Open PanSift (PS) in menu bar"
-
-# Trying to use open only as the user in question
-open /Applications/Pansift.app || exit 1
-
 # osascript -e "tell application \"Pansift.app\"" -e "activate" -e "end tell"
 # "activate" takes focus but also issues a run whereas "launch" doesn't!
 # osascript -e "tell application \"Pansift.app\"" -e "launch" -e "end tell"
 
 END
 
-# Another option here outside of the END
-# sudo -H -u $currentuser open /Applications/Pansift.app
+# Trying to use open only if the non-root or non-loginwindow user has a session
+
+if [[ -z $currentUser || $currentUser == "root" || $currentUser == "loginwindow" ]]; then
+	echo "Not going to open Pansift.app as no user logged in... is this an update only?"
+else
+	echo "Opening Pansift.app (PS) as user: $currentUser"
+	sudo -H -u $currentUser open /Applications/Pansift.app
+fi
 
 exit
