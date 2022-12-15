@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # set -x
-# verboseMode=1
+verboseMode=1
 
 # Forked from https://github.com/SecondSonConsulting/macOS-Scripts/blob/main/installGenericPKG.sh
 # Thanks to: Trevor Sysock (aka @bigmacadmin) at Second Son Consulting Inc.
@@ -164,7 +164,7 @@ function preinstall_summary_report()
 	else
 		echo "PS: Continuing and note user: $currentUser is logged in and available."
 		userHomeFolder=$(dscl . -read /users/${currentUser} NFSHomeDirectory | cut -d " " -f 2)
-		if [[ -s "$userHomeFolder/Library/Preferences/pansift_uuid.conf" && -s "$userHomeFolder/Library/Preferences/pansift_ingest.conf" && "$userHomeFolder/Library/Preferences/pansift_token.conf" ]]; then
+		if [[ -f "$userHomeFolder/Library/Preferences/Pansift/pansift_uuid.conf" && -f "$userHomeFolder/Library/Preferences/Pansift/pansift_ingest.conf" && -f "$userHomeFolder/Library/Preferences/Pansift/pansift_token.conf" ]]; then
 			echo "PS: Found Pansift preferences files for bucket UUID, ingest URL, and write/ZTP token, continuing..."
 		else
     	echo "PS: No existing PanSift bucket UUID, ingest URL, or token found in: $userHomeFolder/Library/Preferences/"
