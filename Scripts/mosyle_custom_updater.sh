@@ -8,40 +8,28 @@
 
 scriptVersion="v2.2"
 
-# Important: This is not an install script for Mosyle but an updater *only* for PanSift so 
-# there must be an existing install or it will exit.
+# Important: This is not an install script for PanSift on Mosyle but an *UPDATER ONLY* for PanSift so 
+# there must be an existing install or it will exit. Use the unattended preinstall scripts to 
+# pre-position configuration for a user.
 
-if [[ -d /Applications/Pansift.app ]]; then
-	echo "PS: Found an existing PanSift install so will continue..."
-else
-	echo "PS: No existing PanSift install found, please use an unattended installer for a logged in user."
-	echo "PS: Exiting as an error."
-	exit 1
-fi
-
-scriptName=$(basename "$0")
-currentDir="$(pwd)"
-
-function timenow {
-  date "+%Y%m%dT%H%M%S%z"
-}
-
-echo "PS: Running PanSift: $scriptName at $(timenow) with..."
-echo "PS: Current Directory: $currentDir"
-
+# Globally check currentUser
 # currentuser=$(stat -f '%Su' /dev/console)
 currentUser=$( echo "show State:/Users/ConsoleUser" | scutil | awk '/Name :/ { print $3 }' )
-if [[ -z $currentUser || $currentUser == "root" || $currentUser == "loginwindow" ]]; then
-  echo "Not going to open Pansift.app as no user logged in... is this an update only?"
-else
-  echo "Opening Pansift.app (PS) as user: $currentUser"
-  sudo -H -u $currentUser open /Applications/Pansift.app
-fi
-
-
 
 # Usage:
-# Can be run as a Mosyle Custom Command or locally.
+
+# To be run as a Mosyle Custom Command with the "Execution Settings" preferable as:
+# "Every User Sign-in"
+## "Only Once (Event Required)"
+## and then use "Clear Results" to force push another run on user login.
+
+# IMPORTANT: You *can* run this script without a user logged in but please note there must
+# be an existing install and it reaches our to Github for a download so do not schedule this
+# frequently, and/or it's recommended to always check packages yourself with tools like
+# "Suspicious Package" before installing to a client base so you know what it does and how.
+# e.g. https://mothersruin.com/software/SuspiciousPackage/
+
+# Extra run notes: Can be run as a Mosyle Custom Command or locally.
 # Any step in the script that fails will produce an easily read error report to standard output.
 # Uncomment set -x and/or verboseMode=1 at the top of the script for advanced debugging
 
@@ -64,18 +52,21 @@ fi
 #
 
 
-######################################
+##########################################
 #
-# User Configuration
+# YOU NEED TO CHECK / UPDATE THIS SECTION
 #
-######################################
+##########################################
 
 #This is low consequence, and only used for the temp directory. Make it something meaningful to you. No special characters.
 #This can typically be left as default: nameOfInstall="InstallPKG"
 nameOfInstall="pansift_updater_pkg"
 
-#Where is the PKG located? Update this for your PanSift account or the version you want.
+#Where is the PKG located? Update this for your PanSift account or the version you want/need.
+
+# ************** UPDATE UPDATE UPDATE **************
 pathToPKG="https://github.com/pansift/p3/raw/main/Pansift-6d0280d1-3eed-4246-8684-80efb2370eab.pkg"
+# ************** UPDATE UPDATE UPDATE **************
 
 #TeamID value is optional, but recommended. If not in use, this should read: expectedTeamID=""
 expectedTeamID=""
@@ -83,11 +74,11 @@ expectedTeamID=""
 #MD5 value is optional, but recommended. If not in use, this should read: expectedMD5=""
 expectedMD5=""
 
-######################################
+#########################################
 #
-# Do not modify below for normal use 
+# DO NOT MODIFY THE BELOW FOR NORMAL USE
 #
-######################################
+#########################################
 
 
 #################
@@ -98,18 +89,18 @@ function verify_root_user()
 {
 	# check we are running as root
 	if [[ $(id -u) -ne 0 ]]; then
-	echo "PS: ERROR: This script must be run as root **EXITING**"
-	exit 1
+		echo "PS: ERROR: This script must be run as root **EXITING**"
+		exit 1
 	fi
 
 }
 
 function rm_if_exists()
 {
-    #Only rm something if the variable has a value and the thing exists!
-    if [ -n "${1}" ] && [ -e "${1}" ];then
-        rm -r "${1}"
-    fi
+	#Only rm something if the variable has a value and the thing exists!
+	if [ -n "${1}" ] && [ -e "${1}" ];then
+		rm -r "${1}"
+	fi
 }
 
 #This function exits the script, deleting the temp files. first argument is the exit code, second argument is the message reported.
@@ -134,22 +125,54 @@ function no_sleeping()
 # Used in debugging to give feedback via standard out
 function debug_message()
 {
-#set +x
-    if [ "$verboseMode" = 1 ]; then
-    	/bin/echo "PS: DEBUG: $*"
-    fi
-#set -x
+	#set +x
+	if [ "$verboseMode" = 1 ]; then
+		/bin/echo "PS: DEBUG: $*"
+	fi
+	#set -x
+}
+
+# General time format 
+
+function timenow {
+	date "+%Y%m%dT%H%M%S%z"
 }
 
 # This is a report regarding the installation details that gets printed prior to the script actually running
 function preinstall_summary_report()
 {
-	echo "$scriptName - $scriptVersion"
+	scriptName=$(basename "$0")
+	currentDir="$(pwd)"
+
+	echo "PS: Running PanSift: $scriptName - $scriptVersion"
 	echo "PS: Date/time: $(timenow)"
-	echo "PS: Location: $pathToPKG"
-	echo "PS: Location Type: $pkgLocationType"
-	echo "PS: Expected MD5 is: $expectedMD5"
-	echo "PS: Expected TeamID is: $expectedTeamID"
+
+	if [[ -z $currentUser || $currentUser == "root" || $currentUser == "loginwindow" ]]; then
+		echo "PS: Continuing with no active user logged in."
+  	if [[ -d /Applications/Pansift.app ]]; then
+    	echo "PS: Continuing as found an existing Pansift.app"
+  	else
+    	echo "PS: No existing PanSift install found, please use an unattended installer for a logged in user."
+    	echo "PS: Exiting with error as no existing install found (this is purely an updater script)."
+    	exit 1
+  	fi
+	else
+		echo "PS: Continuing and note user: $currentUser is logged in and available."
+		userHomeFolder=$(dscl . -read /users/${currentUser} NFSHomeDirectory | cut -d " " -f 2)
+		if [[ -s "$userHomeFolder/Library/Preferences/pansift_uuid.conf" && -s "$userHomeFolder/Library/Preferences/pansift_ingest.conf" && "$userHomeFolder/Library/Preferences/pansift_token.conf" ]]; then
+			echo "PS: Found Pansift preferences files for bucket UUID, ingest URL, and write/ZTP token, continuing..."
+		else
+    	echo "PS: No existing PanSift bucket UUID, ingest URL, or token found in: $userHomeFolder/Library/Preferences/"
+			echo "PS: Please use an unattended installer with a logged in user to preposition settings."
+    	echo "PS: Exiting with an error as no Pansift settings or tokens found for: $currentUser in: $userHomeFolder/Library/Preferences/"
+    	exit 1
+		fi 
+	fi
+	echo "PS: Current Directory: $currentDir"
+	echo "PS: PKG Location: $pathToPKG"
+	echo "PS: PKG Location Type: $pkgLocationType"
+	echo "PS: PKG Expected MD5 is: $expectedMD5"
+	echo "PS: PKG Expected TeamID is: $expectedTeamID"
 	#If there is no TeamID and no MD5 verification configured print a warning
 	if [ -z "$expectedTeamID" ] && [ -z "$expectedMD5" ]; then
 		echo "PS: WARNING: No verification of the PKG before it is installed. Provide an MD5 or TeamID for better security and stability.**"
@@ -181,7 +204,7 @@ function verify_pkg()
 	# If an expectedMD5 was given, test against the actual installer and exit upon mismatch
 	actualMD5="$(md5 -q "$pkgInstallerPath")"
 	if [ -n "$expectedMD5" ] && [ "$actualMD5" != "$expectedMD5" ]; then
-	cleanup_and_exit 1 "PS: ERROR - MD5 mismatch. Exiting."
+		cleanup_and_exit 1 "PS: ERROR - MD5 mismatch. Exiting."
 	fi
 
 	# If an expectedTeamID was given, test against the actual installer and exit upon mismatch
@@ -206,7 +229,7 @@ function install_pkg()
 
 	#Verify install exited with 0
 	if [ "$installResult" != 0 ]; then
-			cleanup_and_exit 1 "PS: Installation command failed: $installExitMessage"
+		cleanup_and_exit 1 "PS: Installation command failed: $installExitMessage"
 	fi
 
 }
