@@ -15,6 +15,8 @@ scriptVersion="v2.2"
 # Globally check currentUser
 # currentuser=$(stat -f '%Su' /dev/console)
 currentUser=$( echo "show State:/Users/ConsoleUser" | scutil | awk '/Name :/ { print $3 }' )
+scriptName=$(/usr/bin/basename "$0")
+currentDir="$(/bin/pwd)"
 
 # Usage:
 
@@ -94,7 +96,7 @@ function verify_root_user()
 {
 	# check we are running as root
 	if [[ $(id -u) -ne 0 ]]; then
-		echo "PS: ERROR: This script must be run as root **EXITING**"
+		/bin/echo "PS: ERROR: This script must be run as root **EXITING**"
 		exit 1
 	fi
 
@@ -104,7 +106,7 @@ function rm_if_exists()
 {
 	#Only rm something if the variable has a value and the thing exists!
 	if [ -n "${1}" ] && [ -e "${1}" ];then
-		rm -r "${1}"
+		/bin/rm -r "${1}"
 	fi
 }
 
@@ -112,9 +114,9 @@ function rm_if_exists()
 #example: cleanup_and_exit 1 "Download Failed."
 function cleanup_and_exit()
 {
-	echo "${2}"
+	/bin/echo "${2}"
 	rm_if_exists "$tmpDir"
-	kill "$caffeinatepid" > /dev/null 2>&1
+	/bin/kill "$caffeinatepid" > /dev/null 2>&1
 	exit "$1"
 }
 
@@ -140,53 +142,51 @@ function debug_message()
 # General time format 
 
 function timenow {
-	date "+%Y%m%dT%H%M%S%z"
+	/bin/date "+%Y%m%dT%H%M%S%z"
 }
 
 # This is a report regarding the installation details that gets printed prior to the script actually running
 function preinstall_summary_report()
 {
-	scriptName=$(basename "$0")
-	currentDir="$(pwd)"
 
-	echo "PS: Running PanSift: $scriptName - $scriptVersion"
-	echo "PS: Date/time: $(timenow)"
+	/bin/echo "PS: Running PanSift: $scriptName - $scriptVersion"
+	/bin/echo "PS: Date/time: $(timenow)"
 
 	if [[ -z $currentUser || $currentUser == "root" || $currentUser == "loginwindow" ]]; then
-		echo "PS: Continuing with no active user logged in."
+		/bin/echo "PS: Continuing with no active user logged in."
   	if [[ -d /Applications/Pansift.app ]]; then
-    	echo "PS: Continuing as found an existing Pansift.app"
+    	/bin/echo "PS: Continuing as found an existing Pansift.app"
   	else
-    	echo "PS: No existing PanSift install found, please use an unattended installer for a logged in user."
+    	/bin/echo "PS: No existing PanSift install found, please use an unattended installer for a logged in user."
     	cleanup_and_exit 1 "PS: Exiting with error as no existing install found (this is purely an updater script)."
   	fi
 	else
 		echo "PS: Continuing and note user: $currentUser is logged in and available."
 		userHomeFolder=$(dscl . -read /users/${currentUser} NFSHomeDirectory | cut -d " " -f 2)
 		if [[ -s "$userHomeFolder/Library/Preferences/Pansift/pansift_uuid.conf" && -s "$userHomeFolder/Library/Preferences/Pansift/pansift_ingest.conf" && -s "$userHomeFolder/Library/Preferences/Pansift/pansift_token.conf" ]]; then
-			echo "PS: Found Pansift preferences files for bucket UUID, ingest URL, and write/ZTP token, continuing..."
+			/bin/echo "PS: Found Pansift preferences files for bucket UUID, ingest URL, and write/ZTP token, continuing..."
 		else
-    	echo "PS: No existing PanSift bucket UUID, ingest URL, or token found in: $userHomeFolder/Library/Preferences/"
-			echo "PS: Please use an unattended installer with a logged in user to preposition settings."
+    	/bin/echo "PS: No existing PanSift bucket UUID, ingest URL, or token found in: $userHomeFolder/Library/Preferences/"
+			/bin/echo "PS: Please use an unattended installer with a logged in user to preposition settings."
     	cleanup_and_exit 1 "PS: Exiting with an error as no Pansift settings or tokens found for: $currentUser in: $userHomeFolder/Library/Preferences/"
 		fi 
 	fi
-	echo "PS: Current Directory: $currentDir"
-	echo "PS: PKG Location: $pathToPKG"
-	echo "PS: PKG Location Type: $pkgLocationType"
+	/bin/echo "PS: Current Directory: $currentDir"
+	/bin/echo "PS: PKG Location: $pathToPKG"
+	/bin/echo "PS: PKG Location Type: $pkgLocationType"
 	if [[ -z $expectedMD5 ]]; then 
-		echo "PS: No MD5 supplied."
+		/bin/echo "PS: No MD5 supplied."
 	else
-		echo "PS: PKG Expected MD5 is: $expectedMD5"
+		/bin/echo "PS: PKG Expected MD5 is: $expectedMD5"
 	fi 
 	if [[ -z $expectedTeamID ]]; then
-		echo "PS: No TeamID supplied."
+		/bin/echo "PS: No TeamID supplied."
 	else
-		echo "PS: PKG Expected TeamID is: $expectedTeamID"
+		/bin/echo "PS: PKG Expected TeamID is: $expectedTeamID"
 	fi
 	#If there is no TeamID and no MD5 verification configured print a warning
 	if [ -z "$expectedTeamID" ] && [ -z "$expectedMD5" ]; then
-		echo "PS: WARNING: No verification of the PKG before it is installed. Provide an MD5 or TeamID for better security and stability.**"
+		/bin/echo "PS: WARNING: No verification of the PKG before it is installed. Provide an MD5 or TeamID for better security and stability.**"
 	fi
 }
 
@@ -197,7 +197,7 @@ function download_pkg()
 	if [ "$pkgLocationType" = "url" ]; then
 		pkgInstallerPath="$tmpDir"/"$nameOfInstall".pkg
 		#Download installer to tmp folder
-		curl -LJs "$pathToPKG" -o "$pkgInstallerPath"
+		/usr/bin/curl -LJs "$pathToPKG" -o "$pkgInstallerPath"
 		downloadResult=$?
 		#Verify curl exited with 0
 		if [ "$downloadResult" != 0 ]; then
