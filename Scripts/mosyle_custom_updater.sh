@@ -24,7 +24,7 @@ currentUser=$( echo "show State:/Users/ConsoleUser" | scutil | awk '/Name :/ { p
 ## and then use "Clear Results" to force push another run on user login.
 
 # IMPORTANT: You *can* run this script without a user logged in but please note there must
-# be an existing install and it reaches our to Github for a download so do not schedule this
+# be an existing install and it reaches out to Github for a download so do not schedule this
 # frequently, and/or it's recommended to always check packages yourself with tools like
 # "Suspicious Package" before installing to a client base so you know what it does and how.
 # e.g. https://mothersruin.com/software/SuspiciousPackage/
