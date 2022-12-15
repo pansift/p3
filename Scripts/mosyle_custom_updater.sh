@@ -164,7 +164,7 @@ function preinstall_summary_report()
 	else
 		echo "PS: Continuing and note user: $currentUser is logged in and available."
 		userHomeFolder=$(dscl . -read /users/${currentUser} NFSHomeDirectory | cut -d " " -f 2)
-		if [[ -f "$userHomeFolder/Library/Preferences/Pansift/pansift_uuid.conf" && -f "$userHomeFolder/Library/Preferences/Pansift/pansift_ingest.conf" && -f "$userHomeFolder/Library/Preferences/Pansift/pansift_token.conf" ]]; then
+		if [[ -s "$userHomeFolder/Library/Preferences/Pansift/pansift_uuid.conf" && -s "$userHomeFolder/Library/Preferences/Pansift/pansift_ingest.conf" && -s "$userHomeFolder/Library/Preferences/Pansift/pansift_token.conf" ]]; then
 			echo "PS: Found Pansift preferences files for bucket UUID, ingest URL, and write/ZTP token, continuing..."
 		else
     	echo "PS: No existing PanSift bucket UUID, ingest URL, or token found in: $userHomeFolder/Library/Preferences/"
