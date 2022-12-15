@@ -65,9 +65,11 @@ nameOfInstall="pansift_updater_pkg"
 #Where is the PKG located? Update this for your PanSift account or the version you want/need.
 
 # ************** UPDATE UPDATE UPDATE TO YOUR ACCOUNT SPECIFIC URL IF KNOWN **************
-pathToPKG="<update_this_to_your_dl_url_given_in_github>"
+# pathToPKG="<update_this_to_your_dl_url_given_in_github>"
 
-# Example <below> where the UUID is your cb_id (i.e. account UUID *not* bucket UUID) if provided by PanSift support.
+pathToPKG="https://pansift.com/dl/latest_pkg" # Depends on marketing site but redirects to GH latest PKG
+
+# Examples <below> where the UUID is your cb_id (i.e. account UUID *not* bucket UUID) if provided by PanSift support.
 # pathToPKG="https://github.com/pansift/p3/raw/main/Pansift-6d0280d1-3eed-4246-8684-80efb2370eab.pkg"
 # ************** UPDATE UPDATE UPDATE **************
 
@@ -174,8 +176,16 @@ function preinstall_summary_report()
 	echo "PS: Current Directory: $currentDir"
 	echo "PS: PKG Location: $pathToPKG"
 	echo "PS: PKG Location Type: $pkgLocationType"
-	echo "PS: PKG Expected MD5 is: $expectedMD5"
-	echo "PS: PKG Expected TeamID is: $expectedTeamID"
+	if [[ -z $expectedMD5 ]]; then 
+		echo "PS: No MD5 supplied."
+	else
+		echo "PS: PKG Expected MD5 is: $expectedMD5"
+	fi 
+	if [[ -z $expectedTeamID ]]; then
+		echo "PS: No TeamID supplied."
+	else
+		echo "PS: PKG Expected TeamID is: $expectedTeamID"
+	fi
 	#If there is no TeamID and no MD5 verification configured print a warning
 	if [ -z "$expectedTeamID" ] && [ -z "$expectedMD5" ]; then
 		echo "PS: WARNING: No verification of the PKG before it is installed. Provide an MD5 or TeamID for better security and stability.**"
