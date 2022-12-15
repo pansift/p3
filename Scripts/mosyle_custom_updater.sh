@@ -67,12 +67,12 @@ nameOfInstall="pansift_updater_pkg"
 #Where is the PKG located? Update this for your PanSift account or the version you want/need.
 
 # ************** UPDATE UPDATE UPDATE TO YOUR ACCOUNT SPECIFIC URL IF KNOWN **************
-# pathToPKG="<update_this_to_your_dl_url_given_in_github>"
 
-pathToPKG="https://pansift.com/dl/latest_pkg" # Depends on marketing site but redirects to GH latest PKG
+# pathToPKG="https://pansift.com/dl/latest_pkg" # Depends on marketing site but redirects to GH latest PKG
 
-# Examples <below> where the UUID is your cb_id (i.e. account UUID *not* bucket UUID) if provided by PanSift support.
-# pathToPKG="https://github.com/pansift/p3/raw/main/Pansift-6d0280d1-3eed-4246-8684-80efb2370eab.pkg"
+# Example <below> where the UUID is your cb_id (i.e. account UUID *not* bucket UUID) if provided by PanSift support.
+pathToPKG="https://github.com/pansift/p3/raw/main/Pansift-6d0280d1-3eed-4246-8684-80efb2370eab.pkg"
+
 # ************** UPDATE UPDATE UPDATE **************
 
 #TeamID value is optional, but recommended. If not in use, this should read: expectedTeamID=""
