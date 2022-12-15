@@ -158,8 +158,7 @@ function preinstall_summary_report()
     	echo "PS: Continuing as found an existing Pansift.app"
   	else
     	echo "PS: No existing PanSift install found, please use an unattended installer for a logged in user."
-    	echo "PS: Exiting with error as no existing install found (this is purely an updater script)."
-    	exit 1
+    	cleanup_and_exit 1 "PS: Exiting with error as no existing install found (this is purely an updater script)."
   	fi
 	else
 		echo "PS: Continuing and note user: $currentUser is logged in and available."
@@ -169,8 +168,7 @@ function preinstall_summary_report()
 		else
     	echo "PS: No existing PanSift bucket UUID, ingest URL, or token found in: $userHomeFolder/Library/Preferences/"
 			echo "PS: Please use an unattended installer with a logged in user to preposition settings."
-    	echo "PS: Exiting with an error as no Pansift settings or tokens found for: $currentUser in: $userHomeFolder/Library/Preferences/"
-    	exit 1
+    	cleanup_and_exit 1 "PS: Exiting with an error as no Pansift settings or tokens found for: $currentUser in: $userHomeFolder/Library/Preferences/"
 		fi 
 	fi
 	echo "PS: Current Directory: $currentDir"
@@ -304,6 +302,8 @@ fi
 
 #Trap will hopefully run our exit function even if the script is cancelled or interrupted
 trap cleanup_and_exit 1 2 3 6
+
+# 1) SIGHUP 2) SIGINT 3) SIGQUIT 6) SIGABRT  
 
 #Make sure we're running with root privileges
 verify_root_user
