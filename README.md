@@ -22,9 +22,9 @@ For paid accounts (i.e. > 2 agents) please [contact support](https://pansift.com
 
 ### Step 2. Automatic Agent Configuration Staging for Multi-Agent Installs
 
-This method is required to **prevent** the ZTP (Zero Touch Provisioning) process from running by **pre-staging** the agent configuration required. It means you **must** specify the settings in advance of running the PKG installer. This ensures that agents will report to a specific and already claimed data bucket.
+This method is required to **prevent** the ZTP (Zero Touch Provisioning) process from running, It involves **pre-staging** the agent configuration and is required **before** running any PKG installer. It also means you **must** specify custom settings in a pre-install script in advance of any other steps or install. This ensures that agents will report to your specific nominated bucket.
 
-Automatic provisioning requires amending portions of the [unattended_preinstall.sh](Scripts/unattended_preinstall.sh) script and running it on remote machines **before** installing the PKG file. You must customize `3` configuration items (<BUCKET_UUID>, <INGEST_URL>, <ZTP_TOKEN>) in the [unattended_preinstall.sh](Scripts/unattended_preinstall.sh) **before** running the [Pansift PKG](https://github.com/pansift/p3/raw/main/Pansift-0.6.1.pkg) installer.
+Automatic provisioning requires amending portions of the [unattended_preinstall.sh](Scripts/unattended_preinstall.sh) script and running it on remote machines **before** installing the PKG file. You must customize `3` configuration items (<BUCKET_UUID>, <INGEST_URL>, <ZTP_TOKEN>) in the [unattended_preinstall.sh](Scripts/unattended_preinstall.sh) **before** deploying the [Pansift PKG](https://github.com/pansift/p3/raw/main/Pansift-0.6.1.pkg) installer.
 
 > :information_source: Buckets form one boundary for account based reads and agent writes. Buckets also define the test host records used by DNS, HTTP, and traces for all the agents in the bucket. Please consider what agents you want to report in to what buckets. Multiagent buckets allow you to administer a group of agents rather than the default 1-1 agent to bucket mapping.
 
