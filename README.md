@@ -12,19 +12,19 @@ Pansift is about helping others to avoid stress and stay productive with optimal
 
 You can then claim your agent from the options in the menubar or manually in the web application (using the bucket UUID code). Claiming will require you to register an account at [https://pansift.com](https://app.pansift.com/demo/logout_demo) to view your data and insights. Happy troubleshooting!
 
-## Unattended Installs (Commercial Company / Managed Services)
+## Unattended Installs (Commercial Company / Managed Service Provider)
 
 Unattended installs assume that an orchestration or MDM (Mobile Device Management) like platform is available to you. It also assumes command line and/or custom scripting access within a user's valid session and context (i.e. the targeted user). This approach also assumes you have paid for > 2 agents and want minimal interaction with the user(s) or endpoint(s) for provisioning.
 
-### 1. IT Teams and MSPs (Managed Service Providers)
+### Targeting New Buckets
 
 For paid accounts (i.e. > 2 agents) please [contact support](https://pansift.com/contact) to have a commercial _multi-agent_ bucket _pre-prepared_ for you in advance (otherwise each agent will get its own bucket on the free platform and lots of individual bucket UUIDs will need to be communicated and claimed individually). We are working to simplify and automate this process.
 
-### 2. Automatic Configuration and Claiming for Multi-Agent Installs
+### Automatic Agent Configuration and Claiming for Multi-Agent Installs
 
-This method **prevents** the ZTP (Zero Touch Provisioning) process from running by pre-staging the configuration required. It means you must specify the settings in advance. This ensures that agents will report to a specific and already claimed data bucket.
+This method is required to **prevent** the ZTP (Zero Touch Provisioning) process from running by **pre-staging** the agent configuration required. It means you **must** specify the settings in advance of running the PKG installer. This ensures that agents will report to a specific and already claimed data bucket.
 
-Automatic provisioning requires amending and running the [unattended_preinstall.sh](Scripts/unattended_preinstall.sh) on remote machines **before** installing the PKG file. You must update `3` configuration items (<BUCKET_UUID>, <INGEST_URL>, <ZTP_TOKEN>) in the [unattended_preinstall.sh](Scripts/unattended_preinstall.sh) **before** running the installer.
+Automatic provisioning requires amending portions of the [unattended_preinstall.sh](Scripts/unattended_preinstall.sh) script and running it on remote machines **before** installing the PKG file. You must update `3` configuration items (<BUCKET_UUID>, <INGEST_URL>, <ZTP_TOKEN>) in the [unattended_preinstall.sh](Scripts/unattended_preinstall.sh) **before** running the installer.
 
 > :information_source: Buckets form one boundary for account based reads and agent writes. Buckets also define the test host records used by DNS, HTTP, and traces for all the agents in the bucket. Please consider what agents you want to report in to what buckets. Multiagent buckets allow you to administer a group of agents rather than the default 1-1 agent to bucket mapping.
 
