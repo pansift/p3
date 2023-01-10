@@ -20,8 +20,6 @@ Unattended installs assume that an orchestration or MDM (Mobile Device Managemen
 
 For paid accounts (i.e. > 2 agents) please [contact support](https://pansift.com/contact) to have a commercial _multi-agent_ bucket _pre-prepared_ for you in advance (otherwise each agent will get its own bucket on the free platform and lots of individual bucket UUIDs will need to be communicated and claimed individually). We are working to simplify and automate this process.
 
-Note: This step will be automated in future.
-
 ### Step 2. Automatic Agent Configuration Staging for Multi-Agent Installs
 
 This method is required to **prevent** the ZTP (Zero Touch Provisioning) process from running by **pre-staging** the agent configuration required. It means you **must** specify the settings in advance of running the PKG installer. This ensures that agents will report to a specific and already claimed data bucket.
