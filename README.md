@@ -12,10 +12,9 @@ Pansift is about helping others to avoid stress and stay productive with optimal
 
 You can then claim your agent from the options in the menubar or manually in the web application (using the bucket UUID code). Claiming will require you to register an account at [https://pansift.com](https://app.pansift.com/demo/logout_demo) to view your data and insights. Happy troubleshooting!
 
-## Unattended Installs (Commercial Company / Managed Service Provider)
+## Unattended Installs (Commercial / Managed Service Providers)
 
 Unattended installs assume that an orchestration or MDM (Mobile Device Management) like platform is available to you. It also assumes command line and/or custom scripting access within a user's valid session and context (i.e. the targeted user). This approach also assumes you have paid for > 2 agents and want minimal interaction with the user(s) or endpoint(s) for provisioning.
-
 
 ### Step 1. Targeting New Buckets
 
