@@ -6,15 +6,15 @@ Pansift is a macOS troubleshooting and monitoring tool with a focus on the netwo
 
 Pansift is about helping others to avoid stress and stay productive with optimally functioning tools and networks. It's about saving you time, maintaining situational awareness, and getting to root causes quickly, easily, and **remotely** (even for historical issues). Whether it's for WiFi, DNS, IPv4, IPv6, or simple disk utilization issues - PanSift allows you to keep an eye on multiple remote machines (just like server monitoring) only with a more lightweight, heavily wireless focused, and user-friendly footprint. More info: [https://pansift.com](https://pansift.com) 
  
-## Attended Installs (Free Users)
+## Attended Installs (Free / Individual Users)
 
 **Download [Pansift PKG](https://github.com/pansift/p3/raw/main/Pansift-0.6.1.pkg) and run it.**
 
 You can then claim your agent from the options in the menubar or manually in the web application (using the bucket UUID code). Claiming will require you to register an account at [https://pansift.com](https://app.pansift.com/demo/logout_demo) to view your data and insights. Happy troubleshooting!
 
-## Unattended Installs (Company /  MSPs)
+## Unattended Installs (Commercial Company / Managed Services)
 
-Unattended installs assume that an orchestration or MDM (Mobile Device Management) like platform is available to you. It also assumes command line access within a user's valid session (as the targeted user) and a full window session (i.e. not just terminal access only as we want to open the app). This also assumes you have paid for > 2 agents and want minimal interaction with the user(s) or endpoint(s) for provisioning.
+Unattended installs assume that an orchestration or MDM (Mobile Device Management) like platform is available to you. It also assumes command line and/or custom scripting access within a user's valid session and context (i.e. the targeted user). This approach also assumes you have paid for > 2 agents and want minimal interaction with the user(s) or endpoint(s) for provisioning.
 
 ### 1. IT Teams and MSPs (Managed Service Providers)
 
