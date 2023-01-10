@@ -8,7 +8,7 @@ Pansift is about helping others to avoid stress and stay productive with optimal
  
 ## Attended Installs (Free Users)
 
-**Download [Pansift DMG](https://github.com/pansift/p3/raw/main/Pansift.dmg), open it, and drag `Pansift.app` to the `Applications` folder and double click to run or use Command+O to open.**
+**Download [Pansift PKG](https://github.com/pansift/p3/raw/main/Pansift-0.6.1.pkg) and run it.**
 
 You can then claim your agent from the options in the menubar or manually in the web application (using the bucket UUID code). Claiming will require you to register an account at [https://pansift.com](https://app.pansift.com/demo/logout_demo) to view your data and insights. Happy troubleshooting!
 
@@ -16,23 +16,23 @@ You can then claim your agent from the options in the menubar or manually in the
 
 Unattended installs assume that an orchestration or MDM (Mobile Device Management) like platform is available to you. It also assumes command line access within a user's valid session (as the targeted user) and a full window session (i.e. not just terminal access only as we want to open the app). This also assumes you have paid for > 2 agents and want minimal interaction with the user(s) or endpoint(s) for provisioning.
 
-### IT Teams and MSPs (Managed Service Providers)
+### 1. IT Teams and MSPs (Managed Service Providers)
 
 For paid accounts (i.e. > 2 agents) please [contact support](https://pansift.com/contact) to have a commercial _multi-agent_ bucket _pre-prepared_ for you in advance (otherwise each agent will get its own bucket on the free platform and lots of individual bucket UUIDs will need to be communicated and claimed individually). We are working to simplify and automate this process.
 
-### Automatic Claims For Multi-Agent Scenarios
+### 2. Automatic Configuration and Claiming for Multi-Agent Installs
 
-This method **prevents** the ZTP (Zero Touch Provisioning) process from running and allows you to specify settings in advance. This ensures that agents will report to an already created and claimed data bucket.
+This method **prevents** the ZTP (Zero Touch Provisioning) process from running by pre-staging the configuration required. It means you must specify the settings in advance. This ensures that agents will report to a specific and already claimed data bucket.
 
-Automatic provisioning requires staging the `Pansift.app` file from the [Pansift.dmg](Pansift.dmg) and then running the [unattended_preinstall.sh](Scripts/unattended_preinstall.sh) on remote machines. You also need to update `3` configuration items (<BUCKET_UUID>, <INGEST_URL>, <ZTP_TOKEN>) in the [unattended_preinstall.sh](Scripts/unattended_preinstall.sh) **before** running it.
+Automatic provisioning requires amending and running the [unattended_preinstall.sh](Scripts/unattended_preinstall.sh) on remote machines **before** installing the PKG file. You must update `3` configuration items (<BUCKET_UUID>, <INGEST_URL>, <ZTP_TOKEN>) in the [unattended_preinstall.sh](Scripts/unattended_preinstall.sh) **before** running the installer.
 
 > :information_source: Buckets form one boundary for account based reads and agent writes. Buckets also define the test host records used by DNS, HTTP, and traces for all the agents in the bucket. Please consider what agents you want to report in to what buckets. Multiagent buckets allow you to administer a group of agents rather than the default 1-1 agent to bucket mapping.
 
-> :warning: **You must run the script `unattended_preinstall.sh` script as the logged in user you wish to target and *not* using a headless system, root/admin, or service account.**
+> :warning: **You must run the script `unattended_preinstall.sh` script as the logged in user you wish to target and *must not* use a headless system, root/admin account, or service account.**
 
-*Note:* You can also pre-stage fully populated `pansift_uuid.conf`, `pansift_token.conf`, and `pansift_ingest.conf` yourself if you wish (though this is what the [unattended_preinstall.sh](Scripts/unattended_preinstall.sh) does). You should be able to copy the script to your MDM or orchestration tool's pre-installation script window.
+*Note:* You can also pre-stage fully populated `pansift_uuid.conf`, `pansift_token.conf`, and `pansift_ingest.conf` yourself if you wish (though this is what the [unattended_preinstall.sh](Scripts/unattended_preinstall.sh) does). You should be able to copy the script to your MDM or orchestration tool's pre-installation script window and ensure it is run with a logged in user.
 
-Once the Pansift.app then runs for the first time, it bootstraps its configuration, so if the files above are **not** present, it will run the normal ZTP process to get **new** bucket details (which you probably **don't want** as then you need to interact with the user and need to collect lots of bucket details and then claim them manually). 
+Once the Pansift.app then runs for the first time, it bootstraps its configuration, so if the files above are **not** present, it will run the normal ZTP process to get **new random** bucket details (which you probably **don't want** as then you need to interact with the user or re-push your nominated bucket details and reainstall or restart). 
 
 If using the `PKG` installer file, the [pansift_postinstall.sh](Scripts/pansift_postinstall.sh) will run to **remove** the user interaction requirement and then **open** the application for the first time (which will bootstrap the remaining settings). Once PanSift recognizes it has a full configuration it will use the configured *claimed* bucket without any additional provisioning process (other than an" "agent sync" being required in your account dashboard). 
 
