@@ -36,7 +36,7 @@ Once the Pansift.app then runs for the first time, it bootstraps its configurati
 
 > :warning: Don't forget to run an "agent sync" in the web application after deploying new agents. 
 
-1. Please remember for commercial/mass deployments you must run the [unattended_preinstall.sh](Scripts/unattended_preinstall.sh) script as the user account you intend to implement PanSift's RUM (Real User Monitoring) on. You should also have a full window session available to the script as it opens the Pansift application.
+1. Please remember for commercial/mass deployments you must run the [unattended_preinstall.sh](Scripts/unattended_preinstall.sh) script in the context of the user account you intend to implement PanSift's RUM (Real User Monitoring) on. You should also have a full window session available to the script as it opens the Pansift application.
 2. Please [contact support](https://pansift.com/contact) to create a new multi-agent bucket if you require one. You _can_ use an existing bucket if you have claimed one from a free account though data will then reside on the free Influx OSS tier (rather than the commercial Influx cloud).
 
 #### Information on Configuration Files
