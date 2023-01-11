@@ -17,6 +17,7 @@
 
 # *************************************************************************************************
 # THIS SCRIPT MUST BE RUN IN THE CONTEXT OF THE LOGGED IN USER AND NOT A SYSTEM OR HEADLESS ACCOUNT
+# WHICH IS WHAT LINE #46 does in terms of "sudo"	
 # *************************************************************************************************
 
 # set -e
