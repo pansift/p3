@@ -32,9 +32,9 @@ Automatic provisioning requires amending portions of the [unattended_preinstall.
 
 > :information_source: Buckets form one boundary for account based reads and agent writes. Buckets also define the test host records used by DNS, HTTP, and traces for all the agents in the bucket. Please consider what agents you want to report in to what buckets. Multiagent buckets allow you to administer a group of agents rather than the default 1-1 agent to bucket mapping.
 
-> :warning: **You must run the script `unattended_preinstall.sh` script as the logged in user you wish to target and *must not* use a headless system, root/admin account, or service account.**
+> :warning: **You must run the script `unattended_preinstall.sh` script as root and it then switches (when necessary) to the logged in user you wish to target.
 
-*Note:* You can also pre-stage fully populated `pansift_uuid.conf`, `pansift_token.conf`, and `pansift_ingest.conf` yourself if you wish (though this is what the [unattended_preinstall.sh](Scripts/unattended_preinstall.sh) does). You should be able to copy the script to your MDM or orchestration tool's pre-installation script window and ensure it is run with a logged in user.
+*Note:* You can also pre-stage fully populated `pansift_uuid.conf`, `pansift_token.conf`, and `pansift_ingest.conf` yourself if you wish (though this is what the [unattended_preinstall.sh](Scripts/unattended_preinstall.sh) does). You should be able to copy the script to your MDM or orchestration tool's pre-installation script window and ensure it is run while there is a logged in user.
 
 Once the Pansift.app then runs for the first time, it bootstraps its configuration, so if the files above are **not** present, it will run the normal ZTP process to get **new random** bucket details (which you probably **don't want** as then you need to interact with the user or re-push your nominated bucket details and reainstall or restart). 
 
