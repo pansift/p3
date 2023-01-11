@@ -3,21 +3,17 @@
 # This script is intended for MSPs or IT owners 
 # !!!!!! IT REQUIRES MODIFICATION BY YOU !!!!!!! 
 
-# The MSP or IT owner needs to use their own staging mechanism
-# to ensure the latest application bundle of "Pansift.app" is present
-# in /Applications via SFTP, SCP, FTP etc. after running this script.
-# and before running the follow on "unattended_postinstall.sh" script.
+# Intent is to run the PKG installer after this script.
 
 # You must update <BUCKET_UUID>, <INGEST_URL>, and <WRITE_TOKEN> in the script below.
 # This must occur *before* Pansift.app is opened or else it will revert to the free 
 # ZTP(Zero Touch Provisioning) with no control over bucket choice per agent and will 
 # provision new random buckets per agent. You should have a specific bucket in mind 
-# and be configuring it below with assistance from Pansift support 
+# and be configuring it below with assistance from Pansift support if required. 
 # This script is for commercial shared/multi-agent buckets.
 
 # *************************************************************************************************
-# THIS SCRIPT MUST BE RUN IN THE CONTEXT OF THE LOGGED IN USER AND NOT A SYSTEM OR HEADLESS ACCOUNT
-# WHICH IS WHAT LINE #46 does in terms of "sudo"	
+# THIS SCRIPT IS RUN AS ROOT BUT SWITCHES TO THE CONTEXT OF THE LOGGED IN USER USING SUDO ~LINE #43
 # *************************************************************************************************
 
 # set -e
