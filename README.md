@@ -6,9 +6,11 @@ Pansift is a macOS troubleshooting and monitoring tool with a focus on the netwo
 
 Pansift is about helping others to avoid stress and stay productive with optimally functioning tools and networks. It's about saving you time, maintaining situational awareness, and getting to root causes quickly, easily, and **remotely** (even for historical issues). Whether it's for WiFi, DNS, IPv4, IPv6, or simple disk utilization issues - PanSift allows you to keep an eye on multiple remote machines (just like server monitoring) only with a more lightweight, heavily wireless focused, and user-friendly footprint. More info: [https://pansift.com](https://pansift.com) 
  
-## System Status
+# System Status
 
 See [status.pansift.com](https://status.pansift.com) for live operational status.
+
+# Installation
 
 ## Attended Installs (Free / Individual Users)
 
