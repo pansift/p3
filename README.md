@@ -30,7 +30,7 @@ For paid accounts (i.e. > 2 agents) please [contact support](https://pansift.com
 
 This method is required to **prevent** the ZTP (Zero Touch Provisioning) process from running, It involves **pre-staging** the agent configuration and is required **before** running any PKG installer. It also means you **must** specify custom settings in a pre-install script in advance of any other steps or install. This ensures that agents will report to your specific nominated bucket.
 
-Automatic provisioning requires amending portions of the [unattended_preinstall.sh](Scripts/unattended_preinstall.sh) script and running it on remote machines **before** installing the PKG file. You must customize `3` configuration items (<BUCKET_UUID>, <INGEST_URL>, <ZTP_TOKEN>) in the [unattended_preinstall.sh](Scripts/unattended_preinstall.sh) **before** deploying the [Pansift PKG](https://github.com/pansift/p3/raw/main/Pansift-0.6.1.pkg) installer. The script is run as **root** but then sudo's to the logged in user to preposition the config files you have customized.
+Automatic provisioning requires amending portions of the [unattended_preinstall.sh](Toolkit/unattended_preinstall.sh) script and running it on remote machines **before** installing the PKG file. You must customize `3` configuration items (<BUCKET_UUID>, <INGEST_URL>, <ZTP_TOKEN>) in the [unattended_preinstall.sh](Toolkit/unattended_preinstall.sh) **before** deploying the [Pansift PKG](https://github.com/pansift/p3/raw/main/Pansift-0.6.1.pkg) installer. The script is run as **root** but then sudo's to the logged in user to preposition the config files you have customized.
 
 > :information_source: Buckets form one boundary for account based reads and agent writes. Buckets also define the test host records used by DNS, HTTP, and traces for all the agents in the bucket. Please consider what agents you want to report in to what buckets. Multiagent buckets allow you to administer a group of agents rather than the default 1-1 agent to bucket mapping.
 
@@ -42,7 +42,7 @@ Once the Pansift.app then runs for the first time, it bootstraps its configurati
 
 > :warning: Don't forget to run an "agent sync" in the web application after deploying new agents. 
 
-1. Please remember for commercial/mass deployments the [unattended_preinstall.sh](Scripts/unattended_preinstall.sh) script needs to be able to switch to the context of the user account you intend to implement PanSift's RUM (Real User Monitoring) on. You should also have a full window session available to the script as it opens the Pansift application. In some MDM platforms you can ensure a script is only run once during login and scoped to a target user (which ensures a user is logged in during the install)
+1. Please remember for commercial/mass deployments the [unattended_preinstall.sh](Toolkit/unattended_preinstall.sh) script needs to be able to switch to the context of the user account you intend to implement PanSift's RUM (Real User Monitoring) on. You should also have a full window session available to the script as it opens the Pansift application. In some MDM platforms you can ensure a script is only run once during login and scoped to a target user (which ensures a user is logged in during the install)
 2. Please [contact support](https://pansift.com/contact) to create a new multi-agent bucket if you require one. You _can_ use an existing bucket if you have claimed one from a free account though data will then reside on the free Influx OSS tier (rather than the commercial Influx cloud).
 
 #### Information on Configuration Files
