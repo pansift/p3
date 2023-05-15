@@ -47,7 +47,7 @@ echo "HOME is $HOME"
 echo "Creating PanSift Preferences directory if non-existent..."
 # Configuration and preferences files
 preferences="$HOME"/Library/Preferences/Pansift
-mkdir -p $preferences
+mkdir -p "$preferences"
 
 echo "Setting up custom Pansift.conf settings for automated claim if missing"
 #
@@ -58,6 +58,7 @@ echo "Setting up custom Pansift.conf settings for automated claim if missing"
 #######  ALL OF THE ABOVE CAN BE FOUND IN YOUR BUCKET SETTINGS #########
 #
 # WE ARE NOT GOING TO OVERWRITE IF FILE ALREADY THERE #
+# AMEND SCRIPT FOR OVERWRITING SETTINGS ON BOTH EXISTING AND NEW INSTALLS #
 #
 pansift_uuid_file="${preferences}/pansift_uuid.conf"
 if [[ -f "$pansift_uuid_file" ]]; then
