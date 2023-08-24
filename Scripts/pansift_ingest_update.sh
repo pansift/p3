@@ -3,7 +3,7 @@
 source "$HOME"/Library/Preferences/Pansift/pansift.conf
 
 read -r -d '' applescriptCode <<'EOF'
-	 set url_input to text returned of (display dialog "Enter your new PanSift Ingest URL." default answer "" with title "Update Ingest URL")
+	 set url_input to text returned of (display dialog "Enter your new PanSift Ingest URL." default answer linefeed with title "Update Ingest URL")
 	 return url_input
 EOF
 
