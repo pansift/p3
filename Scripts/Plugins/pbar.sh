@@ -44,7 +44,7 @@ fi
 
 agent_check() {
 	logs=$(tail -n 3 "$PANSIFT_LOGS"/telegraf.log)
-	log_msg="$(echo -n "$logs" | egrep -qi "\[agent\].*error" || { echo -n 'Agent (OK) | color=green'; exit 0; }; echo -n "$logs" | egrep -i "\[agent\].*error" | cut -d" " -f3- | awk '{print $0"| color=red"}')"
+	log_msg="$(echo -n "$logs" | egrep -qi "\[agent\].*error|failed|no such host" || { echo -n 'Agent (OK) | color=green'; exit 0; }; echo -n "$logs" | egrep -i "\[agent\].*error|failed|no such host" | cut -d" " -f3- | awk '{print substr($0,1,100)"...| color=red"}')"
 	echo "$log_msg"
 }
 
