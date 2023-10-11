@@ -317,12 +317,13 @@ dns_cache_rr_measure () {
 					dns4_cache_query_output=$(timeout 4 dig -4 +time=3 +tries=1 @"$dns4_primary" "$target_host")
 					# dns4_cache_query_response=$(echo -n "$dns4_cache_query_output" | grep -m1 -i "query time" | cut -d' ' -f4 | remove_chars)
 					dns4_cache_query_response=$(echo -n "$dns4_cache_query_output" | grep -m1 -i 'Query time:' | grep -oEe '[0-9]+' | remove_chars)
+					dns4_cache_query_status=$(echo -n "$dns4_cache_query_output" | grep -m1 -i ' status: ' | cut -d, -f2 | cut -d: -f2 | remove_chars_except_case)
 					if [[ -n "$dns4_cache_query_response" ]] && [[ "$dns4_cache_query_response" == "0" ]]; then
 						# Successful fast query probably local or wired so rewriting response to 1 msec
 						dns4_cache_query_response=1.0
 					fi
 					tagset=$(echo -n "ip_version=4,locally4_connected=${locally4_connected:=false},locally_connected=$locally_connected,dns4_primary_found=true,destination=$target_host")
-					fieldset=$(echo -n "utc_offset=\"$utc_offset\",dns4_primary=\"$dns4_primary\",dns4_cache_query_response=${dns4_cache_query_response:=0.0}")
+					fieldset=$(echo -n "utc_offset=\"$utc_offset\",dns4_primary=\"$dns4_primary\",dns4_cache_query_response=${dns4_cache_query_response:=0.0},dns4_cache_query_status=\"${dns4_cache_query_status:=PS_DIG4_MISSING_STATUS}\"")
 					timesuffix=$(expr 1000000000 + $i + 1) # This is to get around duplicates in Influx with measurement, tag, and timestamp the same.
 					timesuffix=${timesuffix:1} # We drop the leading "1" and end up with incrementing nanoseconds 9 digits long
 					timestamp=$(date +%s)$timesuffix
@@ -335,7 +336,7 @@ dns_cache_rr_measure () {
 			dns4_primary="none"
 			target_host="none"
 			tagset="ip_version=4,locally4_connected=${locally4_connected:=false},locally_connected=$locally_connected,dns4_primary_found=false,destination=$target_host"
-			fieldset=$(echo -n "utc_offset=\"$utc_offset\",dns4_primary=\"$dns4_primary\",dns4_cache_query_response=0.0")
+			fieldset=$(echo -n "utc_offset=\"$utc_offset\",dns4_primary=\"$dns4_primary\",dns4_cache_query_response=0.0,dns4_cache_query_status=\"${dns4_cache_query_status:=PS_DIG4_MISSING_STATUS}\"")
 			timestamp=$(date +%s)000000004
 			echo -ne "$measurement,$tagset $fieldset $timestamp\n"
 		fi
@@ -350,12 +351,13 @@ dns_cache_rr_measure () {
 					dns6_cache_query_output=$(timeout 4 dig -6 AAAA +time=3 +tries=1 @"$dns6_primary" "$target_host")
 					# dns6_cache_query_response=$(echo -n "$dns6_cache_query_output" | grep -m1 -i "query time" | cut -d' ' -f4 | remove_chars)
 					dns6_cache_query_response=$(echo -n "$dns6_cache_query_output" | grep -m1 -i 'Query time:' | grep -oEe '[0-9]+' | remove_chars)
+					dns6_cache_query_status=$(echo -n "$dns6_cache_query_output" | grep -m1 -i ' status: ' | cut -d, -f2 | cut -d: -f2 | remove_chars_except_case)
 					if [[ -n "$dns6_cache_query_response" ]] && [[ "$dns6_cache_query_response" == "0" ]]; then
 						# Successful fast query probably local or wired so rewriting response to 1 msec
 						dns6_cache_query_response=1.0
 					fi
 					tagset=$(echo -n "ip_version=6,locally6_connected=${locally6_connected:=false},locally_connected=$locally_connected,dns6_primary_found=true,destination=$target_host")
-					fieldset=$(echo -n "utc_offset=\"$utc_offset\",dns6_primary=\"$dns6_primary\",dns6_cache_query_response=${dns6_cache_query_response:=0.0}")
+					fieldset=$(echo -n "utc_offset=\"$utc_offset\",dns6_primary=\"$dns6_primary\",dns6_cache_query_response=${dns6_cache_query_response:=0.0},dns6_cache_query_status=\"${dns6_cache_query_status:=PS_DIG6_MISSING_STATUS}\"")
 					timesuffix=$(expr 1000000000 + $i + 1) # This is to get around duplicates in Influx with measurement, tag, and timestamp the same.
 					timesuffix=${timesuffix:1} # We drop the leading "1" and end up with incrementing nanoseconds 9 digits long
 					timestamp=$(date +%s)$timesuffix
@@ -368,7 +370,7 @@ dns_cache_rr_measure () {
 			dns6_primary="none"
 			target_host="none"
 			tagset="ip_version=6,locally6_connected=${locally6_connected:=false},locally_connected=$locally_connected,dns6_primary_found=false,destination=$target_host"
-			fieldset=$(echo -n "utc_offset=\"$utc_offset\",dns6_primary=\"$dns6_primary\",dns6_cache_query_response=0.0")
+			fieldset=$(echo -n "utc_offset=\"$utc_offset\",dns6_primary=\"$dns6_primary\",dns6_cache_query_response=0.0,dns6_cache_query_status=\"${dns6_cache_query_status:=PS_DIG6_MISSING_STATUS}\"")
 			timestamp=$(date +%s)000000006
 			echo -ne "$measurement,$tagset $fieldset $timestamp\n"
 		fi
@@ -555,7 +557,7 @@ wlan_measure () {
 			wlan_phy_mode=$(echo -n "$wlan_missing_info" | grep -i 'PHY Mode:' | cut -d':' -f2 | xargs)
 			wlan_mcs=-1 # Default just to set it in case we change the if/else logic below and mess up
 			if [[ "$wlan_phy_mode" == "802.11ax" ]]; then
-				# If 802.11ax then we need to user the system_profiler :(
+				# If 802.11ax then we need to use the system_profiler :(
 				wlan_mcs=$(echo -n "$wlan_missing_info" | grep -i 'MCS Index:' | cut -d':' -f2 | xargs)
 			elif [[ "$wlan_channel" -lt 15 ]] && [[ $osx_mainline == 11 ]] ; then
 				# Here we have an OSX bug where the CLI reports MCS 0 even when MCS can be 15 when on the 2.4GHz range i.e. channels 1-14
@@ -591,9 +593,9 @@ wlan_measure () {
 		elif [[ "$wlan_op_mode" != "none" ]] && [[ $osx_mainline == 10 ]]; then
 			wlan_number_spatial_streams=0i
 			wlan_width=0i
-		elif [[ "$wlan_op_mode" == "none" ]]; then
-			wlan_number_spatial_streams=0i
-			wlan_width=0i
+    elif [[ "$wlan_op_mode" == "none" ]]; then
+      wlan_number_spatial_streams=0i
+      wlan_width=0i
 		else 
 			wlan_number_spatial_streams=$("$plistbuddy" "${airport_more_data}" -c "print NSS" | remove_chars)i
 		fi
