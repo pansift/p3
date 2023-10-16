@@ -786,7 +786,8 @@ http_checks () {
 			http_speed_bytes=$(echo -n "$curl_response" | cut -d':' -f9 | remove_chars)
 			# bc doesn't print a leading zero and this confuses poor influx
 			http_speed_megabits=$(echo "scale=3;($http_speed_bytes * 8) / 1000000" | bc -l | tr -d '\n' | sed 's/^\./0./' | remove_chars)
-			http_ttfb=$(echo "scale=0;(($http_time_connect - $http_time_namelookup) * 10000) / 10;" | bc -l | tr -d '\n' | sed 's/^\./0./' | remove_chars)
+			# http_ttfb changing to scale=3 to catch very fast i.e. us v ms setup on fast links. Also, why not divide by 1000 instead of * 10000 / 10 ??
+			http_ttfb=$(echo "scale=3;(($http_time_connect - $http_time_namelookup) * 10000) / 10;" | bc -l | tr -d '\n' | sed 's/^\./0./' | remove_chars)
 			tagset=$(echo -n "ip_version=4,http_url=$http_url")
 			fieldset=$( echo -n "utc_offset=\"$utc_offset\",http_time_namelookup=${http_time_namelookup:=0},http_time_connect=${http_time_connect:=0},http_time_appconnect=${http_time_appconnect:=0},http_time_pretransfer=${http_time_pretransfer:=0},http_time_starttransfer=${http_time_starttransfer:=0},http_time_total=${http_time_total:=0},http_size_megabytes=${http_size_megabytes:=0},http_size_kilobytes=${http_size_kilobytes:=0},http_ttfb=${http_ttfb:=0},http_status=${http_status:=0i},http_speed_megabits=${http_speed_megabits:=0}")
 			timesuffix=$(expr 1000000000 + $i + 1) # This is to get around duplicates in Influx with measurement, tag, and timestamp the same.
