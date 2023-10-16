@@ -71,7 +71,7 @@ nameOfInstall="pansift_updater_pkg"
 # pathToPKG="https://pansift.com/dl/latest_pkg" # Depends on marketing site but redirects to GH latest PKG
 
 # Example <below> where the UUID is your cb_id (i.e. account UUID *not* bucket UUID) if provided by PanSift support.
-pathToPKG="https://github.com/pansift/p3/raw/main/Pansift-6d0280d1-3eed-4246-8684-80efb2370eab.pkg"
+pathToPKG="https://github.com/pansift/p3/raw/main/Pansift-0.6.1.pkg"
 
 # ************** UPDATE UPDATE UPDATE **************
 
