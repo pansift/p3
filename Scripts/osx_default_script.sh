@@ -719,7 +719,7 @@ wlan_scan () {
 		for i in $(seq 0 "${count}")
 		do
 			wlan_scan_ssid=$("$plistbuddy" "$scandata" -c "print :$i:SSID_STR")
-			wlan_scan_bssid=$("${plistbuddy}" "${scandata}" -c "print :$i:BSSID")
+			wlan_scan_bssid=$("${plistbuddy}" "${scandata}" -c "print :$i:BSSID" 2>/dev/null)
 			#wlan_scan_bssid_tag=$(echo -n "$wlan_scan_bssid")  # BSSID should be a clean string as opposed to using SSID as a tag which needs to escape spaces with backslash \
 			wlan_scan_channel=$("${plistbuddy}" "${scandata}" -c "print :$i:CHANNEL")i
 			wlan_scan_rssi=$("${plistbuddy}" "${scandata}" -c "print :$i:RSSI")i
