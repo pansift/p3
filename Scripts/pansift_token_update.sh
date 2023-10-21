@@ -13,7 +13,7 @@ if [ "${retval:-1}" -eq 1 ]; then
 	exit 0
 elif [[ $token =~ ^[-_A-Z0-9a-z]{86}==$ ]]; then
 	echo $token > "$PANSIFT_PREFERENCES"/pansift_token.conf
-	"$PANSIFT_SCRIPTS"/pansift -b
+	"$PANSIFT_SCRIPTS"/pansift
 else
 	error="Please remove all whitespace. Token is 86 character alphanumeric (with dashes) and ends with '=='"
 	applescriptCode="display dialog \"$error\" buttons {\"OK\"} default button \"OK\" with title \"Error in Token Format\""
