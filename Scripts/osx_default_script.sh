@@ -169,6 +169,8 @@ system_measure () {
 	systemprofile_sphardwaredatatype=$(system_profiler SPHardwareDataType)
 	model_name=$(echo -n "$systemprofile_sphardwaredatatype" | egrep -i "model name" | cut -d':' -f2- | remove_chars_except_case)
 	model_identifier=$(echo -n "$systemprofile_sphardwaredatatype" | egrep -i "model identifier" | cut -d':' -f2- | remove_chars_except_case)
+	main_chip=$(echo -n "$systemprofile_sphardwaredatatype" | grep -Eqi "chip:" || { echo -n 'unknown'; exit 0;}; echo -n "$systemprofile_sphardwaredatatype" | grep -Ei "chip:" | cut -d':' -f2 | xargs | remove_chars_except_case)
+	main_chip=${main_chip:="unknown"}
 	memory=$(echo -n "$systemprofile_sphardwaredatatype" | egrep -i "memory" | cut -d':' -f2- | remove_chars_except_spaces)
 	boot_romversion=$(echo -n "$systemprofile_sphardwaredatatype" | egrep -i "boot rom version|system firmware version" | cut -d':' -f2- | remove_chars_except_spaces)
 	smc_version=$(echo -n "$systemprofile_sphardwaredatatype" | egrep -i "smc version|os loader version" | cut -d':' -f2- | remove_chars_except_spaces)
@@ -267,10 +269,10 @@ network_measure () {
 	if [ "$who_first" -eq 0 ]; then
 		# echo "$who_first means IPv4 first"
 		dg4_response=$(echo -n "$netstat4" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg4_ip" == "none" ]] && ping -t5 -c3 -i1 -k BE "$dg4_ip" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
-		dg6_response=$(echo -n "$netstat6" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg6_ip" == "none" ]] && timeout 5 ping6 -c3 -i1 -k BE "$dg6_fullgw" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
+		dg6_response=$(echo -n "$netstat6" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg6_ip" == "none" ]] && timeout 5 ping6 -c3 -i1 -k BE "$dg6_fullgw" 2>&1 | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
 	else
 		# echo "$who_first means IPv6 first"
-		dg6_response=$(echo -n "$netstat6" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg6_ip" == "none" ]] && timeout 5 ping6 -c3 -i1 -k BE "$dg6_fullgw" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
+		dg6_response=$(echo -n "$netstat6" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg6_ip" == "none" ]] && timeout 5 ping6 -c3 -i1 -k BE "$dg6_fullgw" 2>&1 | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
 		dg4_response=$(echo -n "$netstat4" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg4_ip" == "none" ]] && ping -t5 -c3 -i1 -k BE "$dg4_ip" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
 	fi
 
@@ -599,6 +601,28 @@ wlan_measure () {
 		else 
 			wlan_number_spatial_streams=$("$plistbuddy" "${airport_more_data}" -c "print NSS" | remove_chars)i
 		fi
+		# Let's get the current frequency BAND and WIDTH from the Channel Flags : Donal 201023
+      wlan_channel_flags=$("${plistbuddy}" "${airport_more_data}" -c "print CHANNEL_FLAGS")
+      wlan_channel_flags_binary=$(echo "obase=2;$wlan_channel_flags" | bc)
+      wlan_channel_flags_length=${#wlan_channel_flags_binary}
+      wlan_channel_flags_binary_pad_bits=$(printf "%016.0f" "$wlan_channel_flags_binary")
+      wlan_channel_flags_last_bits=${wlan_channel_flags_binary_pad_bits: -5}
+      wlan_channel_flags_two_ghz_bit=${wlan_channel_flags_last_bits:1:1}
+      wlan_channel_flags_five_ghz_bit=${wlan_channel_flags_last_bits:0:1}
+      wlan_channel_flags_channel_width_twenty_mhz=${wlan_channel_flags_last_bits:3:1}
+      wlan_channel_flags_channel_width_forty_mhz=${wlan_channel_flags_last_bits:2:1}
+      wlan_channel_flags_channel_width_eighty_mhz=${wlan_channel_flags_binary_pad_bits:5:1}
+      wlan_channel_flags_channel_width_onesixty_mhz=${wlan_channel_flags_binary_pad_bits:4:1}
+      if [[ $wlan_channel_flags_two_ghz_bit == "1" ]]; then
+        wlan_channel_flags_band=2
+      fi
+      if [[ $wlan_channel_flags_five_ghz_bit == "1" ]]; then
+        wlan_channel_flags_band=5
+      fi
+      if [[ $wlan_channel_flags_two_ghz_bit == "0" ]] && [[ $wlan_channel_flags_five_ghz_bit == "0" ]]; then
+        wlan_channel_flags_band=6
+      fi
+			wlan_channel_flags_band=${wlan_channel_flags_band:=-1}i # Be careful with adding i's if already defined?
 		# wlan_width=$("$plistbuddy" "${airport_more_data}" -c "print BANDWIDTH" | remove_chars)i
 		# There is still a bug presenting in 11.X with 802.11ax for spatial streams even on 5GHz where we can't get data as set to 0 in airport -Ix
 		width_increment=$(echo -n "$airport_output"| egrep -i '[[:space:]]channel' |  cut -d':' -f2 | awk '{$1=$1;print}' | cut -d',' -f2 | remove_chars)
@@ -611,6 +635,21 @@ wlan_measure () {
 		else
 			wlan_width=20i
 		fi
+
+      # Alternate: Get the WIDTH from the Apple CHANNEL_FLAGS
+      if [[ $wlan_channel_flags_channel_width_twenty_mhz == "1" ]]; then
+        wlan_channel_flags_width=20i
+      fi
+      if [[ $wlan_channel_flags_channel_width_forty_mhz == "1" ]]; then
+        wlan_channel_flags_width=40i
+      fi
+      if [[ $wlan_channel_flags_channel_width_eighty_mhz == "1" ]]; then
+        wlan_channel_flags_width=80i
+      fi
+      if [[ $wlan_channel_flags_channel_width_onesixty_mhz == "1" ]]; then
+        wlan_channel_flags_width=80i
+      fi
+      wlan_width=${wlan_channel_flags_width:=-1i}
 
 		wlan_current_phy_mode=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "PHY Mode:" | head -n1 | cut -d':' -f2- | remove_chars)
 		wlan_supported_phy_mode=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "Supported PHY Modes" | cut -d':' -f2- | remove_chars)
@@ -636,6 +675,7 @@ wlan_measure () {
 		wlan_number_spatial_streams=0i
 		wlan_supported_phy_mode=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "Supported PHY Modes" | cut -d':' -f2- | remove_chars)
 		wlan_supported_channels=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "Supported Channels:" | head -n1 | cut -d':' -f2- | remove_chars_delimit_colon)
+		wlan_channel_flags_band=${wlan_channel_flags_band:=-1i}
 	else
 		# This can happen in a VM where there is no wlan_state but the airport tool still works and returns blank
 		wlan_state="unknown"
@@ -658,6 +698,7 @@ wlan_measure () {
 		wlan_last_assoc_status=-1i
 		wlan_number_spatial_streams=0i
 		wlan_supported_channels=""
+		wlan_channel_flags_band=${wlan_channel_flags_band:=-1i}
 		fi
 	else
 		# set all values null as can not have an empty tag and safer than in the fieldset for everything?
@@ -682,6 +723,7 @@ wlan_measure () {
 		wlan_last_assoc_status=-1i
 		wlan_number_spatial_streams=0i
 		wlan_supported_channels=""
+   	wlan_channel_flags_band=${wlan_channel_flags_band:=-1i}
 	fi
 }
 
@@ -690,7 +732,7 @@ wlan_scan () {
 	if [[ -z "$airport_output" ]]; then
 		# echo -n "No airport output in scan"
 		wlan_scan_on="false"
-		wlan_scan_data="none"
+		# wlan_scan_data="none"
 		measurement="pansift_osx_wlanscan"
 		tagset=$(echo -n "wlan_scan_on=$wlan_scan_on")
 		fieldset=$( echo -n "utc_offset=\"$utc_offset\",wlan_on=false")
@@ -718,38 +760,108 @@ wlan_scan () {
 		count=$(expr "${precount}" - 1)
 		for i in $(seq 0 "${count}")
 		do
-			wlan_scan_ssid=$("$plistbuddy" "$scandata" -c "print :$i:SSID_STR")
+			wlan_scan_ssid=$("${plistbuddy}" "${scandata}" -c "print :$i:SSID_STR")
 			wlan_scan_bssid=$("${plistbuddy}" "${scandata}" -c "print :$i:BSSID" 2>/dev/null)
+			wlan_scan_cc=$("${plistbuddy}" "${scandata}" -c "print :$i:80211D_IE:IE_KEY_80211D_COUNTRY_CODE" 2>/dev/null)
 			#wlan_scan_bssid_tag=$(echo -n "$wlan_scan_bssid")  # BSSID should be a clean string as opposed to using SSID as a tag which needs to escape spaces with backslash \
 			wlan_scan_channel=$("${plistbuddy}" "${scandata}" -c "print :$i:CHANNEL")i
+      wlan_scan_channel_flags=$("${plistbuddy}" "${scandata}" -c "print :$i:CHANNEL_FLAGS")
+      wlan_scan_channel_flags_binary=$(echo "obase=2;$wlan_scan_channel_flags" | bc)
+      wlan_scan_channel_flags_length=${#wlan_scan_channel_flags_binary}
+      wlan_scan_channel_flags_binary_pad_bits=$(printf "%016.0f" "$wlan_scan_channel_flags_binary")
+      wlan_scan_channel_flags_last_bits=${wlan_scan_channel_flags_binary_pad_bits: -5}
+      wlan_scan_channel_flags_two_ghz_bit=${wlan_scan_channel_flags_last_bits:1:1}
+      wlan_scan_channel_flags_five_ghz_bit=${wlan_scan_channel_flags_last_bits:0:1}
+      wlan_scan_channel_flags_channel_width_twenty_mhz=${wlan_scan_channel_flags_last_bits:3:1}
+      wlan_scan_channel_flags_channel_width_forty_mhz=${wlan_scan_channel_flags_last_bits:2:1}
+      wlan_scan_channel_flags_channel_width_eighty_mhz=${wlan_scan_channel_flags_binary_pad_bits:5:1}
+      wlan_scan_channel_flags_channel_width_onesixty_mhz=${wlan_scan_channel_flags_binary_pad_bits:4:1}
 			wlan_scan_rssi=$("${plistbuddy}" "${scandata}" -c "print :$i:RSSI")i
 			wlan_scan_noise=$("${plistbuddy}" "${scandata}" -c "print :$i:NOISE")i
 			wlan_scan_vht_op_channel_center_frequency_seg0=$("${plistbuddy}" "${scandata}" -c "print :$i:VHT_OP:CHANNEL_CENTER_FREQUENCY_SEG0" 2>/dev/null)i
 			wlan_scan_vht_op_channel_center_frequency_seg1=$("${plistbuddy}" "${scandata}" -c "print :$i:VHT_OP:CHANNEL_CENTER_FREQUENCY_SEG1" 2>/dev/null)i
 			wlan_scan_vht_op_channel_width=$("${plistbuddy}" "${scandata}" -c "print :$i:VHT_OP:CHANNEL_WIDTH" 2>/dev/null)i
-			wlan_scan_cc=$("${plistbuddy}" "${scandata}" -c "print :$i:80211D_IE:IE_KEY_80211D_COUNTRY_CODE" 2>/dev/null)
 			wlan_scan_ht_secondary_chan_offset=$("${plistbuddy}" "${scandata}" -c "print :$i:HT_IE:HT_SECONDARY_CHAN_OFFSET" 2>/dev/null)i
-			# Explicit defaults rather than {:=} expansion
+			# The following "xargs" is because we can get null bytes from plist binary data and bash doesn't like them
+			wlan_scan_he_any=$("${plistbuddy}" "${scandata}" -c "print :$i:HE_CAP" 2>/dev/null | xargs) # Only checking for absence or presence of HE KEYS
+			#
+			# Explicit defaults rather than {:=} expansion? Be careful with expansion on loops!!!!
+			# 
+			unset wlan_scan_channel_flags_width # Reset in loop to prevent expansion with "i" on not null below
+			unset wlan_scan_channel_flags_band # Reset in loop to prevent expansion with "i" on not null below
+			unset wlan_scan_80211n
+			unset wlan_scan_80211ac
+			unset wlan_scan_80211ax
+			# Get the WIDTH from the Apple CHANNEL_FLAGS
+			if [[ $wlan_scan_channel_flags_channel_width_twenty_mhz == "1" ]]; then
+				wlan_scan_channel_flags_width=20
+			fi
+			if [[ $wlan_scan_channel_flags_channel_width_forty_mhz == "1" ]]; then
+				wlan_scan_channel_flags_width=40
+			fi
+			if [[ $wlan_scan_channel_flags_channel_width_eighty_mhz == "1" ]]; then
+				wlan_scan_channel_flags_width=80
+			fi
+			if [[ $wlan_scan_channel_flags_channel_width_onesixty_mhz == "1" ]]; then
+				wlan_scan_channel_flags_width=80
+			fi
+			wlan_scan_channel_flags_width=${wlan_scan_channel_flags_width:=0}i
+			# Note: The following may or may not be present hence starting to move to the channel flags above.
+			# You also need to know if previously a/b/g and ht = n, vht = ac, and he = ax
+			# Get the BAND from the Apple CHANNEL_FLAGS (Remember that ac is only 5GHz not 2GHz)
+			if [[ $wlan_scan_channel_flags_two_ghz_bit == "1" ]]; then
+				wlan_scan_channel_flags_band=2
+			fi
+			if [[ $wlan_scan_channel_flags_five_ghz_bit == "1" ]]; then
+				wlan_scan_channel_flags_band=5
+			fi
+      if [[ $wlan_scan_channel_flags_two_ghz_bit == "0" ]] && [[ $wlan_scan_channel_flags_five_ghz_bit == "0" ]]; then
+        wlan_scan_channel_flags_band=6
+      fi
+      wlan_scan_channel_flags_band=${wlan_scan_channel_flags_band:=-1}i
 			if [ $wlan_scan_ht_secondary_chan_offset == "i" ]; then
 				wlan_scan_ht_secondary_chan_offset="0i"
+				wlan_scan_80211n="false"
+			else 
+				wlan_scan_80211n="true"
 			fi
 			if [ $wlan_scan_vht_op_channel_center_frequency_seg0 == "i" ]; then
 				wlan_scan_vht_op_channel_center_frequency_seg0="0i"
+				wlan_scan_80211ac="false"
+			elif [[ $wlan_scan_channel_flags_five_ghz_bit == "1" ]] && [[ $wlan_scan_vht_op_channel_center_frequency_seg0 != "i" ]]; then
+				wlan_scan_80211ac="true"
+			else
+				wlan_scan_80211ac="false"
 			fi
 			if [ $wlan_scan_vht_op_channel_center_frequency_seg1 == "i" ]; then
 				wlan_scan_vht_op_channel_center_frequency_seg1="0i"
 			fi
-			if [ $wlan_scan_vht_op_channel_width == "i" ]; then
+			if [ -z $wlan_scan_he_any ]; then
+				wlan_scan_80211ax="false"
+			else
+				wlan_scan_80211ax="true"
+			fi
+      wlan_scan_80211n=${wlan_scan_80211n:=false}
+      wlan_scan_80211ac=${wlan_scan_80211ac:=false}
+      wlan_scan_80211ax=${wlan_scan_80211ax:=false}
+			if [[ $wlan_scan_vht_op_channel_width == "i" ]]; then
 				wlan_scan_vht_op_channel_width="0i"
 			fi
 			measurement="pansift_osx_wlanscan"
 			#tagset=$(echo -n "wlan_scan_on=$wlan_scan_on,wlan_scan_bssid_tag=$wlan_scan_bssid_tag")
 			tagset=$(echo -n "wlan_scan_on=$wlan_scan_on")
-			fieldset=$( echo -n "utc_offset=\"$utc_offset\",wlan_scan_ssid=\"$wlan_scan_ssid\",wlan_scan_bssid=\"$wlan_scan_bssid\",wlan_scan_channel=$wlan_scan_channel,wlan_scan_rssi=$wlan_scan_rssi,wlan_scan_noise=$wlan_scan_noise,wlan_scan_vht_op_channel_center_frequency_seg0=$wlan_scan_vht_op_channel_center_frequency_seg0,wlan_scan_vht_op_channel_center_frequency_seg1=$wlan_scan_vht_op_channel_center_frequency_seg1,wlan_scan_vht_op_channel_width=$wlan_scan_vht_op_channel_width,wlan_scan_cc=\"${wlan_scan_cc:=none}\",wlan_scan_ht_secondary_chan_offset=$wlan_scan_ht_secondary_chan_offset")
+			fieldset=$( echo -n "utc_offset=\"$utc_offset\",wlan_scan_ssid=\"$wlan_scan_ssid\",wlan_scan_bssid=\"$wlan_scan_bssid\",wlan_scan_channel=$wlan_scan_channel,wlan_scan_rssi=$wlan_scan_rssi,wlan_scan_noise=$wlan_scan_noise,wlan_scan_vht_op_channel_center_frequency_seg0=$wlan_scan_vht_op_channel_center_frequency_seg0,wlan_scan_vht_op_channel_center_frequency_seg1=$wlan_scan_vht_op_channel_center_frequency_seg1,wlan_scan_vht_op_channel_width=$wlan_scan_vht_op_channel_width,wlan_scan_cc=\"${wlan_scan_cc:=none}\",wlan_scan_ht_secondary_chan_offset=$wlan_scan_ht_secondary_chan_offset,wlan_scan_channel_flags_width=${wlan_scan_channel_flags_width:=0i},wlan_scan_channel_flags_band=${wlan_scan_channel_flags_band:=-1i}")
 			timesuffix=$(expr 1000000000 + $i + 1) # This is to get around duplicates in Influx with measurement, tag, and timestamp the same. 
 			timesuffix=${timesuffix:1} # We drop the leading "1" and end up with incrementing nanoseconds 9 digits long
 			timestamp=$(date +%s)$timesuffix
+			# echo "Bits of next: $wlan_scan_channel_flags_binary_pad_bits"
+			# We could just call the "results" function here instead of echo explicit?
 			echo -ne "$measurement,$tagset $fieldset $timestamp\n" 
+			# echo "Band: $wlan_scan_channel_flags_band"
+			# echo "Channel width: $wlan_scan_channel_flags_width"
+			# echo "wlan_scan_80211n: $wlan_scan_80211n"
+			# echo "wlan_scan_80211ac: $wlan_scan_80211ac"
+			# echo "wlan_scan_80211ax: $wlan_scan_80211ax"
 		done
 	fi
 }
@@ -772,7 +884,7 @@ http_checks () {
 			# It's borking on an illegal character returned from a time out + also the remove-chars... curl_response contains 
 			# bad data when using $curl_binary
 			curl_response=$(timeout 30 curl -A "$curl_user_agent" --no-keepalive -4 -k -s -o /dev/null -w "%{time_namelookup}:%{time_connect}:%{time_appconnect}:%{time_pretransfer}:%{time_starttransfer}:%{time_total}:%{size_download}:%{http_code}:%{speed_download}" -L "$target_host" 2>&1)
-			curl_response=${curl_response:="0.0"}
+			curl_response=${curl_response:="0"}
 			http_time_namelookup=$(echo -n "$curl_response" | cut -d':' -f1 | remove_chars)
 			http_time_connect=$(echo -n "$curl_response" | cut -d':' -f2 | remove_chars)
 			http_time_appconnect=$(echo -n "$curl_response" | cut -d':' -f3 | remove_chars)
@@ -788,6 +900,9 @@ http_checks () {
 			http_speed_megabits=$(echo "scale=3;($http_speed_bytes * 8) / 1000000" | bc -l | tr -d '\n' | sed 's/^\./0./' | remove_chars)
 			# http_ttfb changing to scale=3 to catch very fast i.e. us v ms setup on fast links. Also, why not divide by 1000 instead of * 10000 / 10 ??
 			http_ttfb=$(echo "scale=3;(($http_time_connect - $http_time_namelookup) * 10000) / 10;" | bc -l | tr -d '\n' | sed 's/^\./0./' | remove_chars)
+      if [ 1 -eq "$(echo "${http_ttfb} < 0" | bc)" ]; then # IF for example IPv4 is down we are doing maths with a lookup that might work but connect doesn't and results in negative values
+        http_ttfb=0
+      fi
 			tagset=$(echo -n "ip_version=4,http_url=$http_url")
 			fieldset=$( echo -n "utc_offset=\"$utc_offset\",http_time_namelookup=${http_time_namelookup:=0},http_time_connect=${http_time_connect:=0},http_time_appconnect=${http_time_appconnect:=0},http_time_pretransfer=${http_time_pretransfer:=0},http_time_starttransfer=${http_time_starttransfer:=0},http_time_total=${http_time_total:=0},http_size_megabytes=${http_size_megabytes:=0},http_size_kilobytes=${http_size_kilobytes:=0},http_ttfb=${http_ttfb:=0},http_status=${http_status:=0i},http_speed_megabits=${http_speed_megabits:=0}")
 			timesuffix=$(expr 1000000000 + $i + 1) # This is to get around duplicates in Influx with measurement, tag, and timestamp the same.
@@ -811,7 +926,7 @@ while :; do
 		-m|--machine) 
 			system_measure
 			measurement="pansift_osx_machine"            
-			tagset=$(echo -n "product_name=$product_name,model_name=$model_name,model_identifier=$model_identifier,serial_number=$serial_number")
+			tagset=$(echo -n "product_name=$product_name,model_name=$model_name,model_identifier=$model_identifier,serial_number=$serial_number,main_chip=$main_chip")
 			fieldset=$(echo -n "utc_offset=\"$utc_offset\",product_version=\"$product_version\",boot_romversion=\"$boot_romversion\",smc_version=\"$smc_version\",memory=\"$memory\"")
 			results
 			;;
@@ -821,10 +936,11 @@ while :; do
 			dns_random_rr_measure # Can take 6s for random UUID on v4 and v6
 			local_ips # dependency on both prior internet_measure and network_measure
 			wlan_measure
+			# echo "Channel band: $wlan_channel_flags_band"
 			measurement="pansift_osx_network"
 			tagset=$(echo -n "internet_connected=$internet_connected,internet_dualstack=$internet_dualstack,ipv4_only=$ipv4_only,ipv6_only=$ipv6_only,locally_connected=$locally_connected,wlan_connected=$wlan_connected,wlan_state=$wlan_state,wlan_op_mode=$wlan_op_mode,wlan_supported_phy_mode=$wlan_supported_phy_mode") 
-			# TODO: We need to make better use of the default assignment e.g. dg6_response=${dg6_response:=0} for all variables
-			fieldset=$( echo -n "utc_offset=\"$utc_offset\",internet4_public_ip=\"$internet4_public_ip\",internet6_public_ip=\"$internet6_public_ip\",internet4_asn=$internet4_asn,internet6_asn=$internet6_asn,dg4_ip=\"$dg4_ip\",dg4_router_ether=\"$dg4_router_ether\",dg6_router_ether=\"$dg4_router_ether\",dg6_ip=\"$dg6_ip\",dg4_hardware_type=\"$dg4_hardware_type\",dg6_hardware_type=\"$dg6_hardware_type\",dg4_interface=\"$dg4_interface\",dg6_interface=\"$dg6_interface\",dg6_interface_device_only=\"$dg6_interface_device_only\",dg4_interface_ether=\"$dg4_interface_ether\",dg6_interface_ether=\"$dg6_interface_ether\",dg4_local_ip=\"$dg4_local_ip\",dg4_local_netmask=\"$dg4_local_netmask\",dg4_response=${dg4_response:=0},dg6_local_ip=\"$dg6_local_ip\",dg6_local_prefixlen=\"$dg6_local_prefixlen\",dg6_response=${dg6_response:=0},dns4_primary=\"$dns4_primary\",dns6_primary=\"$dns6_primary\",dns4_query_response=$dns4_query_response,dns6_query_response=$dns6_query_response,wlan_rssi=$wlan_rssi,wlan_noise=$wlan_noise,wlan_snr=$wlan_snr,wlan_last_tx_rate=$wlan_last_tx_rate,wlan_max_rate=$wlan_max_rate,wlan_ssid=\"$wlan_ssid\",wlan_bssid=\"$wlan_bssid\",wlan_phy_mode=\"$wlan_phy_mode\",wlan_mcs=$wlan_mcs_i,wlan_number_spatial_streams=$wlan_number_spatial_streams,wlan_last_assoc_status=$wlan_last_assoc_status,wlan_channel=$wlan_channel_i,wlan_width=$wlan_width,wlan_current_phy_mode=\"$wlan_current_phy_mode\",wlan_supported_channels=\"$wlan_supported_channels\",wlan_80211_auth=\"$wlan_80211_auth\",wlan_link_auth=\"$wlan_link_auth\"")
+			# TODO: We need to make better use of the default assignment e.g. dg6_response=${dg6_response:=0.0} for all variables
+			fieldset=$( echo -n "utc_offset=\"$utc_offset\",internet4_public_ip=\"$internet4_public_ip\",internet6_public_ip=\"$internet6_public_ip\",internet4_asn=$internet4_asn,internet6_asn=$internet6_asn,dg4_ip=\"$dg4_ip\",dg4_router_ether=\"$dg4_router_ether\",dg6_router_ether=\"$dg4_router_ether\",dg6_ip=\"$dg6_ip\",dg4_hardware_type=\"$dg4_hardware_type\",dg6_hardware_type=\"$dg6_hardware_type\",dg4_interface=\"$dg4_interface\",dg6_interface=\"$dg6_interface\",dg6_interface_device_only=\"$dg6_interface_device_only\",dg4_interface_ether=\"$dg4_interface_ether\",dg6_interface_ether=\"$dg6_interface_ether\",dg4_local_ip=\"$dg4_local_ip\",dg4_local_netmask=\"$dg4_local_netmask\",dg4_response=${dg4_response:=0},dg6_local_ip=\"$dg6_local_ip\",dg6_local_prefixlen=\"$dg6_local_prefixlen\",dg6_response=${dg6_response:=0},dns4_primary=\"$dns4_primary\",dns6_primary=\"$dns6_primary\",dns4_query_response=$dns4_query_response,dns6_query_response=$dns6_query_response,wlan_rssi=$wlan_rssi,wlan_noise=$wlan_noise,wlan_snr=$wlan_snr,wlan_last_tx_rate=$wlan_last_tx_rate,wlan_max_rate=$wlan_max_rate,wlan_ssid=\"$wlan_ssid\",wlan_bssid=\"$wlan_bssid\",wlan_phy_mode=\"$wlan_phy_mode\",wlan_mcs=$wlan_mcs_i,wlan_number_spatial_streams=$wlan_number_spatial_streams,wlan_last_assoc_status=$wlan_last_assoc_status,wlan_channel=$wlan_channel_i,wlan_channel_flags_band=${wlan_channel_flags_band:=-1i},wlan_width=${wlan_width:=-1i},wlan_current_phy_mode=\"$wlan_current_phy_mode\",wlan_supported_channels=\"$wlan_supported_channels\",wlan_80211_auth=\"$wlan_80211_auth\",wlan_link_auth=\"$wlan_link_auth\"")
 			results
 			;;
 		-s|--scan)
