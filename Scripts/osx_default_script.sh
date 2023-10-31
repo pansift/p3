@@ -647,7 +647,7 @@ wlan_measure () {
         wlan_channel_flags_width=80i
       fi
       if [[ $wlan_channel_flags_channel_width_onesixty_mhz == "1" ]]; then
-        wlan_channel_flags_width=80i
+        wlan_channel_flags_width=160i
       fi
       wlan_width=${wlan_channel_flags_width:=-1i}
 
@@ -772,6 +772,7 @@ wlan_scan () {
       wlan_scan_channel_flags_last_bits=${wlan_scan_channel_flags_binary_pad_bits: -5}
       wlan_scan_channel_flags_two_ghz_bit=${wlan_scan_channel_flags_last_bits:1:1}
       wlan_scan_channel_flags_five_ghz_bit=${wlan_scan_channel_flags_last_bits:0:1}
+      wlan_scan_channel_flags_six_ghz_bit=${wlan_scan_channel_flags_binary_pad_bits:2:1}
       wlan_scan_channel_flags_channel_width_twenty_mhz=${wlan_scan_channel_flags_last_bits:3:1}
       wlan_scan_channel_flags_channel_width_forty_mhz=${wlan_scan_channel_flags_last_bits:2:1}
       wlan_scan_channel_flags_channel_width_eighty_mhz=${wlan_scan_channel_flags_binary_pad_bits:5:1}
@@ -783,7 +784,9 @@ wlan_scan () {
 			wlan_scan_vht_op_channel_width=$("${plistbuddy}" "${scandata}" -c "print :$i:VHT_OP:CHANNEL_WIDTH" 2>/dev/null)i
 			wlan_scan_ht_secondary_chan_offset=$("${plistbuddy}" "${scandata}" -c "print :$i:HT_IE:HT_SECONDARY_CHAN_OFFSET" 2>/dev/null)i
 			# The following "xargs" is because we can get null bytes from plist binary data and bash doesn't like them
-			wlan_scan_he_any=$("${plistbuddy}" "${scandata}" -c "print :$i:HE_CAP" 2>/dev/null | xargs) # Only checking for absence or presence of HE KEYS
+			wlan_scan_he_op_info_center_channel_freq_seg0=$("${plistbuddy}" "${scandata}" -c "print :$i:HE_OP_IE:6GHZ_OP_INFO_CENTER_CHANNEL_FREQ_SEG0" 2>/dev/null)i 
+			wlan_scan_he_op_info_center_channel_freq_seg1=$("${plistbuddy}" "${scandata}" -c "print :$i:HE_OP_IE:6GHZ_OP_INFO_CENTER_CHANNEL_FREQ_SEG1" 2>/dev/null)i
+			wlan_scan_he_op_bss_color=$("${plistbuddy}" "${scandata}" -c "print :$i:HE_OP_IE:BSS_COLOR" 2>/dev/null)i
 			#
 			# Explicit defaults rather than {:=} expansion? Be careful with expansion on loops!!!!
 			# 
@@ -803,7 +806,7 @@ wlan_scan () {
 				wlan_scan_channel_flags_width=80
 			fi
 			if [[ $wlan_scan_channel_flags_channel_width_onesixty_mhz == "1" ]]; then
-				wlan_scan_channel_flags_width=80
+				wlan_scan_channel_flags_width=160
 			fi
 			wlan_scan_channel_flags_width=${wlan_scan_channel_flags_width:=0}i
 			# Note: The following may or may not be present hence starting to move to the channel flags above.
@@ -815,7 +818,8 @@ wlan_scan () {
 			if [[ $wlan_scan_channel_flags_five_ghz_bit == "1" ]]; then
 				wlan_scan_channel_flags_band=5
 			fi
-      if [[ $wlan_scan_channel_flags_two_ghz_bit == "0" ]] && [[ $wlan_scan_channel_flags_five_ghz_bit == "0" ]]; then
+			if [[ $wlan_scan_channel_flags_six_ghz_bit == "1" ]]; then
+      #if [[ $wlan_scan_channel_flags_two_ghz_bit == "0" ]] && [[ $wlan_scan_channel_flags_five_ghz_bit == "0" ]]; then
         wlan_scan_channel_flags_band=6
       fi
       wlan_scan_channel_flags_band=${wlan_scan_channel_flags_band:=-1}i
@@ -836,10 +840,16 @@ wlan_scan () {
 			if [ $wlan_scan_vht_op_channel_center_frequency_seg1 == "i" ]; then
 				wlan_scan_vht_op_channel_center_frequency_seg1="0i"
 			fi
-			if [ -z $wlan_scan_he_any ]; then
+			if [ $wlan_scan_he_op_bss_color == "i" ]; then
 				wlan_scan_80211ax="false"
 			else
 				wlan_scan_80211ax="true"
+			fi
+			if [ $wlan_scan_he_op_info_center_channel_freq_seg0 == "i" ]; then
+				wlan_scan_he_op_info_center_channel_freq_seg0="0i"
+			fi
+			if [ $wlan_scan_he_op_info_center_channel_freq_seg1 == "i" ]; then
+				wlan_scan_he_op_info_center_channel_freq_seg1="0i"
 			fi
       wlan_scan_80211n=${wlan_scan_80211n:=false}
       wlan_scan_80211ac=${wlan_scan_80211ac:=false}
@@ -850,7 +860,7 @@ wlan_scan () {
 			measurement="pansift_osx_wlanscan"
 			#tagset=$(echo -n "wlan_scan_on=$wlan_scan_on,wlan_scan_bssid_tag=$wlan_scan_bssid_tag")
 			tagset=$(echo -n "wlan_scan_on=$wlan_scan_on")
-			fieldset=$( echo -n "utc_offset=\"$utc_offset\",wlan_scan_ssid=\"$wlan_scan_ssid\",wlan_scan_bssid=\"$wlan_scan_bssid\",wlan_scan_channel=$wlan_scan_channel,wlan_scan_rssi=$wlan_scan_rssi,wlan_scan_noise=$wlan_scan_noise,wlan_scan_vht_op_channel_center_frequency_seg0=$wlan_scan_vht_op_channel_center_frequency_seg0,wlan_scan_vht_op_channel_center_frequency_seg1=$wlan_scan_vht_op_channel_center_frequency_seg1,wlan_scan_vht_op_channel_width=$wlan_scan_vht_op_channel_width,wlan_scan_cc=\"${wlan_scan_cc:=none}\",wlan_scan_ht_secondary_chan_offset=$wlan_scan_ht_secondary_chan_offset,wlan_scan_channel_flags_width=${wlan_scan_channel_flags_width:=0i},wlan_scan_channel_flags_band=${wlan_scan_channel_flags_band:=-1i}")
+			fieldset=$( echo -n "utc_offset=\"$utc_offset\",wlan_scan_ssid=\"$wlan_scan_ssid\",wlan_scan_bssid=\"$wlan_scan_bssid\",wlan_scan_channel=$wlan_scan_channel,wlan_scan_rssi=$wlan_scan_rssi,wlan_scan_noise=$wlan_scan_noise,wlan_scan_vht_op_channel_center_frequency_seg0=$wlan_scan_vht_op_channel_center_frequency_seg0,wlan_scan_vht_op_channel_center_frequency_seg1=$wlan_scan_vht_op_channel_center_frequency_seg1,wlan_scan_vht_op_channel_width=$wlan_scan_vht_op_channel_width,wlan_scan_cc=\"${wlan_scan_cc:=none}\",wlan_scan_ht_secondary_chan_offset=$wlan_scan_ht_secondary_chan_offset,wlan_scan_channel_flags_width=${wlan_scan_channel_flags_width:=0i},wlan_scan_channel_flags_band=${wlan_scan_channel_flags_band:=-1i},wlan_scan_he_op_info_center_channel_freq_seg0=$wlan_scan_he_op_info_center_channel_freq_seg0,wlan_scan_he_op_info_center_channel_freq_seg1=$wlan_scan_he_op_info_center_channel_freq_seg1")
 			timesuffix=$(expr 1000000000 + $i + 1) # This is to get around duplicates in Influx with measurement, tag, and timestamp the same. 
 			timesuffix=${timesuffix:1} # We drop the leading "1" and end up with incrementing nanoseconds 9 digits long
 			timestamp=$(date +%s)$timesuffix
