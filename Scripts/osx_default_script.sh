@@ -268,12 +268,12 @@ network_measure () {
 	# not potentially skewed by sleeping radios, ARP, NDP etc...
 	if [ "$who_first" -eq 0 ]; then
 		# echo "$who_first means IPv4 first"
-		dg4_response=$(echo -n "$netstat4" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg4_ip" == "none" ]] && ping -t5 -c3 -i1 -k BE "$dg4_ip" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
-		dg6_response=$(echo -n "$netstat6" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg6_ip" == "none" ]] && timeout 5 ping6 -c3 -i1 -k BE "$dg6_fullgw" 2>&1 | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
+		dg4_response=$(echo -n "$netstat4" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg4_ip" == "none" ]] && ping -t5 -c3 -i1 -k BE "$dg4_ip" 2>/dev/null | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
+		dg6_response=$(echo -n "$netstat6" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg6_ip" == "none" ]] && timeout 5 ping6 -c3 -i1 -k BE "$dg6_fullgw" 2>/dev/null | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
 	else
 		# echo "$who_first means IPv6 first"
-		dg6_response=$(echo -n "$netstat6" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg6_ip" == "none" ]] && timeout 5 ping6 -c3 -i1 -k BE "$dg6_fullgw" 2>&1 | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
-		dg4_response=$(echo -n "$netstat4" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg4_ip" == "none" ]] && ping -t5 -c3 -i1 -k BE "$dg4_ip" | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
+		dg6_response=$(echo -n "$netstat6" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg6_ip" == "none" ]] && timeout 5 ping6 -c3 -i1 -k BE "$dg6_fullgw" 2>/dev/null | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
+		dg4_response=$(echo -n "$netstat4" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg4_ip" == "none" ]] && ping -t5 -c3 -i1 -k BE "$dg4_ip" 2>/dev/null | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
 	fi
 
 
@@ -599,27 +599,30 @@ wlan_measure () {
       wlan_number_spatial_streams=0i
       wlan_width=0i
 		else 
-			wlan_number_spatial_streams=$("$plistbuddy" "${airport_more_data}" -c "print NSS" | remove_chars)i
+			wlan_number_spatial_streams=$("$plistbuddy" "${airport_more_data}" -c "print NSS" 2>/dev/null| remove_chars)i
 		fi
 		# Let's get the current frequency BAND and WIDTH from the Channel Flags : Donal 201023
-      wlan_channel_flags=$("${plistbuddy}" "${airport_more_data}" -c "print CHANNEL_FLAGS")
+      wlan_channel_flags=$("${plistbuddy}" "${airport_more_data}" -c "print CHANNEL_FLAGS" 2>/dev/null)
       wlan_channel_flags_binary=$(echo "obase=2;$wlan_channel_flags" | bc)
       wlan_channel_flags_length=${#wlan_channel_flags_binary}
       wlan_channel_flags_binary_pad_bits=$(printf "%016.0f" "$wlan_channel_flags_binary")
       wlan_channel_flags_last_bits=${wlan_channel_flags_binary_pad_bits: -5}
       wlan_channel_flags_two_ghz_bit=${wlan_channel_flags_last_bits:1:1}
       wlan_channel_flags_five_ghz_bit=${wlan_channel_flags_last_bits:0:1}
+      wlan_channel_flags_six_ghz_bit=${wlan_channel_flags_binary_pad_bits:2:1}
       wlan_channel_flags_channel_width_twenty_mhz=${wlan_channel_flags_last_bits:3:1}
       wlan_channel_flags_channel_width_forty_mhz=${wlan_channel_flags_last_bits:2:1}
       wlan_channel_flags_channel_width_eighty_mhz=${wlan_channel_flags_binary_pad_bits:5:1}
       wlan_channel_flags_channel_width_onesixty_mhz=${wlan_channel_flags_binary_pad_bits:4:1}
+      wlan_channel_flags_channel_width_threetwenty_mhz=${wlan_scan_channel_flags_binary_pad_bits:3:1}
       if [[ $wlan_channel_flags_two_ghz_bit == "1" ]]; then
         wlan_channel_flags_band=2
       fi
       if [[ $wlan_channel_flags_five_ghz_bit == "1" ]]; then
         wlan_channel_flags_band=5
       fi
-      if [[ $wlan_channel_flags_two_ghz_bit == "0" ]] && [[ $wlan_channel_flags_five_ghz_bit == "0" ]]; then
+			if [[ $wlan_channel_flags_six_ghz_bit == "1" ]]; then
+      # if [[ $wlan_channel_flags_two_ghz_bit == "0" ]] && [[ $wlan_channel_flags_five_ghz_bit == "0" ]]; then
         wlan_channel_flags_band=6
       fi
 			wlan_channel_flags_band=${wlan_channel_flags_band:=-1}i # Be careful with adding i's if already defined?
@@ -648,6 +651,9 @@ wlan_measure () {
       fi
       if [[ $wlan_channel_flags_channel_width_onesixty_mhz == "1" ]]; then
         wlan_channel_flags_width=160i
+      fi
+      if [[ $wlan_channel_flags_channel_width_threetwenty_mhz == "1" ]]; then
+        wlan_channel_flags_width=320i
       fi
       wlan_width=${wlan_channel_flags_width:=-1i}
 
@@ -760,12 +766,12 @@ wlan_scan () {
 		count=$(expr "${precount}" - 1)
 		for i in $(seq 0 "${count}")
 		do
-			wlan_scan_ssid=$("${plistbuddy}" "${scandata}" -c "print :$i:SSID_STR")
+			wlan_scan_ssid=$("${plistbuddy}" "${scandata}" -c "print :$i:SSID_STR" 2>/dev/null)
 			wlan_scan_bssid=$("${plistbuddy}" "${scandata}" -c "print :$i:BSSID" 2>/dev/null)
 			wlan_scan_cc=$("${plistbuddy}" "${scandata}" -c "print :$i:80211D_IE:IE_KEY_80211D_COUNTRY_CODE" 2>/dev/null)
 			#wlan_scan_bssid_tag=$(echo -n "$wlan_scan_bssid")  # BSSID should be a clean string as opposed to using SSID as a tag which needs to escape spaces with backslash \
-			wlan_scan_channel=$("${plistbuddy}" "${scandata}" -c "print :$i:CHANNEL")i
-      wlan_scan_channel_flags=$("${plistbuddy}" "${scandata}" -c "print :$i:CHANNEL_FLAGS")
+			wlan_scan_channel=$("${plistbuddy}" "${scandata}" -c "print :$i:CHANNEL" 2>/dev/null)i
+      wlan_scan_channel_flags=$("${plistbuddy}" "${scandata}" -c "print :$i:CHANNEL_FLAGS" 2>/dev/null)
       wlan_scan_channel_flags_binary=$(echo "obase=2;$wlan_scan_channel_flags" | bc)
       wlan_scan_channel_flags_length=${#wlan_scan_channel_flags_binary}
       wlan_scan_channel_flags_binary_pad_bits=$(printf "%016.0f" "$wlan_scan_channel_flags_binary")
@@ -777,8 +783,9 @@ wlan_scan () {
       wlan_scan_channel_flags_channel_width_forty_mhz=${wlan_scan_channel_flags_last_bits:2:1}
       wlan_scan_channel_flags_channel_width_eighty_mhz=${wlan_scan_channel_flags_binary_pad_bits:5:1}
       wlan_scan_channel_flags_channel_width_onesixty_mhz=${wlan_scan_channel_flags_binary_pad_bits:4:1}
-			wlan_scan_rssi=$("${plistbuddy}" "${scandata}" -c "print :$i:RSSI")i
-			wlan_scan_noise=$("${plistbuddy}" "${scandata}" -c "print :$i:NOISE")i
+      wlan_scan_channel_flags_channel_width_threetwenty_mhz=${wlan_scan_channel_flags_binary_pad_bits:3:1}
+			wlan_scan_rssi=$("${plistbuddy}" "${scandata}" -c "print :$i:RSSI" 2>/dev/null)i
+			wlan_scan_noise=$("${plistbuddy}" "${scandata}" -c "print :$i:NOISE" 2>/dev/null)i
 			wlan_scan_vht_op_channel_center_frequency_seg0=$("${plistbuddy}" "${scandata}" -c "print :$i:VHT_OP:CHANNEL_CENTER_FREQUENCY_SEG0" 2>/dev/null)i
 			wlan_scan_vht_op_channel_center_frequency_seg1=$("${plistbuddy}" "${scandata}" -c "print :$i:VHT_OP:CHANNEL_CENTER_FREQUENCY_SEG1" 2>/dev/null)i
 			wlan_scan_vht_op_channel_width=$("${plistbuddy}" "${scandata}" -c "print :$i:VHT_OP:CHANNEL_WIDTH" 2>/dev/null)i
@@ -807,6 +814,9 @@ wlan_scan () {
 			fi
 			if [[ $wlan_scan_channel_flags_channel_width_onesixty_mhz == "1" ]]; then
 				wlan_scan_channel_flags_width=160
+			fi
+			if [[ $wlan_scan_channel_flags_channel_width_onesixty_mhz == "1" ]]; then
+				wlan_scan_channel_flags_width=320
 			fi
 			wlan_scan_channel_flags_width=${wlan_scan_channel_flags_width:=0}i
 			# Note: The following may or may not be present hence starting to move to the channel flags above.
