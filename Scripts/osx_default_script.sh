@@ -822,7 +822,7 @@ wlan_scan () {
 			if [[ $wlan_scan_channel_flags_channel_width_onesixty_mhz == "1" ]]; then
 				wlan_scan_channel_flags_width=160
 			fi
-			if [[ $wlan_scan_channel_flags_channel_width_onesixty_mhz == "1" ]]; then
+			if [[ $wlan_scan_channel_flags_channel_width_threetwenty_mhz == "1" ]]; then
 				wlan_scan_channel_flags_width=320
 			fi
 			wlan_scan_channel_flags_width=${wlan_scan_channel_flags_width:=0}i
