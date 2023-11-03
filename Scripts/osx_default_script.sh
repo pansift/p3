@@ -464,8 +464,8 @@ internet_measure () {
 		ipv4_only="false"
 		ipv6_only="false"
 		internet_dualstack="true"
-		lighthouse4=$(timeout 7 $curl_binary -sN -4 -L -i "$PANSIFT_LIGHTHOUSE" 2>&1 || exit 0)
-		lighthouse6=$(timeout 7 $curl_binary -sN -6 -L -i "$PANSIFT_LIGHTHOUSE" 2>&1 || exit 0)
+		lighthouse4=$(timeout 5 $curl_binary -sN -4 -L -i "$PANSIFT_LIGHTHOUSE" 2>&1 || exit 0)
+		lighthouse6=$(timeout 5 $curl_binary -sN -6 -L -i "$PANSIFT_LIGHTHOUSE" 2>&1 || exit 0)
 		# internet_asn=$(echo -n "$lighthouse4" | grep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse4" | grep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
 		internet4_asn=$(echo -n "$lighthouse4" | grep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse4" | grep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
 		internet6_asn=$(echo -n "$lighthouse6" | grep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse6" | grep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
@@ -476,7 +476,7 @@ internet_measure () {
 		ipv4_only="true"
 		ipv6_only="false"
 		internet_dualstack="false"
-		lighthouse4=$(timeout 7 $curl_binary -sN -4 -L -i "$PANSIFT_LIGHTHOUSE" 2>&1 || exit 0)
+		lighthouse4=$(timeout 5 $curl_binary -sN -4 -L -i "$PANSIFT_LIGHTHOUSE" 2>&1 || exit 0)
 		# internet_asn=$(echo -n "$lighthouse4" | egrep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse4" | egrep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
 		internet4_asn=$(echo -n "$lighthouse4" | grep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse4" | grep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
 		internet4_public_ip=$(echo -n "$lighthouse4" | egrep -qi "x-pansift-client-ip" || { echo -n 'none'; exit 0;}; echo -n "$lighthouse4" | egrep -i "x-pansift-client-ip" | cut -d' ' -f2 | remove_chars )
@@ -486,7 +486,7 @@ internet_measure () {
 		ipv4_only="false"
 		ipv6_only="true"
 		internet_dualstack="false"
-		lighthouse6=$(timeout 7 $curl_binary -sN -6 -L -i "$PANSIFT_LIGHTHOUSE" 2>&1 || exit 0)
+		lighthouse6=$(timeout 5 $curl_binary -sN -6 -L -i "$PANSIFT_LIGHTHOUSE" 2>&1 || exit 0)
 		# internet_asn=$(echo -n "$lighthouse6" | egrep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse6" | egrep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
 		internet6_asn=$(echo -n "$lighthouse6" | grep -qi "x-pansift-client-asn" || { echo -n '0'; exit 0;}; echo -n "$lighthouse6" | grep -i "x-pansift-client-asn" | cut -d' ' -f2 | remove_chars )i
 		internet4_public_ip="none"
@@ -600,6 +600,9 @@ wlan_measure () {
       wlan_width=0i
 		else 
 			wlan_number_spatial_streams=$("$plistbuddy" "${airport_more_data}" -c "print NSS" 2>/dev/null| remove_chars)i
+		fi
+		if [[ "$wlan_number_spatial_streams" == "i" ]]; then
+			wlan_number_spatial_streams=0i
 		fi
 		# Let's get the current frequency BAND and WIDTH from the Channel Flags : Donal 201023
       wlan_channel_flags=$("${plistbuddy}" "${airport_more_data}" -c "print CHANNEL_FLAGS" 2>/dev/null)
@@ -786,6 +789,10 @@ wlan_scan () {
       wlan_scan_channel_flags_channel_width_threetwenty_mhz=${wlan_scan_channel_flags_binary_pad_bits:3:1}
 			wlan_scan_rssi=$("${plistbuddy}" "${scandata}" -c "print :$i:RSSI" 2>/dev/null)i
 			wlan_scan_noise=$("${plistbuddy}" "${scandata}" -c "print :$i:NOISE" 2>/dev/null)i
+			# Noise is lacking in Sonoma 14.x XML output
+			if [[ "$wlan_scan_noise" == "i" ]]; then
+				wlan_scan_noise=0i
+			fi
 			wlan_scan_vht_op_channel_center_frequency_seg0=$("${plistbuddy}" "${scandata}" -c "print :$i:VHT_OP:CHANNEL_CENTER_FREQUENCY_SEG0" 2>/dev/null)i
 			wlan_scan_vht_op_channel_center_frequency_seg1=$("${plistbuddy}" "${scandata}" -c "print :$i:VHT_OP:CHANNEL_CENTER_FREQUENCY_SEG1" 2>/dev/null)i
 			wlan_scan_vht_op_channel_width=$("${plistbuddy}" "${scandata}" -c "print :$i:VHT_OP:CHANNEL_WIDTH" 2>/dev/null)i
@@ -870,7 +877,7 @@ wlan_scan () {
 			measurement="pansift_osx_wlanscan"
 			#tagset=$(echo -n "wlan_scan_on=$wlan_scan_on,wlan_scan_bssid_tag=$wlan_scan_bssid_tag")
 			tagset=$(echo -n "wlan_scan_on=$wlan_scan_on")
-			fieldset=$( echo -n "utc_offset=\"$utc_offset\",wlan_scan_ssid=\"$wlan_scan_ssid\",wlan_scan_bssid=\"$wlan_scan_bssid\",wlan_scan_channel=$wlan_scan_channel,wlan_scan_rssi=$wlan_scan_rssi,wlan_scan_noise=$wlan_scan_noise,wlan_scan_vht_op_channel_center_frequency_seg0=$wlan_scan_vht_op_channel_center_frequency_seg0,wlan_scan_vht_op_channel_center_frequency_seg1=$wlan_scan_vht_op_channel_center_frequency_seg1,wlan_scan_vht_op_channel_width=$wlan_scan_vht_op_channel_width,wlan_scan_cc=\"${wlan_scan_cc:=none}\",wlan_scan_ht_secondary_chan_offset=$wlan_scan_ht_secondary_chan_offset,wlan_scan_channel_flags_width=${wlan_scan_channel_flags_width:=0i},wlan_scan_channel_flags_band=${wlan_scan_channel_flags_band:=-1i},wlan_scan_he_op_info_center_channel_freq_seg0=$wlan_scan_he_op_info_center_channel_freq_seg0,wlan_scan_he_op_info_center_channel_freq_seg1=$wlan_scan_he_op_info_center_channel_freq_seg1")
+			fieldset=$( echo -n "utc_offset=\"$utc_offset\",wlan_scan_ssid=\"$wlan_scan_ssid\",wlan_scan_bssid=\"$wlan_scan_bssid\",wlan_scan_channel=$wlan_scan_channel,wlan_scan_rssi=$wlan_scan_rssi,wlan_scan_noise=${wlan_scan_noise:=0i},wlan_scan_vht_op_channel_center_frequency_seg0=$wlan_scan_vht_op_channel_center_frequency_seg0,wlan_scan_vht_op_channel_center_frequency_seg1=$wlan_scan_vht_op_channel_center_frequency_seg1,wlan_scan_vht_op_channel_width=$wlan_scan_vht_op_channel_width,wlan_scan_cc=\"${wlan_scan_cc:=none}\",wlan_scan_ht_secondary_chan_offset=$wlan_scan_ht_secondary_chan_offset,wlan_scan_channel_flags_width=${wlan_scan_channel_flags_width:=0i},wlan_scan_channel_flags_band=${wlan_scan_channel_flags_band:=-1i},wlan_scan_he_op_info_center_channel_freq_seg0=$wlan_scan_he_op_info_center_channel_freq_seg0,wlan_scan_he_op_info_center_channel_freq_seg1=$wlan_scan_he_op_info_center_channel_freq_seg1")
 			timesuffix=$(expr 1000000000 + $i + 1) # This is to get around duplicates in Influx with measurement, tag, and timestamp the same. 
 			timesuffix=${timesuffix:1} # We drop the leading "1" and end up with incrementing nanoseconds 9 digits long
 			timestamp=$(date +%s)$timesuffix
@@ -960,7 +967,7 @@ while :; do
 			measurement="pansift_osx_network"
 			tagset=$(echo -n "internet_connected=$internet_connected,internet_dualstack=$internet_dualstack,ipv4_only=$ipv4_only,ipv6_only=$ipv6_only,locally_connected=$locally_connected,wlan_connected=$wlan_connected,wlan_state=$wlan_state,wlan_op_mode=$wlan_op_mode,wlan_supported_phy_mode=$wlan_supported_phy_mode") 
 			# TODO: We need to make better use of the default assignment e.g. dg6_response=${dg6_response:=0.0} for all variables
-			fieldset=$( echo -n "utc_offset=\"$utc_offset\",internet4_public_ip=\"$internet4_public_ip\",internet6_public_ip=\"$internet6_public_ip\",internet4_asn=$internet4_asn,internet6_asn=$internet6_asn,dg4_ip=\"$dg4_ip\",dg4_router_ether=\"$dg4_router_ether\",dg6_router_ether=\"$dg4_router_ether\",dg6_ip=\"$dg6_ip\",dg4_hardware_type=\"$dg4_hardware_type\",dg6_hardware_type=\"$dg6_hardware_type\",dg4_interface=\"$dg4_interface\",dg6_interface=\"$dg6_interface\",dg6_interface_device_only=\"$dg6_interface_device_only\",dg4_interface_ether=\"$dg4_interface_ether\",dg6_interface_ether=\"$dg6_interface_ether\",dg4_local_ip=\"$dg4_local_ip\",dg4_local_netmask=\"$dg4_local_netmask\",dg4_response=${dg4_response:=0},dg6_local_ip=\"$dg6_local_ip\",dg6_local_prefixlen=\"$dg6_local_prefixlen\",dg6_response=${dg6_response:=0},dns4_primary=\"$dns4_primary\",dns6_primary=\"$dns6_primary\",dns4_query_response=$dns4_query_response,dns6_query_response=$dns6_query_response,wlan_rssi=$wlan_rssi,wlan_noise=$wlan_noise,wlan_snr=$wlan_snr,wlan_last_tx_rate=$wlan_last_tx_rate,wlan_max_rate=$wlan_max_rate,wlan_ssid=\"$wlan_ssid\",wlan_bssid=\"$wlan_bssid\",wlan_phy_mode=\"$wlan_phy_mode\",wlan_mcs=$wlan_mcs_i,wlan_number_spatial_streams=$wlan_number_spatial_streams,wlan_last_assoc_status=$wlan_last_assoc_status,wlan_channel=$wlan_channel_i,wlan_channel_flags_band=${wlan_channel_flags_band:=-1i},wlan_width=${wlan_width:=-1i},wlan_current_phy_mode=\"$wlan_current_phy_mode\",wlan_supported_channels=\"$wlan_supported_channels\",wlan_80211_auth=\"$wlan_80211_auth\",wlan_link_auth=\"$wlan_link_auth\"")
+			fieldset=$( echo -n "utc_offset=\"$utc_offset\",internet4_public_ip=\"$internet4_public_ip\",internet6_public_ip=\"$internet6_public_ip\",internet4_asn=$internet4_asn,internet6_asn=$internet6_asn,dg4_ip=\"$dg4_ip\",dg4_router_ether=\"$dg4_router_ether\",dg6_router_ether=\"$dg4_router_ether\",dg6_ip=\"$dg6_ip\",dg4_hardware_type=\"$dg4_hardware_type\",dg6_hardware_type=\"$dg6_hardware_type\",dg4_interface=\"$dg4_interface\",dg6_interface=\"$dg6_interface\",dg6_interface_device_only=\"$dg6_interface_device_only\",dg4_interface_ether=\"$dg4_interface_ether\",dg6_interface_ether=\"$dg6_interface_ether\",dg4_local_ip=\"$dg4_local_ip\",dg4_local_netmask=\"$dg4_local_netmask\",dg4_response=${dg4_response:=0},dg6_local_ip=\"$dg6_local_ip\",dg6_local_prefixlen=\"$dg6_local_prefixlen\",dg6_response=${dg6_response:=0},dns4_primary=\"$dns4_primary\",dns6_primary=\"$dns6_primary\",dns4_query_response=$dns4_query_response,dns6_query_response=$dns6_query_response,wlan_rssi=$wlan_rssi,wlan_noise=$wlan_noise,wlan_snr=$wlan_snr,wlan_last_tx_rate=$wlan_last_tx_rate,wlan_max_rate=$wlan_max_rate,wlan_ssid=\"$wlan_ssid\",wlan_bssid=\"$wlan_bssid\",wlan_phy_mode=\"$wlan_phy_mode\",wlan_mcs=$wlan_mcs_i,wlan_number_spatial_streams=${wlan_number_spatial_streams:=0i},wlan_last_assoc_status=$wlan_last_assoc_status,wlan_channel=$wlan_channel_i,wlan_channel_flags_band=${wlan_channel_flags_band:=-1i},wlan_width=${wlan_width:=-1i},wlan_current_phy_mode=\"$wlan_current_phy_mode\",wlan_supported_channels=\"$wlan_supported_channels\",wlan_80211_auth=\"$wlan_80211_auth\",wlan_link_auth=\"$wlan_link_auth\"")
 			results
 			;;
 		-s|--scan)
