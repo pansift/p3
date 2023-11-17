@@ -266,14 +266,15 @@ network_measure () {
 	who_first="$(($RANDOM % 2))"
 	# We got some interesting results in the IPv6 v IPv4 which is faster/latency tests so we want to randomize which one goes first so results are
 	# not potentially skewed by sleeping radios, ARP, NDP etc...
+	# Note: TODO: We have a timeout problem when timeout() then uses the last line which containts IPv6 or IPv4 address and not summary...
 	if [ "$who_first" -eq 0 ]; then
 		# echo "$who_first means IPv4 first"
-		dg4_response=$(echo -n "$netstat4" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg4_ip" == "none" ]] && ping -t5 -c3 -i1 -k BE "$dg4_ip" 2>/dev/null | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
-		dg6_response=$(echo -n "$netstat6" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg6_ip" == "none" ]] && timeout 5 ping6 -c3 -i1 -k BE "$dg6_fullgw" 2>/dev/null | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
+		dg4_response=$(echo -n "$netstat4" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg4_ip" == "none" ]] && ping -t7 -c2 -k VO "$dg4_ip" 2>/dev/null | tail -n1 |  grep -i "avg" | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
+		dg6_response=$(echo -n "$netstat6" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg6_ip" == "none" ]] && timeout 7 ping6 -c2 -k VO "$dg6_fullgw" 2>/dev/null | tail -n1 | grep -i "avg" | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
 	else
 		# echo "$who_first means IPv6 first"
-		dg6_response=$(echo -n "$netstat6" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg6_ip" == "none" ]] && timeout 5 ping6 -c3 -i1 -k BE "$dg6_fullgw" 2>/dev/null | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
-		dg4_response=$(echo -n "$netstat4" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg4_ip" == "none" ]] && ping -t5 -c3 -i1 -k BE "$dg4_ip" 2>/dev/null | tail -n1 | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
+		dg6_response=$(echo -n "$netstat6" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg6_ip" == "none" ]] && timeout 7 ping6 -c2 -k VO "$dg6_fullgw" 2>/dev/null | tail -n1 | grep -i "avg" | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
+		dg4_response=$(echo -n "$netstat4" | grep -qi default || { echo -n 0; exit 0; }; [[ ! "$dg4_ip" == "none" ]] && ping -t7 -c2 -k VO "$dg4_ip" 2>/dev/null | tail -n1 | grep -i "avg" | cut -d' ' -f4 | cut -d'/' -f2 || echo -n 0)
 	fi
 
 
@@ -441,8 +442,8 @@ dns_random_rr_measure () {
 internet_measure () {
 	# We need basic ICMP response times from lighthouse too?
 	#
-	internet4_connected=$(ping -o -c3 -i1 -t5 $PANSIFT_ICMP4_TARGET > /dev/null 2>&1 || { echo -n "false"; exit 0;}; echo -n "true")
-	internet6_connected=$(timeout 5 ping6 -o -c3 -i1 $PANSIFT_ICMP6_TARGET > /dev/null 2>&1 || { echo -n "false"; exit 0;}; echo -n "true")
+	internet4_connected=$(ping -o -c2 -t10 $PANSIFT_ICMP4_TARGET > /dev/null 2>&1 || { echo -n "false"; exit 0;}; echo -n "true")
+	internet6_connected=$(timeout 10 ping6 -o -c2 $PANSIFT_ICMP6_TARGET > /dev/null 2>&1 || { echo -n "false"; exit 0;}; echo -n "true")
 	internet_connected="false" # Default to be overwritten below
 	internet_dualstack="false" # "
 	ipv4_only="false" # "
