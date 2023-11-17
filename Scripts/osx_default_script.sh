@@ -568,8 +568,9 @@ wlan_measure () {
 			else
 				wlan_mcs=$(echo -n "$airport_output"| egrep -i '[[:space:]]mcs' | cut -d':' -f2 | remove_chars)
 			fi
+			wlan_mcs=${wlan_mcs:=-1}
 			wlan_mcs_i="$wlan_mcs"i
-			wlan_mcs_i=${wlan_mcs_i:=-1i}
+			# wlan_mcs_i=${wlan_mcs_i:=-1i}
 			# Bug in Monterey airport -I is missing BSSID in 12.4 and 12.5 :( it requires sudo as per 
 			# https://www.reddit.com/r/MacOS/comments/qlqhld/airport_reports_blank_bssid_since_monterey/
 			if [[ "$osx_mainline" -ge 12 ]]; then
