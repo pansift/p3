@@ -597,9 +597,9 @@ wlan_measure () {
 		elif [[ "$wlan_op_mode" != "none" ]] && [[ $osx_mainline == 10 ]]; then
 			wlan_number_spatial_streams=0i
 			wlan_width=0i
-    elif [[ "$wlan_op_mode" == "none" ]]; then
-      wlan_number_spatial_streams=0i
-      wlan_width=0i
+		elif [[ "$wlan_op_mode" == "none" ]]; then
+			wlan_number_spatial_streams=0i
+			wlan_width=0i
 		else 
 			wlan_number_spatial_streams=$("$plistbuddy" "${airport_more_data}" -c "print NSS" 2>/dev/null| remove_chars)i
 		fi
@@ -607,30 +607,30 @@ wlan_measure () {
 			wlan_number_spatial_streams=0i
 		fi
 		# Let's get the current frequency BAND and WIDTH from the Channel Flags : Donal 201023
-      wlan_channel_flags=$("${plistbuddy}" "${airport_more_data}" -c "print CHANNEL_FLAGS" 2>/dev/null)
-      wlan_channel_flags_binary=$(echo "obase=2;$wlan_channel_flags" | bc)
-      wlan_channel_flags_length=${#wlan_channel_flags_binary}
-      wlan_channel_flags_binary_pad_bits=$(printf "%016.0f" "$wlan_channel_flags_binary")
-      wlan_channel_flags_last_bits=${wlan_channel_flags_binary_pad_bits: -5}
-      wlan_channel_flags_two_ghz_bit=${wlan_channel_flags_last_bits:1:1}
-      wlan_channel_flags_five_ghz_bit=${wlan_channel_flags_last_bits:0:1}
-      wlan_channel_flags_six_ghz_bit=${wlan_channel_flags_binary_pad_bits:2:1}
-      wlan_channel_flags_channel_width_twenty_mhz=${wlan_channel_flags_last_bits:3:1}
-      wlan_channel_flags_channel_width_forty_mhz=${wlan_channel_flags_last_bits:2:1}
-      wlan_channel_flags_channel_width_eighty_mhz=${wlan_channel_flags_binary_pad_bits:5:1}
-      wlan_channel_flags_channel_width_onesixty_mhz=${wlan_channel_flags_binary_pad_bits:4:1}
-      wlan_channel_flags_channel_width_threetwenty_mhz=${wlan_scan_channel_flags_binary_pad_bits:3:1}
-      if [[ $wlan_channel_flags_two_ghz_bit == "1" ]]; then
-        wlan_channel_flags_band=2
-      fi
-      if [[ $wlan_channel_flags_five_ghz_bit == "1" ]]; then
-        wlan_channel_flags_band=5
-      fi
-			if [[ $wlan_channel_flags_six_ghz_bit == "1" ]]; then
-      # if [[ $wlan_channel_flags_two_ghz_bit == "0" ]] && [[ $wlan_channel_flags_five_ghz_bit == "0" ]]; then
-        wlan_channel_flags_band=6
-      fi
-			wlan_channel_flags_band=${wlan_channel_flags_band:=-1}i # Be careful with adding i's if already defined?
+		wlan_channel_flags=$("${plistbuddy}" "${airport_more_data}" -c "print CHANNEL_FLAGS" 2>/dev/null)
+		wlan_channel_flags_binary=$(echo "obase=2;$wlan_channel_flags" | bc)
+		wlan_channel_flags_length=${#wlan_channel_flags_binary}
+		wlan_channel_flags_binary_pad_bits=$(printf "%016.0f" "$wlan_channel_flags_binary")
+		wlan_channel_flags_last_bits=${wlan_channel_flags_binary_pad_bits: -5}
+		wlan_channel_flags_two_ghz_bit=${wlan_channel_flags_last_bits:1:1}
+		wlan_channel_flags_five_ghz_bit=${wlan_channel_flags_last_bits:0:1}
+		wlan_channel_flags_six_ghz_bit=${wlan_channel_flags_binary_pad_bits:2:1}
+		wlan_channel_flags_channel_width_twenty_mhz=${wlan_channel_flags_last_bits:3:1}
+		wlan_channel_flags_channel_width_forty_mhz=${wlan_channel_flags_last_bits:2:1}
+		wlan_channel_flags_channel_width_eighty_mhz=${wlan_channel_flags_binary_pad_bits:5:1}
+		wlan_channel_flags_channel_width_onesixty_mhz=${wlan_channel_flags_binary_pad_bits:4:1}
+		wlan_channel_flags_channel_width_threetwenty_mhz=${wlan_channel_flags_binary_pad_bits:3:1}
+		if [[ $wlan_channel_flags_two_ghz_bit == "1" ]]; then
+			wlan_channel_flags_band=2
+		fi
+		if [[ $wlan_channel_flags_five_ghz_bit == "1" ]]; then
+			wlan_channel_flags_band=5
+		fi
+		if [[ $wlan_channel_flags_six_ghz_bit == "1" ]]; then
+			# if [[ $wlan_channel_flags_two_ghz_bit == "0" ]] && [[ $wlan_channel_flags_five_ghz_bit == "0" ]]; then
+			wlan_channel_flags_band=6
+		fi
+		wlan_channel_flags_band=${wlan_channel_flags_band:=-1}i # Be careful with adding i's if already defined?
 		# wlan_width=$("$plistbuddy" "${airport_more_data}" -c "print BANDWIDTH" | remove_chars)i
 		# There is still a bug presenting in 11.X with 802.11ax for spatial streams even on 5GHz where we can't get data as set to 0 in airport -Ix
 		width_increment=$(echo -n "$airport_output"| egrep -i '[[:space:]]channel' |  cut -d':' -f2 | awk '{$1=$1;print}' | cut -d',' -f2 | remove_chars)
@@ -644,72 +644,72 @@ wlan_measure () {
 			wlan_width=20i
 		fi
 
-      # Alternate: Get the WIDTH from the Apple CHANNEL_FLAGS
-      if [[ $wlan_channel_flags_channel_width_twenty_mhz == "1" ]]; then
-        wlan_channel_flags_width=20i
-      fi
-      if [[ $wlan_channel_flags_channel_width_forty_mhz == "1" ]]; then
-        wlan_channel_flags_width=40i
-      fi
-      if [[ $wlan_channel_flags_channel_width_eighty_mhz == "1" ]]; then
-        wlan_channel_flags_width=80i
-      fi
-      if [[ $wlan_channel_flags_channel_width_onesixty_mhz == "1" ]]; then
-        wlan_channel_flags_width=160i
-      fi
-      if [[ $wlan_channel_flags_channel_width_threetwenty_mhz == "1" ]]; then
-        wlan_channel_flags_width=320i
-      fi
-      wlan_width=${wlan_channel_flags_width:=-1i}
+			# Alternate: Get the WIDTH from the Apple CHANNEL_FLAGS
+			if [[ $wlan_channel_flags_channel_width_twenty_mhz == "1" ]]; then
+				wlan_channel_flags_width=20i
+			fi
+			if [[ $wlan_channel_flags_channel_width_forty_mhz == "1" ]]; then
+				wlan_channel_flags_width=40i
+			fi
+			if [[ $wlan_channel_flags_channel_width_eighty_mhz == "1" ]]; then
+				wlan_channel_flags_width=80i
+			fi
+			if [[ $wlan_channel_flags_channel_width_onesixty_mhz == "1" ]]; then
+				wlan_channel_flags_width=160i
+			fi
+			if [[ $wlan_channel_flags_channel_width_threetwenty_mhz == "1" ]]; then
+				wlan_channel_flags_width=320i
+			fi
+			wlan_width=${wlan_channel_flags_width:=-1i}
 
-		wlan_current_phy_mode=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "PHY Mode:" | head -n1 | cut -d':' -f2- | remove_chars)
-		wlan_supported_phy_mode=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "Supported PHY Modes" | cut -d':' -f2- | remove_chars)
-		wlan_supported_channels=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "Supported Channels:" | head -n1 | cut -d':' -f2- | remove_chars_delimit_colon)
-		# We need to take in to account the following 2 states of init / associating where much of the data is unavailable.
-	elif [[ "$wlan_state" == "init" ]] || [[ "$wlan_state" == "associating" ]] || [[ "$wlan_state" == "authenticating" ]]; then
-		wlan_op_mode="none"
-		wlan_80211_auth="none"
-		wlan_link_auth="none" # Though this is available for init
-		wlan_current_phy_mode="none"
-		wlan_channel_i=0i
-		wlan_width=-1i # Can we default to 20 (20MHz) i.e. does 0 mean 20, what about .ax?
-		wlan_rssi=0i
-		wlan_noise=0i
-		wlan_snr=0i
-		wlan_last_tx_rate=0i
-		wlan_max_rate=0i
-		wlan_ssid=""
-		wlan_bssid=""
-		wlan_phy_mode=""
-		wlan_mcs_i=-1i # MCS can be 0 as per https://mcsindex.com/
-		wlan_last_assoc_status=-1i
-		wlan_number_spatial_streams=0i
-		wlan_supported_phy_mode=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "Supported PHY Modes" | cut -d':' -f2- | remove_chars)
-		wlan_supported_channels=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "Supported Channels:" | head -n1 | cut -d':' -f2- | remove_chars_delimit_colon)
-		wlan_channel_flags_band=${wlan_channel_flags_band:=-1i}
-	else
-		# This can happen in a VM where there is no wlan_state but the airport tool still works and returns blank
-		wlan_state="unknown"
-		wlan_op_mode="none"
-		wlan_80211_auth="none"
-		wlan_link_auth="none" # Though this is available for init
-		wlan_current_phy_mode="none"
-		wlan_supported_phy_mode="none"
-		wlan_channel_i=0i
-		wlan_width=-1i # Can we default to 20 (20MHz) i.e. does 0 mean 20, what about .ax?
-		wlan_rssi=0i
-		wlan_noise=0i
-		wlan_snr=0i
-		wlan_last_tx_rate=0i
-		wlan_max_rate=0i
-		wlan_ssid=""
-		wlan_bssid=""
-		wlan_phy_mode=""
-		wlan_mcs_i=-1i # MCS can be 0 as per https://mcsindex.com/
-		wlan_last_assoc_status=-1i
-		wlan_number_spatial_streams=0i
-		wlan_supported_channels=""
-		wlan_channel_flags_band=${wlan_channel_flags_band:=-1i}
+			wlan_current_phy_mode=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "PHY Mode:" | head -n1 | cut -d':' -f2- | remove_chars)
+			wlan_supported_phy_mode=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "Supported PHY Modes" | cut -d':' -f2- | remove_chars)
+			wlan_supported_channels=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "Supported Channels:" | head -n1 | cut -d':' -f2- | remove_chars_delimit_colon)
+			# We need to take in to account the following 2 states of init / associating where much of the data is unavailable.
+		elif [[ "$wlan_state" == "init" ]] || [[ "$wlan_state" == "associating" ]] || [[ "$wlan_state" == "authenticating" ]]; then
+			wlan_op_mode="none"
+			wlan_80211_auth="none"
+			wlan_link_auth="none" # Though this is available for init
+			wlan_current_phy_mode="none"
+			wlan_channel_i=0i
+			wlan_width=-1i # Can we default to 20 (20MHz) i.e. does 0 mean 20, what about .ax?
+			wlan_rssi=0i
+			wlan_noise=0i
+			wlan_snr=0i
+			wlan_last_tx_rate=0i
+			wlan_max_rate=0i
+			wlan_ssid=""
+			wlan_bssid=""
+			wlan_phy_mode=""
+			wlan_mcs_i=-1i # MCS can be 0 as per https://mcsindex.com/
+			wlan_last_assoc_status=-1i
+			wlan_number_spatial_streams=0i
+			wlan_supported_phy_mode=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "Supported PHY Modes" | cut -d':' -f2- | remove_chars)
+			wlan_supported_channels=$(echo -n "$wlan_sp_airport_data_type" | egrep -i "Supported Channels:" | head -n1 | cut -d':' -f2- | remove_chars_delimit_colon)
+			wlan_channel_flags_band=${wlan_channel_flags_band:=-1i}
+		else
+			# This can happen in a VM where there is no wlan_state but the airport tool still works and returns blank
+			wlan_state="unknown"
+			wlan_op_mode="none"
+			wlan_80211_auth="none"
+			wlan_link_auth="none" # Though this is available for init
+			wlan_current_phy_mode="none"
+			wlan_supported_phy_mode="none"
+			wlan_channel_i=0i
+			wlan_width=-1i # Can we default to 20 (20MHz) i.e. does 0 mean 20, what about .ax?
+			wlan_rssi=0i
+			wlan_noise=0i
+			wlan_snr=0i
+			wlan_last_tx_rate=0i
+			wlan_max_rate=0i
+			wlan_ssid=""
+			wlan_bssid=""
+			wlan_phy_mode=""
+			wlan_mcs_i=-1i # MCS can be 0 as per https://mcsindex.com/
+			wlan_last_assoc_status=-1i
+			wlan_number_spatial_streams=0i
+			wlan_supported_channels=""
+			wlan_channel_flags_band=${wlan_channel_flags_band:=-1i}
 		fi
 	else
 		# set all values null as can not have an empty tag and safer than in the fieldset for everything?
@@ -734,13 +734,17 @@ wlan_measure () {
 		wlan_last_assoc_status=-1i
 		wlan_number_spatial_streams=0i
 		wlan_supported_channels=""
-   	wlan_channel_flags_band=${wlan_channel_flags_band:=-1i}
+		wlan_channel_flags_band=${wlan_channel_flags_band:=-1i}
 	fi
 }
 
 wlan_scan () {
 	airport_output=$("$airport" -s -x)
-	if [[ -z "$airport_output" ]]; then
+	scandata="$PANSIFT_LOGS"/airport-scan.plist #Need a better way to do the install location, assuming ~/p3 for now. 
+	printf "%s" "$airport_output" > "$scandata" &
+	pid=$!
+	wait $pid
+	if [[ -z "$airport_output" || ! -s "${scandata}" ]]; then
 		# echo -n "No airport output in scan"
 		wlan_scan_on="false"
 		# wlan_scan_data="none"
@@ -749,18 +753,9 @@ wlan_scan () {
 		fieldset=$( echo -n "utc_offset=\"$utc_offset\",wlan_on=false")
 		results
 	else
-		# Need to migrate this to XML output and a data structure that Influx can ingest that includes taking in to account spaces in SSID hence XML
-		#scandata="/tmp/airport.plist"
-		scandata="$PANSIFT_LOGS"/airport-scan.plist #Need a better way to do the install location, assuming ~/p3 for now. 
-		#test -f $scandata || touch $scandata
-		#if [[ ! -e $scandata ]]; then
-		#  touch $scandata
-		#fi
-		#echo $airport_output > tempfile && cp tempfile $scandata # This is a hack to wait for the completion of writing data
-		printf "%s" "$airport_output" > "$scandata" &
-		pid=$!
-		wait $pid
 		wlan_scan_on="true"
+		# Note: plistbuddy does not do proper exist codes for file reading errors, it works fine for command error exit codes
+		# "Error Reading File" will go to stdout not stderr
 		precount=$(
 		"$plistbuddy" "${scandata}" -c "print ::" | # Extract array items
 			cat -v |                                  # Convert from binary output to ascii
@@ -768,27 +763,33 @@ wlan_scan () {
 			wc -l |                                   # Count top-level dictionaries
 			xargs                                     # Trim whitespace
 		)
+		# Also, -1 can be passed here but see the notes on plistbuddy errors and exit codes for file errors vs command errors
 		count=$(expr "${precount}" - 1)
 		for i in $(seq 0 "${count}")
 		do
+			# Note: plistbuddy does not do proper exist codes for file reading errors, it works fine for command error exit codes
+			# "Error Reading File" will go to stdout not stderr
+			if [[ ! -s "${scandata}" ]]; then
+				continue
+			fi
 			wlan_scan_ssid=$("${plistbuddy}" "${scandata}" -c "print :$i:SSID_STR" 2>/dev/null)
 			wlan_scan_bssid=$("${plistbuddy}" "${scandata}" -c "print :$i:BSSID" 2>/dev/null)
 			wlan_scan_cc=$("${plistbuddy}" "${scandata}" -c "print :$i:80211D_IE:IE_KEY_80211D_COUNTRY_CODE" 2>/dev/null)
 			#wlan_scan_bssid_tag=$(echo -n "$wlan_scan_bssid")  # BSSID should be a clean string as opposed to using SSID as a tag which needs to escape spaces with backslash \
 			wlan_scan_channel=$("${plistbuddy}" "${scandata}" -c "print :$i:CHANNEL" 2>/dev/null)i
-      wlan_scan_channel_flags=$("${plistbuddy}" "${scandata}" -c "print :$i:CHANNEL_FLAGS" 2>/dev/null)
-      wlan_scan_channel_flags_binary=$(echo "obase=2;$wlan_scan_channel_flags" | bc)
-      wlan_scan_channel_flags_length=${#wlan_scan_channel_flags_binary}
-      wlan_scan_channel_flags_binary_pad_bits=$(printf "%016.0f" "$wlan_scan_channel_flags_binary")
-      wlan_scan_channel_flags_last_bits=${wlan_scan_channel_flags_binary_pad_bits: -5}
-      wlan_scan_channel_flags_two_ghz_bit=${wlan_scan_channel_flags_last_bits:1:1}
-      wlan_scan_channel_flags_five_ghz_bit=${wlan_scan_channel_flags_last_bits:0:1}
-      wlan_scan_channel_flags_six_ghz_bit=${wlan_scan_channel_flags_binary_pad_bits:2:1}
-      wlan_scan_channel_flags_channel_width_twenty_mhz=${wlan_scan_channel_flags_last_bits:3:1}
-      wlan_scan_channel_flags_channel_width_forty_mhz=${wlan_scan_channel_flags_last_bits:2:1}
-      wlan_scan_channel_flags_channel_width_eighty_mhz=${wlan_scan_channel_flags_binary_pad_bits:5:1}
-      wlan_scan_channel_flags_channel_width_onesixty_mhz=${wlan_scan_channel_flags_binary_pad_bits:4:1}
-      wlan_scan_channel_flags_channel_width_threetwenty_mhz=${wlan_scan_channel_flags_binary_pad_bits:3:1}
+			wlan_scan_channel_flags=$("${plistbuddy}" "${scandata}" -c "print :$i:CHANNEL_FLAGS" 2>/dev/null)
+			wlan_scan_channel_flags_binary=$(echo "obase=2;$wlan_scan_channel_flags" | bc)
+			wlan_scan_channel_flags_length=${#wlan_scan_channel_flags_binary}
+			wlan_scan_channel_flags_binary_pad_bits=$(printf "%016.0f" "$wlan_scan_channel_flags_binary")
+			wlan_scan_channel_flags_last_bits=${wlan_scan_channel_flags_binary_pad_bits: -5}
+			wlan_scan_channel_flags_two_ghz_bit=${wlan_scan_channel_flags_last_bits:1:1}
+			wlan_scan_channel_flags_five_ghz_bit=${wlan_scan_channel_flags_last_bits:0:1}
+			wlan_scan_channel_flags_six_ghz_bit=${wlan_scan_channel_flags_binary_pad_bits:2:1}
+			wlan_scan_channel_flags_channel_width_twenty_mhz=${wlan_scan_channel_flags_last_bits:3:1}
+			wlan_scan_channel_flags_channel_width_forty_mhz=${wlan_scan_channel_flags_last_bits:2:1}
+			wlan_scan_channel_flags_channel_width_eighty_mhz=${wlan_scan_channel_flags_binary_pad_bits:5:1}
+			wlan_scan_channel_flags_channel_width_onesixty_mhz=${wlan_scan_channel_flags_binary_pad_bits:4:1}
+			wlan_scan_channel_flags_channel_width_threetwenty_mhz=${wlan_scan_channel_flags_binary_pad_bits:3:1}
 			wlan_scan_rssi=$("${plistbuddy}" "${scandata}" -c "print :$i:RSSI" 2>/dev/null)i
 			wlan_scan_noise=$("${plistbuddy}" "${scandata}" -c "print :$i:NOISE" 2>/dev/null)i
 			# Anything we append an "i" to for integers needs to have a default before or be reset on failure
@@ -842,10 +843,10 @@ wlan_scan () {
 				wlan_scan_channel_flags_band=5
 			fi
 			if [[ $wlan_scan_channel_flags_six_ghz_bit == "1" ]]; then
-      #if [[ $wlan_scan_channel_flags_two_ghz_bit == "0" ]] && [[ $wlan_scan_channel_flags_five_ghz_bit == "0" ]]; then
-        wlan_scan_channel_flags_band=6
-      fi
-      wlan_scan_channel_flags_band=${wlan_scan_channel_flags_band:=-1}i
+				#if [[ $wlan_scan_channel_flags_two_ghz_bit == "0" ]] && [[ $wlan_scan_channel_flags_five_ghz_bit == "0" ]]; then
+				wlan_scan_channel_flags_band=6
+			fi
+			wlan_scan_channel_flags_band=${wlan_scan_channel_flags_band:=-1}i
 			if [ $wlan_scan_ht_secondary_chan_offset == "i" ]; then
 				wlan_scan_ht_secondary_chan_offset="0i"
 				wlan_scan_80211n="false"
@@ -874,9 +875,9 @@ wlan_scan () {
 			if [ $wlan_scan_he_op_info_center_channel_freq_seg1 == "i" ]; then
 				wlan_scan_he_op_info_center_channel_freq_seg1="0i"
 			fi
-      wlan_scan_80211n=${wlan_scan_80211n:=false}
-      wlan_scan_80211ac=${wlan_scan_80211ac:=false}
-      wlan_scan_80211ax=${wlan_scan_80211ax:=false}
+			wlan_scan_80211n=${wlan_scan_80211n:=false}
+			wlan_scan_80211ac=${wlan_scan_80211ac:=false}
+			wlan_scan_80211ax=${wlan_scan_80211ax:=false}
 			if [[ $wlan_scan_vht_op_channel_width == "i" ]]; then
 				wlan_scan_vht_op_channel_width="0i"
 			fi
@@ -933,9 +934,9 @@ http_checks () {
 			http_speed_megabits=$(echo "scale=3;($http_speed_bytes * 8) / 1000000" | bc -l | tr -d '\n' | sed 's/^\./0./' | remove_chars)
 			# http_ttfb changing to scale=3 to catch very fast i.e. us v ms setup on fast links. Also, why not divide by 1000 instead of * 10000 / 10 ??
 			http_ttfb=$(echo "scale=3;(($http_time_connect - $http_time_namelookup) * 10000) / 10;" | bc -l | tr -d '\n' | sed 's/^\./0./' | remove_chars)
-      if [ 1 -eq "$(echo "${http_ttfb} < 0" | bc)" ]; then # IF for example IPv4 is down we are doing maths with a lookup that might work but connect doesn't and results in negative values
-        http_ttfb=0
-      fi
+			if [ 1 -eq "$(echo "${http_ttfb} < 0" | bc)" ]; then # IF for example IPv4 is down we are doing maths with a lookup that might work but connect doesn't and results in negative values
+				http_ttfb=0
+			fi
 			tagset=$(echo -n "ip_version=4,http_url=$http_url")
 			fieldset=$( echo -n "utc_offset=\"$utc_offset\",http_time_namelookup=${http_time_namelookup:=0},http_time_connect=${http_time_connect:=0},http_time_appconnect=${http_time_appconnect:=0},http_time_pretransfer=${http_time_pretransfer:=0},http_time_starttransfer=${http_time_starttransfer:=0},http_time_total=${http_time_total:=0},http_size_megabytes=${http_size_megabytes:=0},http_size_kilobytes=${http_size_kilobytes:=0},http_ttfb=${http_ttfb:=0},http_status=${http_status:=0i},http_speed_megabits=${http_speed_megabits:=0}")
 			timesuffix=$(expr 1000000000 + $i + 1) # This is to get around duplicates in Influx with measurement, tag, and timestamp the same.
