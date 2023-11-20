@@ -745,16 +745,19 @@ wlan_scan () {
 	pid=$!
 	wait $pid
 	if [[ -z "$airport_output" || ! -s "${scandata}" ]]; then
-		# echo -n "No airport output in scan"
+		# echo -n "No scan file or no airport output in scan"
+		# Note: plistbuddy does not do proper exit codes for file reading errors, it works fine for command error exit codes
 		wlan_scan_on="false"
 		# wlan_scan_data="none"
 		measurement="pansift_osx_wlanscan"
 		tagset=$(echo -n "wlan_scan_on=$wlan_scan_on")
+		# Technically we can have failures here and it doesn't necessarily mean the wlan_on is false but effectively is
+    # whether "off" or no data sent to file (or file is empty)
 		fieldset=$( echo -n "utc_offset=\"$utc_offset\",wlan_on=false")
 		results
 	else
 		wlan_scan_on="true"
-		# Note: plistbuddy does not do proper exist codes for file reading errors, it works fine for command error exit codes
+		# Note: plistbuddy does not do proper exit codes for file reading errors, it works fine for command error exit codes
 		# "Error Reading File" will go to stdout not stderr
 		precount=$(
 		"$plistbuddy" "${scandata}" -c "print ::" | # Extract array items
@@ -767,7 +770,7 @@ wlan_scan () {
 		count=$(expr "${precount}" - 1)
 		for i in $(seq 0 "${count}")
 		do
-			# Note: plistbuddy does not do proper exist codes for file reading errors, it works fine for command error exit codes
+			# Note: plistbuddy does not do proper exit codes for file reading errors, it works fine for command error exit codes
 			# "Error Reading File" will go to stdout not stderr
 			if [[ ! -s "${scandata}" ]]; then
 				continue
