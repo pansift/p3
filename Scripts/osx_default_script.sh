@@ -794,6 +794,9 @@ wlan_scan () {
 			wlan_scan_channel_flags_channel_width_onesixty_mhz=${wlan_scan_channel_flags_binary_pad_bits:4:1}
 			wlan_scan_channel_flags_channel_width_threetwenty_mhz=${wlan_scan_channel_flags_binary_pad_bits:3:1}
 			wlan_scan_rssi=$("${plistbuddy}" "${scandata}" -c "print :$i:RSSI" 2>/dev/null)i
+			if [[ "$wlan_scan_rssi" == "i" ]]; then
+				wlan_scan_rssi=0i
+			fi
 			wlan_scan_noise=$("${plistbuddy}" "${scandata}" -c "print :$i:NOISE" 2>/dev/null)i
 			# Anything we append an "i" to for integers needs to have a default before or be reset on failure
 			if [[ "$wlan_scan_channel" == "i" ]]; then

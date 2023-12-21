@@ -44,7 +44,7 @@ fi
 
 agent_check() {
 	logs=$(tail -n 3 "$PANSIFT_LOGS"/telegraf.log)
-	log_msg="$(echo -n "$logs" | egrep -qi "\[agent\].*error|failed|no such host" || { echo -n 'Agent (OK) | color=green'; exit 0; }; echo -n "$logs" | egrep -i "\[agent\].*error|failed|no such host" | cut -d" " -f3- | awk '{print substr($0,1,100)"...| color=red"}')"
+	log_msg="$(echo -n "$logs" | egrep -qi "\[agent\].*error|failed|no such host" || { echo -n 'Agent (OK) | color=green'; exit 0; }; echo -n "$logs" | egrep -i "\[agent\].*error|failed|no such host" | cut -d" " -f3- | awk '{print substr($0,1,100)"...| color=purple"}')"
 	echo "$log_msg"
 }
 
@@ -53,7 +53,7 @@ echo "---"
 echo "About PanSift | bash='$PANSIFT_SCRIPTS/pansift_about.sh' terminal=false"
 echo "---"
 echo "Reachability Status"
-ping -o -c2 -i1 -t5 $PANSIFT_ICMP4_TARGET > /dev/null 2>&1 && echo "IPv4 (OK) | color=green" || echo "IPv4 (Issues) | color=red"
+ping -o -c2 -i1 -t5 $PANSIFT_ICMP4_TARGET > /dev/null 2>&1 && echo "IPv4 (OK) | color=green" || echo "IPv4 (Issues) | color=purple"
 ping6 -o -c2 -i1 $PANSIFT_ICMP6_TARGET > /dev/null 2>&1 && echo "IPv6 (OK) | color=green" || echo "IPv6 (Issues) | color=purple"
 agent_check
 echo "---"
