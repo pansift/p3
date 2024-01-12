@@ -56,3 +56,39 @@ Once the Pansift.app runs for the first time, it bootstraps its configuration. I
  * `pansift_ingest.conf` contains a single string comprised of a fully qualified URL for the bucket's datastore and ingest host. It takes the form of the `pansift`/`bucket` UUID as the host portion in the `ingest` subdomain. A URL example would be as such; `https://84b878ec-da07-490e-8375-c36dfbb098fa.ingest.pansift.com` (but replace with your UUID), and it needs to resolve in DNS before writes will succeed. This URL tells the agent which datastore host to speak to. The DNS entry is created during the normal ZTP process or by support (so please liaise with support for mass deployments if you are unsure). Please also check the PanSift log for a new agent or [contact support](https://pansift.com/contact) if this is not resolving for you. :information_source: The FQDN(Fully Qualified Domain Name) is a CNAME that points to the datastore A record.
 
 > :warning: **Do not configure the `pansift_ingest.conf` datastore URL with the A record. Use "https://" + the CNAME which follows the pattern of `https://<uuid>.ingest.pansift.com`** otherwise backend operational changes may cause interruptions to your agents' ability to write.
+
+# Uninstalling PanSift
+
+## Manual Uninstall
+
+There's an "Uninstall" option in the Agent menu under "PS/Uninstall/Interactively" (which opens the terminal and goes from there). Alternatively, you can remove it from your "Login Items" and also delete from "Applications" + stop the Telegraf process (though this is what the [Uninstall script](Scripts/uninstall.sh) does). If the "Uninstall" option is not bringing up your Mac's "Terminal", just open a fresh "Terminal" and click "Uninstall" from the menu again.
+
+## Automatic Uninstall
+
+Note: `sudo` is only required if you are running as another user (not the user under which it was installed). `sudo` may also be required for removing from the /Applications folder, but the remaining files and processes are only using user-level permissions. As you can see `$HOME` expects to be run under the user account which was also used to install the application.
+
+Note_II: We are also trying to be very careful when using `rm -rf` to only reference explicit files and paths to help avoid any spurious deletions.
+```
+# Locations
+export PANSIFT_PREFERENCES="$HOME"/Library/Preferences/Pansift
+export PANSIFT_SCRIPTS="$HOME"/Library/Application\ Scripts/Pansift
+export PANSIFT_LOGS="$HOME"/Library/Logs/Pansift
+export PANSIFT_SUPPORT="$HOME"/Library/Application\ Support/Pansift
+
+sudo pkill -9 -f Pansift.app
+sudo defaults delete com.pansift.p3bar
+sudo osascript -e 'tell application "System Events" to delete login item "Pansift"'
+
+cd /Applications 
+sudo rm -rf ./Pansift.app
+cd "$PANSIFT_SCRIPTS" && sudo rm -rf ../Pansift/*
+cd .. && sudo rmdir ./Pansift
+cd "$PANSIFT_PREFERENCES" && sudo rm -rf ../Pansift/*
+cd .. && sudo rmdir ./Pansift
+cd "$PANSIFT_LOGS" && sudo rm -rf ../Pansift/*
+cd .. && sudo rmdir ./Pansift
+cd "$PANSIFT_SUPPORT" && sudo rm -rf ../Pansift/*
+
+sudo pkill -9 -f Pansift/telegraf
+```
+cd .. && sudo rmdir ./Pansift
