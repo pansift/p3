@@ -75,12 +75,17 @@ export PANSIFT_SCRIPTS="$HOME"/Library/Application\ Scripts/Pansift
 export PANSIFT_LOGS="$HOME"/Library/Logs/Pansift
 export PANSIFT_SUPPORT="$HOME"/Library/Application\ Support/Pansift
 
+# Main App + Telegraf, Defaults, and Login Item
 sudo pkill -9 -f Pansift.app
+sudo pkill -9 -f Pansift/telegraf
 sudo defaults delete com.pansift.p3bar
 sudo osascript -e 'tell application "System Events" to delete login item "Pansift"'
 
-cd /Applications 
+# Application Folder App
+cd /Applications
 sudo rm -rf ./Pansift.app
+
+# Supporting Files
 cd "$PANSIFT_SCRIPTS" && sudo rm -rf ../Pansift/*
 cd .. && sudo rmdir ./Pansift
 cd "$PANSIFT_PREFERENCES" && sudo rm -rf ../Pansift/*
@@ -88,7 +93,5 @@ cd .. && sudo rmdir ./Pansift
 cd "$PANSIFT_LOGS" && sudo rm -rf ../Pansift/*
 cd .. && sudo rmdir ./Pansift
 cd "$PANSIFT_SUPPORT" && sudo rm -rf ../Pansift/*
-
-sudo pkill -9 -f Pansift/telegraf
-```
 cd .. && sudo rmdir ./Pansift
+```
