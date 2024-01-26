@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 if [[ "$1" == "-w" ]]; then
-	open https://app.pansift.com
+	open https://app.pansift.com/insights
 	exit
 else
 	source "$HOME"/Library/Preferences/Pansift/pansift.conf
