@@ -11,32 +11,59 @@ currentDir="$(pwd)"
 function timenow {
 	date "+%Y%m%dT%H%M%S%z"
 }
-echo "Running PanSift: $scriptName at $(timenow) with..."
-echo "Current Directory: $currentDir"
+echo "PS: Running PanSift: $scriptName at $(timenow) with..."
+echo "PS: Current Directory: $currentDir"
 
-echo "Shutting down any existing Pansift.app instances and related telegraf"
+echo "PS: Shutting down any existing Pansift.app instances and related telegraf"
 # Shut down the current Pansift.app if there is one
 if [[ $(pgrep -f Pansift.app) ]]; then
-  sudo pkill -9 -f Pansift.app
+	sudo pkill -9 -f Pansift.app
 fi
 if [[ $(pgrep -f Pansift/telegraf-osx.conf) ]]; then
-  sudo pkill -9 -f Pansift/telegraf-osx.conf
+	sudo pkill -9 -f Pansift/telegraf-osx.conf
 fi
 
-version=$(sw_vers -productVersion)
+product_version=$(sw_vers -productVersion)
+product_mainline=$(echo -n "$product_version" | cut -d'.' -f1 | xargs)
+product_sub_version=$(echo -n "$product_version" | cut -d'.' -f2 | xargs)
 
-if [[ $version =~ ^13 ]]; then
-	echo "Important: Found macOS version $version (Ventura)"
+if [[ $product_version =~ ^13 ]]; then
+	echo "PS: Important: Found macOS product_version $product_version (Ventura)"
 	if [[ -d /Applications/Pansift.app ]]; then
-		echo "Existing Pansift.app so going to remove it to address Ventura: Privacy Policy Controls (PPPC)"
-		echo "Rather than allow installer to fail (until Apple fix it!)"
+		echo "PS: Existing Pansift.app so going to remove it to address Ventura: Privacy Policy Controls (PPPC)"
+		echo "PS: Rather than allow installer to fail (until Apple fix it!)"
 		cd /Applications
 		sudo rm -rf Pansift.app
 	else
-		echo "No existing Pansift.app found in /Applications so continuing as per normal."
+		echo "PS: No existing Pansift.app found in /Applications so continuing as per normal."
 	fi 
 else
-	echo "Found macOS version: $version"
+	echo "PS: Found macOS product_version: $product_version"
+fi
+
+if [ $product_mainline -ge 14 ] && [ $product_sub_version -ge 4 ]; then
+	echo "PS: Important: Found macOS product_version $product_version (Sonoma 14.4 or above) so we need sudoers for wdutil info"
+	function add_to_sudoers() {
+		echo "$1 ALL=NOPASSWD:/usr/bin/wdutil info #pansift" | sudo EDITOR="tee -a" visudo -f /etc/sudoers.d/pansift
+	}
+	# Check for PanSift sudoers entry and also targeted user account
+	currentUser=$(stat -f '%Su' /dev/console)
+	if test -f /etc/sudoers.d/pansift; then
+		echo "PS: PanSift sudoers File already exists."
+		grep_configline="$currentUser ALL=NOPASSWD:\/usr\/bin\/wdutil info #pansift"
+		# grep_command=$(grep -ic "$grep_configline" /etc/sudoers.d/pansift)
+		if grep -i "$grep_configline" /etc/sudoers.d/pansift; then
+			echo "PS: Already have a sudoers entry for wdutil"
+		else
+			echo "PS: Can not find sudoers entry for wdutil"
+			echo "PS: Adding #pansift sudoers entry for wdutil"
+			add_to_sudoers "$currentUser"
+		fi
+	else
+		echo "PS: No PanSift sudoers file, adding one including an wdutil entry"
+		# sudo touch /etc/sudoers.d/pansift
+		add_to_sudoers "$currentUser"
+	fi
 fi
 
 exit
