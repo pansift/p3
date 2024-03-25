@@ -51,6 +51,8 @@ fi
 echo "PS: Irrespective of macOS $product_version we need sudoers for future wdutil info due to airport CLI deprecation"
 
 function add_to_sudoers() {
+	# Note: If no /etc/sudoers.d/ directory, create one!
+	sudo mkdir -p /etc/sudoers.d 
 	echo "$1 ALL=NOPASSWD:/usr/bin/wdutil info #pansift" | sudo EDITOR="tee -a" visudo -f /etc/sudoers.d/pansift
 }
 
@@ -68,7 +70,7 @@ if test -f /etc/sudoers.d/pansift; then
 		add_to_sudoers "$currentUser"
 	fi
 else
-	echo "PS: No PanSift sudoers file, adding one including an entry for wdutil info for $currentUser only"
+	echo "PS: No PanSift sudoers file, adding one including an entry for wdutil info for $currentUser user only"
 	# sudo touch /etc/sudoers.d/pansift
 	add_to_sudoers "$currentUser"
 fi
