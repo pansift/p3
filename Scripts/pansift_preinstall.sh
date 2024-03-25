@@ -42,28 +42,35 @@ else
 fi
 
 if [ $product_mainline -ge 14 ] && [ $product_sub_version -ge 4 ]; then
-	echo "PS: Important: Found macOS product_version $product_version (Sonoma 14.4 or above) so we need sudoers for wdutil info"
-	function add_to_sudoers() {
-		echo "$1 ALL=NOPASSWD:/usr/bin/wdutil info #pansift" | sudo EDITOR="tee -a" visudo -f /etc/sudoers.d/pansift
-	}
-	# Check for PanSift sudoers entry and also targeted user account
-	currentUser=$(stat -f '%Su' /dev/console)
-	if test -f /etc/sudoers.d/pansift; then
-		echo "PS: PanSift sudoers File already exists."
-		grep_configline="$currentUser ALL=NOPASSWD:\/usr\/bin\/wdutil info #pansift"
-		# grep_command=$(grep -ic "$grep_configline" /etc/sudoers.d/pansift)
-		if grep -i "$grep_configline" /etc/sudoers.d/pansift; then
-			echo "PS: Already have a sudoers entry for wdutil"
-		else
-			echo "PS: Can not find sudoers entry for wdutil"
-			echo "PS: Adding #pansift sudoers entry for wdutil"
-			add_to_sudoers "$currentUser"
-		fi
+	echo "PS: Important: Found macOS product_version $product_version (Sonoma 14.4 or above)"
+	echo "PS: For macOS $product_version we need sudoers for wdutil info due to airport CLI deprecation"
+fi
+# We will add the sudoers from agent 0.6.7 onwards so if the user upgrades we can still get Wi-Fi commands
+# without having to mandate a reinstall of the agent post macOS 14.4 upgrades in the future.
+
+echo "PS: Irrespective of macOS $product_version we need sudoers for future wdutil info due to airport CLI deprecation"
+
+function add_to_sudoers() {
+	echo "$1 ALL=NOPASSWD:/usr/bin/wdutil info #pansift" | sudo EDITOR="tee -a" visudo -f /etc/sudoers.d/pansift
+}
+
+# Check for PanSift sudoers entry and also targeted user account
+currentUser=$(stat -f '%Su' /dev/console)
+if test -f /etc/sudoers.d/pansift; then
+	echo "PS: PanSift sudoers File already exists."
+	grep_configline="$currentUser ALL=NOPASSWD:\/usr\/bin\/wdutil info #pansift"
+	# grep_command=$(grep -ic "$grep_configline" /etc/sudoers.d/pansift)
+	if grep -i "$grep_configline" /etc/sudoers.d/pansift; then
+		echo "PS: Already have a sudoers entry for wdutil"
 	else
-		echo "PS: No PanSift sudoers file, adding one including an wdutil entry"
-		# sudo touch /etc/sudoers.d/pansift
+		echo "PS: Can not find sudoers entry for wdutil"
+		echo "PS: Adding #pansift sudoers entry for wdutil"
 		add_to_sudoers "$currentUser"
 	fi
+else
+	echo "PS: No PanSift sudoers file, adding one including an entry for wdutil info for $currentUser only"
+	# sudo touch /etc/sudoers.d/pansift
+	add_to_sudoers "$currentUser"
 fi
 
 exit
