@@ -99,6 +99,10 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
 		cd "$PANSIFT_SUPPORT" && sudo rm -rf ../Pansift/*
 		cd .. && sudo rmdir ./Pansift
 	fi
+  # Sudoers Entry
+  if [[ -f "/etc/sudoers.d/pansift" ]]; then
+    cd /etc/sudoers.d/ && sudo rm pansift
+  fi
 elif [[ "$OSTYPE" == "cygwin" ]]; then
 	# POSIX compatibility layer and Linux environment emulation for Windows
 	echo "Not supported on Cygwin yet" 
