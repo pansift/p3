@@ -17,7 +17,7 @@ echo "Running PanSift: $SCRIPT_NAME at $(timenow) with..."
 echo "Current Directory: $CURRENTDIR"
 
 currentuser=$(stat -f '%Su' /dev/console)
-echo "Running as user: $currentuser"
+echo "PS: Running as user: $currentuser"
 # sudo -H -u $(stat -f "%Su" /dev/console) /bin/bash <<'END'
 
 # Source settings for this script
@@ -27,11 +27,11 @@ preferences="$install_path"/Contents/Resources/Preferences/pansift.conf
 if test -f "$preferences"; then
 	source "$preferences"
 else
-	echo "Can not find pansift.conf preferences file... exiting"
+	echo "PS: Can not find pansift.conf preferences file... exiting"
 	exit 1
 fi
 
-echo "Getting user password if required:"
+echo "PS: Getting user password if required:"
 sudo true
 
 pansift_uuid_file="$PANSIFT_PREFERENCES"/pansift_uuid.conf
@@ -50,16 +50,16 @@ if test -f "$pansift_ingest_file"; then
 	ingest=$(echo -n "$line" | xargs)
 fi
 
-echo "=========================================================="
-echo " Strongly recommend making a note of your Pansift settings"
-echo " Bucket UUID: ${uuid}" 
-echo " Write Token: ${token}" 
-echo " Ingest URL: ${ingest}" 
-echo "=========================================================="
+echo "PS: =========================================================="
+echo "PS:  Strongly recommend making a note of your Pansift settings"
+echo "PS:  Bucket UUID: ${uuid}" 
+echo "PS:  Write Token: ${token}" 
+echo "PS:  Ingest URL: ${ingest}" 
+echo "PS: =========================================================="
 if [[ "$1" == "-s" ]]; then
-	echo "Doing a silent uninstall as the -s switch was passed to the script." 
+	echo "PS: Doing a silent uninstall as the -s switch was passed to the script." 
 else
-	read -n 1 -s -r -p "Press any key to continue or Ctrl+C to stop."
+	read -n 1 -s -r -p "PS: Press any key to continue or Ctrl+C to stop."
 fi
 echo
 
@@ -123,11 +123,11 @@ sudo pkill -9 -f Pansift/telegraf
 #launchctl unload -w ~/Library/LaunchAgents/com.pansift.p3bar
 # Need to find where the launchagent went in Big Sur?
 
-echo "=========================================================="
-echo "Check Applications and move Pansift to Trash if requried."
-echo "Log in to https://pansift.com to request data deletion, "
-echo "or ask your administrator / managed service provider."
-echo "Note: Only Pansift admins can request web data deletions!"
-echo "=========================================================="
+echo "PS: =========================================================="
+echo "PS: Check Applications and move Pansift to Trash if requried."
+echo "PS: Log in to https://pansift.com to request data deletion, "
+echo "PS: or ask your administrator / managed service provider."
+echo "PS: Note: Only Pansift admins can request web data deletions!"
+echo "PS: =========================================================="
 
 exit
