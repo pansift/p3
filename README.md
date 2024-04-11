@@ -59,39 +59,20 @@ Once the Pansift.app runs for the first time, it bootstraps its configuration. I
 
 # Uninstalling PanSift
 
+There are two approaches to uninstalling PanSift: the first is via the UI (which opens the terminal and runs an uninstall interactively). The second is silently via the command line and requires a "-s" command line switch. This second silent approach is for remote administration and usually used by Managed Service Providers to perform mass uninstalls.
+
 ## Manual Uninstall
 
-There's an "Uninstall" option in the Agent menu under "PS/Uninstall/Interactively" (which opens the terminal and goes from there). Alternatively, you can remove it from your "Login Items" and also delete from "Applications" + stop the Telegraf process (though this is what the [Uninstall script](Scripts/uninstall.sh) does). If the "Uninstall" option is not bringing up your Mac's "Terminal", just open a fresh "Terminal" and click "Uninstall" from the menu again.
+There's an "Uninstall" option in the Agent menu under "PS/Internals/Uninstall/Interactively" (which opens the terminal and goes from there, including asking you to record your configuration if required, or supplying your password). 
 
-## Automatic Uninstall
+Alternatively, you can remove it from your "Login Items" and also delete from "Applications" + stop the Telegraf process (though this is what the [Uninstall script](Scripts/uninstall.sh) does). If the "Uninstall" option is not bringing up your Mac's "Terminal", just open a fresh "Terminal" and click "Uninstall" from the menu again.
 
-Note: `sudo` is only required if you are running as another user (not the user under which it was installed). `sudo` may also be required for removing from the /Applications folder, but the remaining files and processes are only using user-level permissions. As you can see `$HOME` expects to be run under the user account which was also used to install the application.
+## Automatic Uninstall (Silent "-s")
 
-Note_II: We are also trying to be very careful when using `rm -rf` to only reference explicit files and paths to help avoid any spurious deletions.
-```
-# Locations
-export PANSIFT_PREFERENCES="$HOME"/Library/Preferences/Pansift
-export PANSIFT_SCRIPTS="$HOME"/Library/Application\ Scripts/Pansift
-export PANSIFT_LOGS="$HOME"/Library/Logs/Pansift
-export PANSIFT_SUPPORT="$HOME"/Library/Application\ Support/Pansift
+Please use the "-s" silent command line option for unattended uninstalls.
 
-# Main App + Telegraf, Defaults, and Login Item
-sudo pkill -9 -f Pansift.app
-sudo pkill -9 -f Pansift/telegraf
-sudo defaults delete com.pansift.p3bar
-sudo osascript -e 'tell application "System Events" to delete login item "Pansift"'
+This approach is normally used to run against a machine or machines remotely. The parent process should have root-level permissions, as removing applications from the /Applications folder requires escalated privileges.
 
-# Application Folder App
-cd /Applications
-sudo rm -rf ./Pansift.app
+Note: If you look at the script, it expects the user under which PanSift was installed, to be logged in. So, even though running with root permissions, `$HOME` should resolve for the current user to ensure the login items are removed, as are the configuration files. 
 
-# Supporting Files
-cd "$PANSIFT_SCRIPTS" && sudo rm -rf ../Pansift/*
-cd .. && sudo rmdir ./Pansift
-cd "$PANSIFT_PREFERENCES" && sudo rm -rf ../Pansift/*
-cd .. && sudo rmdir ./Pansift
-cd "$PANSIFT_LOGS" && sudo rm -rf ../Pansift/*
-cd .. && sudo rmdir ./Pansift
-cd "$PANSIFT_SUPPORT" && sudo rm -rf ../Pansift/*
-cd .. && sudo rmdir ./Pansift
-```
+Please see the uninstall script here: [Uninstall script](Scripts/uninstall.sh)
