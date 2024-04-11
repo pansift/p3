@@ -13,8 +13,8 @@ function timenow {
   date "+%Y%m%dT%H%M%S%z"
 }
 
-echo "Running PanSift: $SCRIPT_NAME at $(timenow) with..."
-echo "Current Directory: $CURRENTDIR"
+echo "PS: Running PanSift: $SCRIPT_NAME at $(timenow) with..."
+echo "PS: Current Directory: $CURRENTDIR"
 
 currentuser=$(stat -f '%Su' /dev/console)
 echo "PS: Running as user: $currentuser"
