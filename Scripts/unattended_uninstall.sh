@@ -60,6 +60,7 @@ echo
 sudo pkill -9 -f Pansift/telegraf
 sudo pkill -9 -f Pansift.app
 sudo defaults delete com.pansift.p3bar
+# The osascript looks for extra permissions in the GUI
 sudo osascript -e 'tell application "System Events" to delete login item "Pansift"'
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
