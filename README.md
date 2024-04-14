@@ -57,21 +57,21 @@ Once the Pansift.app runs for the first time, it bootstraps its configuration. I
 
 > :warning: **Do not configure the `pansift_ingest.conf` datastore URL with the A record. Use "https://" + the CNAME which follows the pattern of `https://<uuid>.ingest.pansift.com`** otherwise backend operational changes may cause interruptions to your agents' ability to write.
 
-# Uninstalling PanSift
+# Uninstalling
 
 There are three options for uninstalling PanSift:
- 1. Click via the agent UI (which opens the terminal and runs the [Uninstall script](Scripts/uninstall.sh) interactively)
- 2. Silently via the command line and requires a "-s" command line switch. This second silent approach is for remote administration and is usually used by Managed Service Providers (MSPs) to perform targeted/mass uninstalls.
- 3. Package-based uninstall: using the new [PanSift Uninstaller](Pansift_Uninstaller.pkg) package, which you can click to run via the UI (or use the command line to activate once positioned/downloaded, which can also be used by Managed Service Providers (MSPs) to perform targeted/mass uninstalls).
+ 1. Manual Uninstall: via the agent UI click "*PS/Internals/Uninstall/Interactively*" (which opens the terminal and runs the [Uninstall script](Scripts/uninstall.sh))
+ 2. Uninstall Script: via the command line, which requires a "-s" command line switch. This second silent approach is for remote administration and is usually used by Managed Service Providers (MSPs) to perform targeted/mass uninstalls via their MDM (Mobile Device Management) platform. It should be run with root privileges while the targeted user is logged in.
+ 3. Package-Based Uninstall: This uses the new [PanSift Uninstaller](Pansift_Uninstaller.pkg) package (in testing). You can click to it run via the UI or use the command line to activate once positioned/downloaded. This can also be used by Managed Service Providers (MSPs) to perform targeted/mass uninstalls). More information below...
  
 
-## Manual Uninstall
+## 1. Manual Uninstall
 
 There's an "Uninstall" option in the Agent menu under "PS/Internals/Uninstall/Interactively" (which opens the terminal and goes from there, including asking you to record your configuration if required, or supplying your password). 
 
 Alternatively, you can remove it from your "Login Items" and also delete from "Applications" + stop the Telegraf process (though this is what the [Uninstall script](Scripts/uninstall.sh) does). If the "Uninstall" option is not bringing up your Mac's "Terminal", just open a fresh "Terminal" and click "Uninstall" from the menu again.
 
-## Uninstall Script (Silent "-s")
+## 2. Uninstall Script (Silent "-s")
 
 Please use the "-s" silent command line option for unattended uninstalls when using [Uninstall script](Scripts/uninstall.sh) remotely.
 
@@ -81,8 +81,10 @@ Note: If you look at the script, it expects the user under which PanSift was ins
 
 Please see the uninstall script here: [Uninstall script](Scripts/uninstall.sh)
 
-## Package Based Uninstall (UI or command line)
+## 3. Package-Based Uninstall (UI or command line)
 
-Simply open the [PanSift Uninstaller](Pansift_Uninstaller.pkg) package and follow along. It will ask you for your password and if it can access System Events to remove the PanSift Login Item 
+Simply open the [PanSift Uninstaller](Pansift_Uninstaller.pkg) package and follow along. It will ask you for your password and if it can access "System Events" and "Documents" to remove PanSift including its "Login Item". 
 
-> :information_source: you can also run the [PanSift Uninstaller](Pansift_Uninstaller.pkg) package from the command line as root (or with sudo) via something like: `sudo installer -pkg Pansift_Uninstaller.pkg -target /Applications/` which can be useful in remote management scenarios.
+> :information_source: you can also run the [PanSift Uninstaller](Pansift_Uninstaller.pkg) package from the command line as root (or with sudo) via something like: `sudo installer -pkg Pansift_Uninstaller.pkg -target /Applications/` which can be useful in remote management scenarios. Make sure you specify the correct path to the PKG file once you have prepositioned it after download.
+
+> :warning: This package is an empty package with a simple preinstall script that runs [unattended_uninstall.sh](Scripts/unattended_uninstall.sh), which is also easily inspectable from the PKG file with a tool like [Suspicious Package](https://mothersruin.com/software/SuspiciousPackage/). 
