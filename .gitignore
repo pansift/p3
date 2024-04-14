@@ -8,6 +8,7 @@ pansift_token.conf
 airport.plist
 **/localsync.sh
 **/.obsidian/*
+Archive/*
 
 # Rails etc.
 
