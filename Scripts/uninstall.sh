@@ -63,6 +63,7 @@ else
 fi
 echo
 
+sudo pkill -9 -f Pansift/telegraf
 sudo pkill -9 -f Pansift.app
 sudo defaults delete com.pansift.p3bar
 sudo osascript -e 'tell application "System Events" to delete login item "Pansift"'
@@ -119,7 +120,6 @@ else
 	echo "Not supported on this platform yet"
 fi
 
-sudo pkill -9 -f Pansift/telegraf
 #launchctl unload -w ~/Library/LaunchAgents/com.pansift.p3bar
 # Need to find where the launchagent went in Big Sur?
 
