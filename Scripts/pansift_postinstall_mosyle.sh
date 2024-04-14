@@ -32,13 +32,14 @@ sudo xattr -r -d com.apple.quarantine /Applications/Pansift.app
 # Can't use this as it asks for more permissions during the installer app, needs to live elsewhere
 # osascript -e 'tell application "System Events" to make login item at end with properties {path:"/Applications/Pansift.app", hidden:false, name:"Pansift"}'
 
-currentuser=$(stat -f '%Su' /dev/console)
-echo "Switch to user: $currentuser"
-sudo -H -u $(stat -f "%Su" /dev/console) /bin/bash <<'END'
-echo "HOME is $HOME"
+# currentuser=$(stat -f '%Su' /dev/console)
+currentUser=$( echo "show State:/Users/ConsoleUser" | scutil | awk '/Name :/ { print $3 }' )
+echo "PS: Switch to user: $currentuser"
+sudo -H -u $currentUser /bin/bash <<'END'
+echo "PS: HOME is $HOME"
 
 # Sync files as a backup incase the app boostrap can not.
-echo "Setup PanSift dirs and files (if not already)"
+echo "PS: Setup PanSift dirs and files (if not already)"
 
 # Source settings for this script
 install_path="/Applications/Pansift.app"

@@ -16,8 +16,9 @@ function timenow {
 echo "PS: Running PanSift: $SCRIPT_NAME at $(timenow) with..."
 echo "PS: Current Directory: $CURRENTDIR"
 
-currentuser=$(stat -f '%Su' /dev/console)
-echo "PS: Running as user: $currentuser"
+# currentUser=$(stat -f '%Su' /dev/console)
+currentUser=$( echo "show State:/Users/ConsoleUser" | scutil | awk '/Name :/ { print $3 }' )
+echo "PS: Running as user: $currentUser"
 # sudo -H -u $(stat -f "%Su" /dev/console) /bin/bash <<'END'
 
 # Source settings for this script

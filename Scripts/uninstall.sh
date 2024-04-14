@@ -16,8 +16,9 @@ function timenow {
 echo "PS: Running PanSift: $SCRIPT_NAME at $(timenow) with..."
 echo "PS: Current Directory: $CURRENTDIR"
 
-currentuser=$(stat -f '%Su' /dev/console)
-echo "PS: Running as user: $currentuser"
+#currentUser=$(stat -f '%Su' /dev/console)
+currentUser=$( echo "show State:/Users/ConsoleUser" | scutil | awk '/Name :/ { print $3 }' )
+echo "PS: Running as user: $currentUser"
 # sudo -H -u $(stat -f "%Su" /dev/console) /bin/bash <<'END'
 
 # Source settings for this script
@@ -72,6 +73,11 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 	echo "Not supported on Linux yet" 
 elif [[ "$OSTYPE" == "darwin"* ]]; then
 	# Mac OSX
+	# /Applications
+	if [[ -d "/Applications/Pansift.app" ]]; then
+		cd /Applications 
+		sudo rm -rf ./Pansift.app
+	fi
 	# Scripts to Trash
 	if [[ -d "$PANSIFT_SCRIPTS" ]]; then
 		cd "$PANSIFT_SCRIPTS" && sudo rm -rf ../Pansift/*
@@ -84,11 +90,6 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
 		fi
 		cd "$PANSIFT_PREFERENCES" && sudo rm -rf ../Pansift/*
 		cd .. && sudo rmdir ./Pansift
-	fi
-	# /Applications
-	if [[ -d "/Applications/Pansift.app" ]]; then
-		cd /Applications 
-		sudo rm -rf ./Pansift.app
 	fi
 	# Logs
 	if [[ -d "$PANSIFT_LOGS" ]]; then
@@ -119,6 +120,9 @@ elif [[ "$OSTYPE" == "freebsd"* ]]; then
 else
 	echo "Not supported on this platform yet"
 fi
+
+sudo pkgutil --forget com.pansift.p3bar
+sudo pkgutil --forget com.pansift.p3bar.pansiftuninstaller
 
 #launchctl unload -w ~/Library/LaunchAgents/com.pansift.p3bar
 # Need to find where the launchagent went in Big Sur?
