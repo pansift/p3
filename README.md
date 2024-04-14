@@ -59,7 +59,11 @@ Once the Pansift.app runs for the first time, it bootstraps its configuration. I
 
 # Uninstalling PanSift
 
-There are two approaches to uninstalling PanSift: the first is via the UI (which opens the terminal and runs an uninstall interactively). The second is silently via the command line and requires a "-s" command line switch. This second silent approach is for remote administration and usually used by Managed Service Providers to perform mass uninstalls.
+There are three options for uninstalling PanSift:
+ 1. Click via the agent UI (which opens the terminal and runs the [Uninstall script](Scripts/uninstall.sh) interactively)
+ 2. Silently via the command line and requires a "-s" command line switch. This second silent approach is for remote administration and is usually used by Managed Service Providers (MSPs) to perform targeted/mass uninstalls.
+ 3. Package-based uninstall: using the new [PanSift Uninstaller](Pansift_Uninstaller.pkg) package, which you can click to run via the UI (or use the command line to activate once positioned/downloaded, which can also be used by Managed Service Providers (MSPs) to perform targeted/mass uninstalls).
+ 
 
 ## Manual Uninstall
 
@@ -76,3 +80,9 @@ This approach is normally used to run against a machine or machines remotely. Th
 Note: If you look at the script, it expects the user under which PanSift was installed, to be logged in. So, even though running with root permissions, `$HOME` should resolve for the current user to ensure the login items are removed, as are the configuration files. 
 
 Please see the uninstall script here: [Uninstall script](Scripts/uninstall.sh)
+
+## Package Based Uninstall
+
+Simply open the [PanSift Uninstaller](Pansift_Uninstaller.pkg) package and follow along. It will ask you for your password and if it can access System Events to remove the PanSift Login Item 
+
+> :information_source: you can also run the [PanSift Uninstaller](Pansift_Uninstaller.pkg) package from the command line as root (or with sudo) via something like: `sudo installer -pkg Pansift_Uninstaller.pkg -target /Applications/` which can be useful in remote management scenarios.
