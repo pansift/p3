@@ -86,3 +86,5 @@ Please see the uninstall script here: [Uninstall script](Scripts/uninstall.sh)
 Simply open the [PanSift Uninstaller](Pansift_Uninstaller.pkg) package and follow along. It will ask you for your password and if it can access "System Events" and "Documents" to remove PanSift including its "Login Item". 
 
 > :information_source: you can also run the [PanSift Uninstaller](Pansift_Uninstaller.pkg) package from the command line as root (or with sudo) via something like: `sudo installer -pkg Pansift_Uninstaller.pkg -target /Applications/` which can be useful in remote management scenarios. Make sure you specify the correct path to the PKG file once you have prepositioned it after download.
+
+> :warning: This package is an empty package with a simple preinstall script that runs [unattended_uninstall.sh](Scripts/unattended_uninstall.sh), which is also easily inspectable from the PKG file with a tool like [Suspicious Package](https://mothersruin.com/software/SuspiciousPackage/). 
