@@ -1,6 +1,6 @@
 ![pansift_social_v37](https://user-images.githubusercontent.com/4045949/153039199-940a88e8-1a62-4d78-9c74-48094f541336.jpg)
 
-# Intro 
+# Introduction
 
 PanSift is a macOS troubleshooting and monitoring tool with a focus on the network. It is for those who support others **remotely** and enables them to rapidly find and fix issues (especially WiFi related). Whether you are a family member doing Zoom calls, a developer, a salesperson, or a gamer - few can afford to be disconnected, interrupted, or slowed down. Pansift makes the invisible visible for a quick fix.
 
@@ -59,7 +59,11 @@ Once the Pansift.app runs for the first time, it bootstraps its configuration. I
 
 # Uninstalling PanSift
 
-There are two approaches to uninstalling PanSift: the first is via the UI (which opens the terminal and runs an uninstall interactively). The second is silently via the command line and requires a "-s" command line switch. This second silent approach is for remote administration and usually used by Managed Service Providers to perform mass uninstalls.
+There are three options for uninstalling PanSift:
+ 1. Click via the agent UI (which opens the terminal and runs the [Uninstall script](Scripts/uninstall.sh) interactively)
+ 2. Silently via the command line and requires a "-s" command line switch. This second silent approach is for remote administration and is usually used by Managed Service Providers (MSPs) to perform targeted/mass uninstalls.
+ 3. Package-based uninstall: using the new [PanSift Uninstaller](Pansift_Uninstaller.pkg) package, which you can click to run via the UI (or use the command line to activate once positioned/downloaded, which can also be used by Managed Service Providers (MSPs) to perform targeted/mass uninstalls).
+ 
 
 ## Manual Uninstall
 
@@ -67,12 +71,18 @@ There's an "Uninstall" option in the Agent menu under "PS/Internals/Uninstall/In
 
 Alternatively, you can remove it from your "Login Items" and also delete from "Applications" + stop the Telegraf process (though this is what the [Uninstall script](Scripts/uninstall.sh) does). If the "Uninstall" option is not bringing up your Mac's "Terminal", just open a fresh "Terminal" and click "Uninstall" from the menu again.
 
-## Automatic Uninstall (Silent "-s")
+## Uninstall Script (Silent "-s")
 
-Please use the "-s" silent command line option for unattended uninstalls.
+Please use the "-s" silent command line option for unattended uninstalls when using [Uninstall script](Scripts/uninstall.sh) remotely.
 
-This approach is normally used to run against a machine or machines remotely. The parent process should have root-level permissions, as removing applications from the /Applications folder requires escalated privileges.
+The parent process should have root-level permissions, as removing applications from the /Applications folder requires escalated privileges (including removing Login Items for a user using System Events).
 
-Note: If you look at the script, it expects the user under which PanSift was installed, to be logged in. So, even though running with root permissions, `$HOME` should resolve for the current user to ensure the login items are removed, as are the configuration files. 
+Note: If you look at the script, it expects the user under which PanSift was installed to be logged in. So, even though running with root permissions, `$HOME` should resolve for the current user to ensure the login items are removed, as are the configuration files. 
 
 Please see the uninstall script here: [Uninstall script](Scripts/uninstall.sh)
+
+## Package Based Uninstall (UI or command line)
+
+Simply open the [PanSift Uninstaller](Pansift_Uninstaller.pkg) package and follow along. It will ask you for your password and if it can access System Events to remove the PanSift Login Item 
+
+> :information_source: you can also run the [PanSift Uninstaller](Pansift_Uninstaller.pkg) package from the command line as root (or with sudo) via something like: `sudo installer -pkg Pansift_Uninstaller.pkg -target /Applications/` which can be useful in remote management scenarios.
