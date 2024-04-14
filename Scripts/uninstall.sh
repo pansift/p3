@@ -122,7 +122,6 @@ else
 fi
 
 sudo pkgutil --forget com.pansift.p3bar
-sudo pkgutil --forget com.pansift.p3bar.pansiftuninstaller
 
 #launchctl unload -w ~/Library/LaunchAgents/com.pansift.p3bar
 # Need to find where the launchagent went in Big Sur?
