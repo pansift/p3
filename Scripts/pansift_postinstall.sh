@@ -18,8 +18,8 @@ function timenow {
 	date "+%Y%m%dT%H%M%S%z"
 }
 
-echo "Running PanSift: $scriptName at $(timenow) with..."
-echo "Current Directory: $currentDir"
+echo "PS: Running PanSift: $scriptName at $(timenow) with..."
+echo "PS: Current Directory: $currentDir"
 
 # currentuser=$(stat -f '%Su' /dev/console)
 currentUser=$( echo "show State:/Users/ConsoleUser" | scutil | awk '/Name :/ { print $3 }' )
@@ -43,28 +43,28 @@ sleep 3 # Wait for slower disks to finish the Pansift app copy though this shoul
 sudo xattr -r -d com.apple.quarantine /Applications/Pansift.app
 
 
-echo "Switch to user: $currentUser"
+echo "PS: Switch to user: $currentUser"
 sudo -H -u $currentUser /bin/bash <<'END'
-echo "HOME is $HOME"
+echo "PS: HOME is $HOME"
 
 # Sync files as a backup incase the app boostrap can not.
-echo "Setup PanSift dirs and files (if not already)"
+echo "PS: Setup PanSift dirs and files (if not already)"
 
 # Source settings for this script
 install_path="/Applications/Pansift.app"
 source "$install_path"/Contents/Resources/Preferences/pansift.conf
 
 # Configuration and preferences files
-echo "PANSIFT_PREFERENCES path is $PANSIFT_PREFERENCES"
+echo "PS: PANSIFT_PREFERENCES path is $PANSIFT_PREFERENCES"
 mkdir -p "$PANSIFT_PREFERENCES" || echo "Error: Could not create $PANSIFT_PREFERENCES"
 
 # Scripts and additional executables
-echo "PANSIFT_SCRIPTS path is $PANSIFT_SCRIPTS"
+echo "PS: PANSIFT_SCRIPTS path is $PANSIFT_SCRIPTS"
 mkdir -p "$PANSIFT_SCRIPTS" || echo "Error: Could not create $PANSIFT_SCRIPTS"
 mkdir -p "$PANSIFT_SCRIPTS"/Plugins || echo "Error: Could not create $PANSIFT_SCRIPTS/Plugins"
 
 # Logs, logs, logs
-echo "PANSIFT_LOGS path is $PANSIFT_LOGS"
+echo "PS: PANSIFT_LOGS path is $PANSIFT_LOGS"
 mkdir -p "$PANSIFT_LOGS" || echo "Error: Could not create $PANSIFT_LOGS"
 
 # PIDs and other flotsam
@@ -90,9 +90,9 @@ END
 # Trying to use open only if the non-root or non-loginwindow user has a session
 
 if [[ -z $currentUser || $currentUser == "root" || $currentUser == "loginwindow" ]]; then
-	echo "Not going to open Pansift.app as no user logged in... is this an update only?"
+	echo "PS: Not going to open Pansift.app as no user logged in... is this an update only?"
 else
-	echo "Opening Pansift.app (PS) as user: $currentUser"
+	echo "PS: Opening Pansift.app (PS) as user: $currentUser"
 	sudo -H -u $currentUser open /Applications/Pansift.app
 fi
 
