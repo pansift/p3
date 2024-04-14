@@ -57,12 +57,12 @@ Once the Pansift.app runs for the first time, it bootstraps its configuration. I
 
 > :warning: **Do not configure the `pansift_ingest.conf` datastore URL with the A record. Use "https://" + the CNAME which follows the pattern of `https://<uuid>.ingest.pansift.com`** otherwise backend operational changes may cause interruptions to your agents' ability to write.
 
-# Uninstalling PanSift
+# Uninstalling
 
 There are three options for uninstalling PanSift:
- 1. Click to uninstall via the agent UI "*PS/Internals/Uninstall/Interactively*" (which opens the terminal and runs the [Uninstall script](Scripts/uninstall.sh))
- 2. Silently uninstall via the command line, which requires a "-s" command line switch. This second silent approach is for remote administration and is usually used by Managed Service Providers (MSPs) to perform targeted/mass uninstalls via their MDM (Mobile Device Management) platform. It should be run with root privileges while the targeted user is logged in.
- 3. A package-based uninstall. This uses the new [PanSift Uninstaller](Pansift_Uninstaller.pkg) package (in testing). You can click to it run via the UI or use the command line to activate once positioned/downloaded. This can also be used by Managed Service Providers (MSPs) to perform targeted/mass uninstalls). More information below...
+ 1. Manual Uninstall: via the agent UI click "*PS/Internals/Uninstall/Interactively*" (which opens the terminal and runs the [Uninstall script](Scripts/uninstall.sh))
+ 2. Uninstall Script: via the command line, which requires a "-s" command line switch. This second silent approach is for remote administration and is usually used by Managed Service Providers (MSPs) to perform targeted/mass uninstalls via their MDM (Mobile Device Management) platform. It should be run with root privileges while the targeted user is logged in.
+ 3. Package-Based Uninstall: This uses the new [PanSift Uninstaller](Pansift_Uninstaller.pkg) package (in testing). You can click to it run via the UI or use the command line to activate once positioned/downloaded. This can also be used by Managed Service Providers (MSPs) to perform targeted/mass uninstalls). More information below...
  
 
 ## 1. Manual Uninstall
