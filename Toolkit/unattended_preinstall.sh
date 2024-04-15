@@ -28,10 +28,10 @@ CURRENTDIR="$(pwd)"
 function timenow {
 	date "+%Y%m%dT%H%M%S%z"
 }
-echo "Running PanSift $script_name at $(timenow) with..."
-echo "Directory: $CURRENTDIR"
+echo "PS: Running PanSift $script_name at $(timenow) with..."
+echo "PS: Directory: $CURRENTDIR"
 
-echo "Shutting down any existing Pansift.app instances and related telegraf"
+echo "PS: Shutting down any existing Pansift.app instances and related telegraf"
 # Shut down the current Pansift.app if there is one
 # Technically this is not required (stopping) but it's cleaner if any of the 
 # below is re-written to force an overwrite of configuration.
@@ -42,11 +42,12 @@ if [[ $(pgrep -f Pansift/telegraf-osx.conf) ]]; then
 	pkill -9 -f Pansift/telegraf-osx.conf
 fi
 
-currentUser=$(stat -f '%Su' /dev/console)
-echo "Switch to user: $currentUser"
+# currentUser=$(stat -f '%Su' /dev/console)
+currentUser=$( echo "show State:/Users/ConsoleUser" | scutil | awk '/Name :/ { print $3 }' )
+echo "PS: Switch to user: $currentUser"
 
 sudo -H -u $currentUser /bin/bash <<'END'
-echo "The HOME for $USER is: ${HOME:=<Unknown>}"
+echo "PS: The HOME for $USER is: ${HOME:=<Unknown>}"
 
 # Basic Configuration and then additional preferences files if present.
 echo "Creating PanSift Preferences directory if non-existent..."
@@ -67,33 +68,33 @@ echo "Setting up custom pansift.conf settings for automated claim if missing"
 #
 pansift_uuid_file="${preferences}/pansift_uuid.conf"
 if [[ -f "$pansift_uuid_file" ]]; then
-	echo "Existing ${pansift_uuid_file} so leaving it alone"
+	echo "PS: Existing ${pansift_uuid_file} so leaving it alone"
 	# If you want to overwrite, comment out above and uncomment below
-	# echo "Writing over existing: ${pansift_uuid_file}"
-	# echo "<BUCKET_UUID>" > "$pansift_uuid_file"
+	# echo "PS: Writing over existing: ${pansift_uuid_file}"
+	# echo "PS: <BUCKET_UUID>" > "$pansift_uuid_file"
 else
-	echo "Writing to ${pansift_uuid_file}"
-	echo "<BUCKET_UUID>" > "$pansift_uuid_file"
+	echo "PS: Writing to ${pansift_uuid_file}"
+	echo "PS: <BUCKET_UUID>" > "$pansift_uuid_file"
 fi
 pansift_ingest_file="${preferences}/pansift_ingest.conf"
 if [[ -f "$pansift_ingest_file" ]]; then
-	echo "Existing ${pansift_ingest_file} so leaving it alone"
+	echo "PS: Existing ${pansift_ingest_file} so leaving it alone"
 	# If you want to overwrite, comment out above and uncomment below
-	# echo "Writing over existing: ${pansift_ingest_file}"
-	# echo "<INGEST_URL>" > "$pansift_ingest_file"
+	# echo "PS: Writing over existing: ${pansift_ingest_file}"
+	# echo "PS: <INGEST_URL>" > "$pansift_ingest_file"
 else
-	echo "Writing to ${pansift_ingest_file}"
-	echo "<INGEST_URL>" > "$pansift_ingest_file"
+	echo "PS: Writing to ${pansift_ingest_file}"
+	echo "PS: <INGEST_URL>" > "$pansift_ingest_file"
 fi
 pansift_token_file="${preferences}/pansift_token.conf"
 if [[ -f "$pansift_token_file" ]]; then
 	echo "Existing ${pansift_token_file} so leaving it alone"
 	# If you want to overwrite, comment out above and uncomment below
-	# echo "Writing over existing: ${pansift_token_file}"
-	# echo "<ZTP_WRITE_TOKEN>" > "$pansift_token_file"
+	# echo "PS: Writing over existing: ${pansift_token_file}"
+	# echo "PS: <ZTP_WRITE_TOKEN>" > "$pansift_token_file"
 else
-	echo "Writing to ${pansift_token_file}"
-	echo "<ZTP_WRITE_TOKEN>" > "$pansift_token_file"
+	echo "PS: Writing to ${pansift_token_file}"
+	echo "PS: <ZTP_WRITE_TOKEN>" > "$pansift_token_file"
 fi
 #
 # !!! REPLACE THE ABOVE WITH YOUR SPECIFIC <BUCKET_UUID>, <INGEST_URL>, AND <ZTP_WRITE_TOKEN> !!!
@@ -110,13 +111,13 @@ pansift_application="/Applications/Pansift.app"
 
 if [[ -d "$pansift_application" ]]; then
 	if [[ -z $currentUser || $currentUser == "root" || $currentUser == "loginwindow" ]]; then
-		echo "Not going to open Pansift.app as no relevant user: $currentUser logged in... is this an update only?"
+		echo "PS: Not going to open Pansift.app as no relevant user: $currentUser logged in... is this an update only?"
 	else
-		echo "Opening Pansift.app (PS) as user: $currentUser"
+		echo "PS: Opening Pansift.app (PS) as user: $currentUser"
 		sudo -H -u $currentUser open /Applications/Pansift.app
 	fi
 else
-	echo "No existing PanSift application found in /Applications, exiting..."
+	echo "PS: No existing PanSift application found in /Applications, exiting..."
 fi
 
 exit
