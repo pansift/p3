@@ -43,8 +43,6 @@ sudo pkill -9 -f Pansift.app
 sudo pkill -9 -f Scripts/Pansift
 echo "PS: Remove PanSift defaults if they exist..."
 sudo defaults delete com.pansift.p3bar
-echo "PS: Tell System Events to delete login item Pansift..."
-sudo osascript -e 'tell application "System Events" to delete login item "Pansift"'
 
 # We are not going to source any more as we might be root versus user
 install_path="/Applications/Pansift.app"
@@ -164,5 +162,9 @@ echo "PS: Log in to https://pansift.com to request data deletion, "
 echo "PS: or ask your administrator / managed service provider."
 echo "PS: Note: Only Pansift admins can request web data deletions!"
 echo "PS: =========================================================="
+
+# TODO: Need a better way to do the below as it looks for permissions from installer/terminal + unknown TCC/PPPC profile?
+echo "PS: Tell System Events to delete login item Pansift..."
+sudo osascript -e 'tell application "System Events" to delete login item "Pansift"' || echo "PS: Failed to remove Login Item" && exit 0
 
 exit
