@@ -156,6 +156,6 @@ echo "PS: Note: Only Pansift admins can request web data deletions!"
 echo "PS: =========================================================="
 
 # TODO: Need a better way to do the below as it looks for permissions from installer/terminal + unknown TCC/PPPC profile?
-echo "PS: Tell System Events to delete login item Pansift..."
-sudo osascript -e 'tell application "System Events" to delete login item "Pansift"' || echo "PS: Failed to remove Login Item" && exit 0
+# echo "PS: Tell System Events to delete login item Pansift..."
+# sudo osascript -e 'tell application "System Events" to delete login item "Pansift"' || echo "PS: Failed to remove Login Item" && exit 0
 exit
