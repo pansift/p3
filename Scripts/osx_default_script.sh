@@ -539,7 +539,7 @@ wlan_measure () {
 	# macOS Sonoma 14.4 onwards deprecates the airport CLI utility so we need to start using wdutil with sudo from here.
 	wlan_sp_airport_data_type=$(system_profiler SPAirPortDataType)
 
-	if [ $osx_mainline -ge 14 ] && [ $product_sub_version -ge 4 ]; then
+	if ([ $osx_mainline -ge 14 ] && [ $product_sub_version -ge 4 ]) || [ $osx_mainline -ge 15 ]; then
 		wdutil_data=$(sudo wdutil info)
 		wdutil_wifi_data=$(echo -n "$wdutil_data" | grep -i -A32 "Wifi")
 		# Note: Here we need to start using wdutil with sudo but still cover all the variables outputted for telegraf
@@ -602,12 +602,18 @@ wlan_measure () {
 		else
 			wlan_channel_flags_band=0i
 		fi
-		wlan_channel=$(echo -n "$wlan_channel_info" | cut -d'g' -f2- | cut -d' ' -f1 | xargs)
+		# Updates for 15.x Sequoia (delimiter in wdutil)
+		wlan_channel=$(echo -n "$wlan_channel_info" | cut -d'g' -f2- | cut -d'/' -f1 | cut -d' ' -f1 | xargs)
 		wlan_channel=${wlan_channel:=-1}
 		wlan_channel_i="$wlan_channel"i # Is this a safer way to apply the "i" if the variable has the potential not to be set?
-		wlan_width_info=$(echo -n "$wlan_channel_info" | cut -d'(' -f2- | cut -d' ' -f1 | xargs)
-		wlan_width_info=${wlan_width_info:=-1}
-		wlan_width="$wlan_width_info"i # Is this a safer way to apply the "i" if the variable has the potential not to be set?
+			# Updates for 15.x Sequoia (delimiter in wdutil, repetition yes, variable expansion a pain)
+    	if [ $osx_mainline -ge 15 ]; then
+      	wlan_width_info=$(echo -n "$wlan_channel_info" | cut -d'/' -f2- | cut -d' ' -f1 | xargs)
+    	else
+      	wlan_width_info=$(echo -n "$wlan_channel_info" | cut -d'(' -f2- | cut -d' ' -f1 | xargs)
+    	fi
+			wlan_width_info=${wlan_width_info:=-1}
+			wlan_width="$wlan_width_info"i # Is this a safer way to apply the "i" if the variable has the potential not to be set?
 		fi
 		# sudo wdutil info
 
