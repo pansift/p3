@@ -854,7 +854,8 @@ wlan_measure () {
 }
 
 wlan_scan () {
-	if [ $osx_mainline -ge 14 ] && [ $product_sub_version -ge 4 ]; then
+	# Updates for 15.x Sequoia
+  if ([ $osx_mainline -ge 14 ] && [ $product_sub_version -ge 4 ]) || [ $osx_mainline -ge 15 ]; then
 		# Need to re-write/re-think the whole scan for Sonoma 14.4+ unfortunately 
 		# as we won't get the channel widths easily from wdutil or sp
 		wlan_sp_airport_data_type_output=$(system_profiler SPAirPortDataType -xml)
