@@ -580,7 +580,9 @@ wlan_measure () {
 		tx_rate=${tx_rate:=-1}
 		wlan_last_tx_rate="$tx_rate"i
 		# wlan_max_rate is not available in wdutil
-		wlan_ssid=$(echo -n "$wdutil_wifi_data" | egrep -i '[[:space:]]ssid' | cut -d':' -f2- | awk '{$1=$1;print}')
+    # wlan_ssid now redacted in OSX 15.3 in wdutil
+	  # wlan_ssid=$(echo -n "$wdutil_wifi_data" | egrep -i '[[:space:]]ssid' | cut -d':' -f2- | awk '{$1=$1;print}')
+		wlan_ssid=$(echo -n "$wlan_sp_airport_data_type" | grep -i -A1 -m1 "Current Network Information" | tail -1 | sed 's/:$//' | xargs)
 		# Just trimming the wlan_sp_airport_data_type down for handiness
 		wlan_missing_info=$(echo -n "$wlan_sp_airport_data_type" | grep -A9 "$wlan_ssid" | head -10) # The -A9 and head -n10 is just to be safe as older versions showed more
 		# Just trimming the wlan_sp_airport_data_type down for handiness
